@@ -1,0 +1,380 @@
+// ============================================
+// 公共样式 — 温暖治愈风
+// ============================================
+@use './variables.scss' as *;
+@use 'sass:color';
+
+// 重置样式
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: $font-family;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: $text-primary;
+  background-color: $bg-page;
+}
+
+#app {
+  height: 100%;
+  background-color: $bg-page;
+}
+
+// 通用容器
+.container {
+  width: 100%;
+  max-width: $container-width;
+  margin: 0 auto;
+  padding: 0 $spacing-lg;
+}
+
+// 页面容器
+.page-container {
+  min-height: calc(100vh - #{$header-height});
+  padding: $spacing-lg;
+  background-color: $bg-page;
+}
+
+// ---- 卡片样式 ----
+.card {
+  background: $bg-white;
+  border-radius: $border-radius-xl;
+  box-shadow: $box-shadow-card;
+  border: 1px solid $border-lighter;
+  padding: $spacing-lg;
+  transition: $transition-base;
+
+  &:hover {
+    box-shadow: $box-shadow-dark;
+    transform: translateY(-2px);
+    border-color: $border-base;
+  }
+}
+
+// ---- Element Plus 按钮覆盖 ----
+.el-button {
+  border-radius: $border-radius-full !important;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: $transition-bounce !important;
+
+  &.el-button--primary {
+    background: $primary-gradient !important;
+    border-color: transparent !important;
+    color: white !important;
+    box-shadow: $box-shadow-light;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: $box-shadow-primary;
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  &.el-button--default {
+    background: $bg-white !important;
+    border-color: $border-base !important;
+    color: $text-regular !important;
+
+    &:hover {
+      border-color: $primary-color !important;
+      color: $primary-color !important;
+      background: $bg-subtle !important;
+    }
+  }
+}
+
+// ---- Element Plus 输入框覆盖 ----
+.el-input__wrapper {
+  border-radius: $border-radius-lg !important;
+  background: $bg-white !important;
+  box-shadow: 0 0 0 1px $border-base inset !important;
+  transition: $transition-base !important;
+
+  &:hover {
+    box-shadow: 0 0 0 1px $primary-light inset !important;
+  }
+
+  &.is-focus {
+    box-shadow: 0 0 0 2px rgba($primary-color, 0.25) inset !important;
+  }
+}
+
+.el-input__inner {
+  color: $text-primary !important;
+  font-family: $font-family !important;
+
+  &::placeholder {
+    color: $text-placeholder !important;
+  }
+}
+
+.el-textarea__inner {
+  border-radius: $border-radius-lg !important;
+  border-color: $border-base !important;
+  color: $text-primary !important;
+  background: $bg-white !important;
+
+  &:focus {
+    border-color: $primary-color !important;
+    box-shadow: 0 0 0 3px rgba($primary-color, 0.12) !important;
+  }
+}
+
+// ---- Element Plus 菜单覆盖 ----
+.el-menu {
+  background-color: transparent !important;
+  border-bottom: none !important;
+
+  .el-menu-item {
+    color: $text-regular !important;
+    font-weight: 500;
+    border-radius: $border-radius-md !important;
+    transition: $transition-base !important;
+
+    &:hover {
+      background: $bg-subtle !important;
+      color: $primary-color !important;
+    }
+
+    &.is-active {
+      color: $primary-color !important;
+      background: rgba($primary-color, 0.08) !important;
+      font-weight: 600;
+    }
+  }
+}
+
+// ---- Element Plus 标签覆盖 ----
+.el-tag {
+  border-radius: $border-radius-full !important;
+  font-weight: 500;
+
+  &.el-tag--primary {
+    background: rgba($primary-color, 0.1) !important;
+    border-color: rgba($primary-color, 0.2) !important;
+    color: $primary-dark !important;
+  }
+}
+
+// ---- Element Plus 对话框覆盖 ----
+.el-dialog {
+  border-radius: $border-radius-2xl !important;
+  overflow: hidden;
+
+  .el-dialog__header {
+    background: $bg-warm;
+    border-bottom: 1px solid $border-lighter;
+    padding: $spacing-lg $spacing-xl !important;
+  }
+}
+
+// ---- Element Plus 分页覆盖 ----
+.el-pagination {
+  .el-pager li {
+    border-radius: $border-radius-md !important;
+    font-weight: 500;
+
+    &.is-active {
+      background: $primary-color !important;
+      color: white !important;
+    }
+  }
+}
+
+// 工具类
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+// 文字颜色
+.text-primary {
+  color: $text-primary;
+}
+
+.text-secondary {
+  color: $text-secondary;
+}
+
+.text-success {
+  color: $success-color;
+}
+
+.text-warning {
+  color: $warning-color;
+}
+
+.text-danger {
+  color: $danger-color;
+}
+
+// 文字大小
+.text-xs {
+  font-size: $font-size-extra-small;
+}
+
+.text-sm {
+  font-size: $font-size-small;
+}
+
+.text-base {
+  font-size: $font-size-base;
+}
+
+.text-lg {
+  font-size: $font-size-large;
+}
+
+.text-xl {
+  font-size: $font-size-extra-large;
+}
+
+// 间距
+.mt-xs { margin-top: $spacing-xs; }
+.mt-sm { margin-top: $spacing-sm; }
+.mt-md { margin-top: $spacing-md; }
+.mt-lg { margin-top: $spacing-lg; }
+.mt-xl { margin-top: $spacing-xl; }
+
+.mb-xs { margin-bottom: $spacing-xs; }
+.mb-sm { margin-bottom: $spacing-sm; }
+.mb-md { margin-bottom: $spacing-md; }
+.mb-lg { margin-bottom: $spacing-lg; }
+.mb-xl { margin-bottom: $spacing-xl; }
+
+.pt-xs { padding-top: $spacing-xs; }
+.pt-sm { padding-top: $spacing-sm; }
+.pt-md { padding-top: $spacing-md; }
+.pt-lg { padding-top: $spacing-lg; }
+.pt-xl { padding-top: $spacing-xl; }
+
+.pb-xs { padding-bottom: $spacing-xs; }
+.pb-sm { padding-bottom: $spacing-sm; }
+.pb-md { padding-bottom: $spacing-md; }
+.pb-lg { padding-bottom: $spacing-lg; }
+.pb-xl { padding-bottom: $spacing-xl; }
+
+// Flex布局
+.flex {
+  display: flex;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+// 响应式
+@media (max-width: $breakpoint-sm) {
+  .page-container {
+    padding: $spacing-md;
+  }
+
+  .card {
+    padding: $spacing-md;
+  }
+
+  .container {
+    padding: 0 $spacing-sm;
+  }
+}
+
+// 加载动画
+@keyframes loading {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loading {
+  animation: loading 1s linear infinite;
+}
+
+// 淡入动画
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+// 滑入动画
+@keyframes slideInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-up {
+  animation: slideInUp 0.3s ease-out;
+}
+
+// 隐藏滚动条但保留功能
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// 文字溢出省略
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ellipsis-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

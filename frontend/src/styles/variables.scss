@@ -1,0 +1,134 @@
+// ============================================
+// 温暖治愈风 — 设计变量系统
+// 色调：杏粉 + 薰衣草紫 + 奶油白
+// ============================================
+
+// ---- 核心品牌色 ----
+$primary-color: #e8845a;           // 暖杏橙（主色）
+$primary-light: #f4a57a;           // 浅暖杏
+$primary-lighter: #fcd5bc;         // 极浅杏
+$primary-dark: #cc6b42;            // 深暖杏
+$primary-gradient: linear-gradient(135deg, #f4a57a 0%, #c96f42 100%);
+
+$secondary-color: #9b8bb4;         // 薰衣草紫
+$secondary-light: #b8acc8;         // 浅薰衣草
+$secondary-lighter: #e8e3f0;       // 极浅薰衣草
+$secondary-gradient: linear-gradient(135deg, #b8acc8 0%, #7d6b9e 100%);
+
+// ---- 功能色 ----
+$success-color: #72b087;           // 自然绿（偏暖）
+$warning-color: #e8b55a;           // 暖琥珀
+$danger-color: #e87a7a;            // 柔和红
+$info-color: #a0aec0;              // 蓝灰
+
+// ---- 心理主题辅助色 ----
+$calm-color: #90c4d8;              // 宁静天蓝
+$warm-color: #f4c9a8;              // 温暖杏粉
+$nature-color: #a8d8b0;            // 自然绿意
+$hope-color: #f9e4b7;              // 希望金黄
+
+// ---- 文字颜色（暖棕系） ----
+$text-primary: #3d2b1f;            // 主要文字（深暖棕）
+$text-regular: #6b5244;            // 常规文字（中暖棕）
+$text-secondary: #9e8070;          // 次要文字（浅暖棕）
+$text-placeholder: #c4b0a4;        // 占位文字（极浅棕）
+$text-white: #fff9f5;              // 白色文字（偏暖白）
+
+// ---- 边框颜色 ----
+$border-base: #e8d5c5;             // 基础边框（暖米）
+$border-light: #f0e0d0;            // 浅色边框
+$border-lighter: #f6ece4;          // 更浅边框
+$border-extra-light: #fdf4ee;      // 极浅边框
+
+// ---- 背景颜色 ----
+$bg-page: #fdf6ee;                 // 页面背景（奶油白）
+$bg-color: #fdf6ee;                // 兼容旧变量名
+$bg-white: #fffcf8;                // 卡片背景（暖白）
+$bg-warm: #fff8f2;                 // 温暖区块背景
+$bg-subtle: #fef3e8;               // 微妙强调背景
+$bg-header: #fffaf5;               // 导航栏背景
+
+// ---- 间距 ----
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-2xl: 48px;
+$spacing-3xl: 64px;
+
+// ---- 圆角（治愈感更圆润） ----
+$border-radius-xs: 4px;
+$border-radius-sm: 8px;
+$border-radius-md: 12px;
+$border-radius-lg: 16px;
+$border-radius-xl: 20px;
+$border-radius-2xl: 24px;
+$border-radius-full: 9999px;
+
+// ---- 阴影（软而有温度） ----
+$box-shadow-xs: 0 1px 3px rgba(107, 82, 68, 0.08);
+$box-shadow-base: 0 4px 12px rgba(107, 82, 68, 0.10), 0 1px 4px rgba(107, 82, 68, 0.06);
+$box-shadow-dark: 0 8px 24px rgba(107, 82, 68, 0.15), 0 2px 8px rgba(107, 82, 68, 0.08);
+$box-shadow-light: 0 2px 8px rgba(232, 132, 90, 0.12);
+$box-shadow-primary: 0 6px 20px rgba(232, 132, 90, 0.30);
+$box-shadow-card: 0 2px 16px rgba(107, 82, 68, 0.08);
+
+// ---- 字体大小 ----
+$font-size-xs: 11px;
+$font-size-extra-small: 12px;
+$font-size-small: 13px;
+$font-size-base: 14px;
+$font-size-medium: 16px;
+$font-size-large: 18px;
+$font-size-xl: 20px;
+$font-size-extra-large: 24px;
+$font-size-2xl: 28px;
+$font-size-3xl: 32px;
+
+// ---- 字体族 ----
+$font-family: 'PingFang SC', 'Noto Sans SC', 'Helvetica Neue', '微软雅黑', sans-serif;
+
+// ---- 过渡动画 ----
+$transition-fast: all 0.15s ease;
+$transition-base: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-slow: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-bounce: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+// ---- 布局 ----
+$header-height: 64px;
+$sidebar-width: 260px;
+$container-width: 1400px;
+$content-max-width: 800px;
+
+// ---- 响应式断点 ----
+$breakpoint-xs: 480px;
+$breakpoint-sm: 768px;
+$breakpoint-md: 1024px;
+$breakpoint-lg: 1280px;
+$breakpoint-xl: 1920px;
+
+// ---- Element Plus 覆盖变量 ----
+:root {
+  --el-color-primary: #e8845a;
+  --el-color-primary-light-3: #f4a57a;
+  --el-color-primary-light-5: #f4c9a8;
+  --el-color-primary-light-7: #fcd5bc;
+  --el-color-primary-light-9: #fef3e8;
+  --el-color-primary-dark-2: #cc6b42;
+  --el-color-success: #72b087;
+  --el-color-warning: #e8b55a;
+  --el-color-danger: #e87a7a;
+  --el-border-color: #e8d5c5;
+  --el-border-color-light: #f0e0d0;
+  --el-fill-color-blank: #fffcf8;
+  --el-bg-color: #fffcf8;
+  --el-text-color-primary: #3d2b1f;
+  --el-text-color-regular: #6b5244;
+  --el-text-color-secondary: #9e8070;
+  --el-border-radius-base: 10px;
+  --el-border-radius-small: 6px;
+  --el-border-radius-round: 20px;
+  --el-font-size-base: 14px;
+  --el-font-family: 'PingFang SC', 'Noto Sans SC', 'Helvetica Neue', '微软雅黑', sans-serif;
+}
