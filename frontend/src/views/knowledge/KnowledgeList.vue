@@ -174,7 +174,7 @@ onMounted(() => loadArticles())
   border: 1px solid $border-lighter;
   border-radius: 16px;
   padding: 14px 20px;
-  box-shadow: 0 2px 10px rgba(107,82,68,0.05);
+  box-shadow: 0 2px 10px rgba(27,42,44,0.05);
 
   .category-pills {
     display: flex;
@@ -225,7 +225,7 @@ onMounted(() => loadArticles())
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(232, 132, 90, 0.2);
+      box-shadow: 0 4px 12px rgba(46, 110, 104, 0.2);
     }
   }
 }
@@ -246,7 +246,7 @@ onMounted(() => loadArticles())
   .search-keyword {
     font-weight: 600;
     color: $primary-color;
-    background: rgba(232, 132, 90, 0.1);
+    background: rgba(46, 110, 104, 0.1);
     padding: 2px 8px;
     border-radius: 4px;
   }
@@ -271,11 +271,11 @@ onMounted(() => loadArticles())
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
-  box-shadow: 0 2px 12px rgba(107,82,68,0.06);
+  box-shadow: 0 2px 12px rgba(27,42,44,0.06);
 
   &:hover {
     transform: translateY(-6px);
-    box-shadow: 0 12px 32px rgba(107,82,68,0.14);
+    box-shadow: 0 12px 32px rgba(27,42,44,0.14);
 
     .cover-wrap img { transform: scale(1.05); }
     .read-more { color: $primary-color; }

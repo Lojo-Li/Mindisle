@@ -105,15 +105,15 @@ const dateRange = ref([])
 const userChartPeriod = ref('week')
 
 const stats = ref([
-  { key: 'users', label: '用户总数', value: '1,234', trend: 12.5, color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', icon: User },
-  { key: 'orders', label: '订单总数', value: '856', trend: 8.3, color: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', icon: ShoppingCart },
-  { key: 'revenue', label: '总收入', value: '¥45,678', trend: 23.1, color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', icon: Money },
-  { key: 'articles', label: '知识文章', value: '342', trend: 5.6, color: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', icon: Document }
+  { key: 'users', label: '用户总数', value: '1,234', trend: 12.5, color: 'linear-gradient(135deg, #3B837C 0%, #22524E 100%)', icon: User },
+  { key: 'orders', label: '订单总数', value: '856', trend: 8.3, color: 'linear-gradient(135deg, #9FCBC4 0%, #C4746A 100%)', icon: ShoppingCart },
+  { key: 'revenue', label: '总收入', value: '¥45,678', trend: 23.1, color: 'linear-gradient(135deg, #5AA79E 0%, #E2EFEC 100%)', icon: Money },
+  { key: 'articles', label: '知识文章', value: '342', trend: 5.6, color: 'linear-gradient(135deg, #9FCBC4 0%, #E2EFEC 100%)', icon: Document }
 ])
 
 const pendingItems = ref([
-  { id: 1, title: '待审核咨询师', desc: '3 位咨询师申请待审核', icon: UserFilled, color: '#f56c6c', action: () => router.push('/admin/counselors') },
-  { id: 2, title: '待处理投诉', desc: '2 条用户投诉待处理', icon: Warning, color: '#e6a23c', action: () => {} }
+  { id: 1, title: '待审核咨询师', desc: '3 位咨询师申请待审核', icon: UserFilled, color: '#C4746A', action: () => router.push('/admin/counselors') },
+  { id: 2, title: '待处理投诉', desc: '2 条用户投诉待处理', icon: Warning, color: '#D9982F', action: () => {} }
 ])
 
 const userChartRef = ref(null)
@@ -146,7 +146,7 @@ const initOrderChart = () => {
     grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
     xAxis: { type: 'category', data: ['待确认', '已确认', '进行中', '已完成', '已取消'] },
     yAxis: { type: 'value' },
-    series: [{ name: '订单数', type: 'bar', data: [45, 123, 67, 234, 23], itemStyle: { color: '#667eea' } }]
+    series: [{ name: '订单数', type: 'bar', data: [45, 123, 67, 234, 23], itemStyle: { color: '#3B837C' } }]
   })
 }
 

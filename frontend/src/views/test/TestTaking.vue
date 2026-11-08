@@ -481,7 +481,7 @@ onBeforeUnmount(() => {
       font-size: $font-size-large;
       font-weight: 700;
       color: $primary-color;
-      background: rgba(232,132,90,0.1);
+      background: rgba(46,110,104,0.1);
       padding: 6px 16px;
       border-radius: 999px;
     }
@@ -506,7 +506,7 @@ onBeforeUnmount(() => {
   margin-bottom: 24px;
   border-radius: 20px !important;
   border: 1px solid $border-lighter !important;
-  box-shadow: 0 4px 20px rgba(107,82,68,0.08) !important;
+  box-shadow: 0 4px 20px rgba(27,42,44,0.08) !important;
 
   :deep(.el-card__body) {
     padding: 32px;
@@ -548,13 +548,13 @@ onBeforeUnmount(() => {
     background: $bg-page;
 
     &:hover {
-      border-color: rgba(232,132,90,0.4);
-      background: rgba(232,132,90,0.04);
+      border-color: rgba(46,110,104,0.4);
+      background: rgba(46,110,104,0.04);
     }
 
     &.selected {
       border-color: $primary-color;
-      background: rgba(232,132,90,0.08);
+      background: rgba(46,110,104,0.08);
     }
 
     .option-radio {
@@ -611,7 +611,7 @@ onBeforeUnmount(() => {
     transition: all 0.15s ease;
 
     &.answered {
-      background: rgba(232,132,90,0.1);
+      background: rgba(46,110,104,0.1);
       border-color: $primary-color;
       color: $primary-color;
     }
@@ -624,8 +624,8 @@ onBeforeUnmount(() => {
     }
 
     &:hover:not(.current) {
-      border-color: rgba(232,132,90,0.5);
-      background: rgba(232,132,90,0.06);
+      border-color: rgba(46,110,104,0.5);
+      background: rgba(46,110,104,0.06);
     }
   }
 }
@@ -652,7 +652,7 @@ onBeforeUnmount(() => {
       transition: all 0.15s ease;
 
       &.answered {
-        background: rgba(232,132,90,0.12);
+        background: rgba(46,110,104,0.12);
         border: 1.5px solid $primary-color;
       }
 

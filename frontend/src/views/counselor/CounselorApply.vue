@@ -5,7 +5,7 @@
       <el-card class="apply-card">
         <template #header>
           <div class="card-header">
-            <el-icon :size="24" color="#67C23A"><Briefcase /></el-icon>
+            <el-icon :size="24" color="#6E915A"><Briefcase /></el-icon>
             <span>加入我们 - 成为心理咨询师</span>
           </div>
         </template>
@@ -13,10 +13,10 @@
         <div class="apply-content">
           <!-- 平台介绍 -->
           <div class="section intro-section">
-            <h2>关于 SoulStation</h2>
+            <h2>关于 Mindisle</h2>
             <div class="intro-text">
               <p>
-                SoulStation 是一个专业的心理健康服务平台，致力于为用户提供优质的心理咨询服务。
+                Mindisle 是一个专业的心理健康服务平台，致力于为用户提供优质的心理咨询服务。
                 我们拥有一支经验丰富、专业资质过硬的咨询师团队，为用户提供在线咨询、心理测评、
                 知识科普等全方位的心理健康服务。
               </p>
@@ -628,7 +628,7 @@ const goBack = () => {
     .form-group {
       margin-bottom: $spacing-xl;
       padding: $spacing-xl;
-      background: #f9fafb;
+      background: #F6F5F1;
       border-radius: $border-radius-md;
 
       .unit-text {

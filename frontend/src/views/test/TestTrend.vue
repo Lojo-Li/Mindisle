@@ -299,22 +299,22 @@ const renderChart = () => {
         data: scores,
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(232, 132, 90, 0.3)' },
-            { offset: 1, color: 'rgba(232, 132, 90, 0.03)' }
+            { offset: 0, color: 'rgba(46, 110, 104, 0.3)' },
+            { offset: 1, color: 'rgba(46, 110, 104, 0.03)' }
           ])
         },
         lineStyle: {
           width: 3,
-          color: '#e8845a'
+          color: '#2E6E68'
         },
         itemStyle: {
-          color: '#e8845a',
+          color: '#2E6E68',
           borderWidth: 2,
           borderColor: '#fff'
         },
         emphasis: {
           itemStyle: {
-            color: '#e8845a',
+            color: '#2E6E68',
             borderWidth: 4,
             borderColor: '#fff'
           }
@@ -408,7 +408,7 @@ onBeforeUnmount(() => {
   margin-bottom: 24px;
   border-radius: 16px !important;
   border: 1px solid $border-lighter !important;
-  box-shadow: 0 2px 12px rgba(107,82,68,0.06) !important;
+  box-shadow: 0 2px 12px rgba(27,42,44,0.06) !important;
 
   :deep(.el-card__body) {
     padding: 20px 24px;
@@ -437,7 +437,7 @@ onBeforeUnmount(() => {
   margin-bottom: 24px;
   border-radius: 20px !important;
   border: 1px solid $border-lighter !important;
-  box-shadow: 0 4px 20px rgba(107,82,68,0.08) !important;
+  box-shadow: 0 4px 20px rgba(27,42,44,0.08) !important;
 
   :deep(.el-card__header) {
     font-weight: 600;
@@ -454,7 +454,7 @@ onBeforeUnmount(() => {
 .history-card {
   border-radius: 20px !important;
   border: 1px solid $border-lighter !important;
-  box-shadow: 0 4px 20px rgba(107,82,68,0.08) !important;
+  box-shadow: 0 4px 20px rgba(27,42,44,0.08) !important;
 
   :deep(.el-card__header) {
     font-weight: 600;
@@ -472,7 +472,7 @@ onBeforeUnmount(() => {
     }
 
     tr:hover td {
-      background: rgba(232,132,90,0.04) !important;
+      background: rgba(46,110,104,0.04) !important;
     }
   }
 }

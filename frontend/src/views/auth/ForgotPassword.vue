@@ -11,7 +11,7 @@
 
       <!-- 标题 -->
       <div class="header">
-        <el-icon :size="48" color="#e8845a">
+        <el-icon :size="48" color="#2E6E68">
           <Lock />
         </el-icon>
         <h1 class="title">重置密码</h1>
@@ -337,7 +337,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(160deg, #fde8d8 0%, #fbd4c0 45%, #e8c4d8 100%);
+  background: linear-gradient(160deg, #F6F5F1 0%, #EFEDE6 45%, #E2EFEC 100%);
   padding: 20px;
   position: relative;
   overflow: hidden;

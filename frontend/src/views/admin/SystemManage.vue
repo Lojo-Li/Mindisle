@@ -80,8 +80,8 @@ import { Plus } from '@element-plus/icons-vue'
 const activeTab = ref('basic')
 
 const basicForm = ref({
-  siteName: '心理咨询平台',
-  siteSubtitle: '心灵驿站，守护您的心理健康',
+  siteName: '心屿 Mindisle',
+  siteSubtitle: '心屿，守护您的心理健康',
   contactEmail: 'contact@example.com',
   contactPhone: '400-123-4567'
 })
@@ -145,7 +145,7 @@ const handleDeleteAdmin = (row) => {
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  color: #1f2937;
+  color: #1B2A2C;
 }
 
 .system-tabs {

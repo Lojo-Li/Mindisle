@@ -4,8 +4,8 @@
     <div class="login-panel-left">
       <div class="panel-brand">
         <div class="brand-icon">🌸</div>
-        <h1 class="brand-name">心灵驿站</h1>
-        <p class="brand-tagline">SoulStation</p>
+        <h1 class="brand-name">心屿</h1>
+        <p class="brand-tagline">Mindisle</p>
       </div>
       <div class="panel-quote">
         <blockquote>
@@ -86,7 +86,7 @@
       </div>
 
       <footer class="page-bottom">
-        © 2026 心灵驿站 · 守护您的心理健康
+        © 2026 心屿 · 守护您的心理健康
       </footer>
     </div>
   </div>
@@ -173,7 +173,7 @@ const goToForgotPassword = () => router.push('/forgot-password')
 // ---- 左侧装饰面板 ----
 .login-panel-left {
   flex: 0 0 45%;
-  background: linear-gradient(160deg, #fde8d8 0%, #fbd4c0 40%, #e8c4d8 100%);
+  background: linear-gradient(160deg, #F6F5F1 0%, #EFEDE6 40%, #E2EFEC 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -197,14 +197,14 @@ const goToForgotPassword = () => router.push('/forgot-password')
     .brand-name {
       font-size: 36px;
       font-weight: 700;
-      color: #3d2b1f;
+      color: #1B2A2C;
       letter-spacing: 4px;
       margin-bottom: 4px;
     }
 
     .brand-tagline {
       font-size: 14px;
-      color: #9e8070;
+      color: #94A4A6;
       letter-spacing: 6px;
       text-transform: uppercase;
     }
@@ -224,7 +224,7 @@ const goToForgotPassword = () => router.push('/forgot-password')
     blockquote p {
       font-size: 15px;
       line-height: 1.8;
-      color: #5a3c2b;
+      color: #56696D;
       font-style: italic;
       text-align: center;
     }
@@ -250,7 +250,7 @@ const goToForgotPassword = () => router.push('/forgot-password')
       border: 1px solid rgba(255,255,255,0.5);
 
       .feat-icon { font-size: 20px; }
-      .feat-text { font-size: 14px; color: #4a3020; font-weight: 500; }
+      .feat-text { font-size: 14px; color: #22524E; font-weight: 500; }
     }
   }
 
@@ -276,14 +276,14 @@ const goToForgotPassword = () => router.push('/forgot-password')
   .deco-3 {
     width: 100px; height: 100px;
     bottom: 120px; right: 30px;
-    background: rgba(232, 132, 90, 0.12);
+    background: rgba(46, 110, 104, 0.12);
   }
 }
 
 // ---- 右侧表单面板 ----
 .login-panel-right {
   flex: 1;
-  background: #fffcf8;
+  background: #FFFFFF;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -302,13 +302,13 @@ const goToForgotPassword = () => router.push('/forgot-password')
     h2 {
       font-size: 28px;
       font-weight: 700;
-      color: #3d2b1f;
+      color: #1B2A2C;
       margin-bottom: 8px;
     }
 
     p {
       font-size: 15px;
-      color: #9e8070;
+      color: #94A4A6;
     }
   }
 }
@@ -321,10 +321,10 @@ const goToForgotPassword = () => router.push('/forgot-password')
   :deep(.el-input__wrapper) {
     border-radius: 14px !important;
     padding: 4px 16px;
-    box-shadow: 0 0 0 1px #e8d5c5 inset !important;
+    box-shadow: 0 0 0 1px #E7E5DE inset !important;
 
     &.is-focus {
-      box-shadow: 0 0 0 2px rgba(232, 132, 90, 0.3) inset !important;
+      box-shadow: 0 0 0 2px rgba(46, 110, 104, 0.3) inset !important;
     }
   }
 
@@ -348,14 +348,14 @@ const goToForgotPassword = () => router.push('/forgot-password')
     font-weight: 600;
     letter-spacing: 2px;
     border-radius: 14px !important;
-    background: linear-gradient(135deg, #f4a57a 0%, #c96f42 100%) !important;
+    background: linear-gradient(135deg, #3B837C 0%, #22524E 100%) !important;
     border: none !important;
-    box-shadow: 0 6px 20px rgba(232, 132, 90, 0.38) !important;
+    box-shadow: 0 6px 20px rgba(46, 110, 104, 0.38) !important;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 10px 28px rgba(232, 132, 90, 0.45) !important;
+      box-shadow: 0 10px 28px rgba(46, 110, 104, 0.45) !important;
     }
 
     &:active {
@@ -368,7 +368,7 @@ const goToForgotPassword = () => router.push('/forgot-password')
   text-align: center;
   margin-top: 20px;
   font-size: 14px;
-  color: #9e8070;
+  color: #94A4A6;
 
   .el-link {
     margin-left: 4px;
@@ -381,7 +381,7 @@ const goToForgotPassword = () => router.push('/forgot-password')
   position: absolute;
   bottom: 24px;
   font-size: 13px;
-  color: #c4b0a4;
+  color: #A9B9B8;
 }
 
 // ---- 响应式 ----

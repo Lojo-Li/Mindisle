@@ -90,7 +90,7 @@
             <div class="card-top">
               <h3>{{ counselor.name }}</h3>
               <div class="rating-row">
-                <el-rate v-model="counselor.rating" disabled show-score text-color="#e8845a" score-template="{value}" />
+                <el-rate v-model="counselor.rating" disabled show-score text-color="#2E6E68" score-template="{value}" />
                 <span class="review-count">{{ counselor.reviewCount }}条评价</span>
               </div>
             </div>
@@ -325,7 +325,7 @@ onMounted(() => {
   margin-bottom: 28px;
   border-radius: 18px !important;
   border: 1px solid $border-lighter !important;
-  box-shadow: 0 2px 12px rgba(107,82,68,0.06) !important;
+  box-shadow: 0 2px 12px rgba(27,42,44,0.06) !important;
 
   :deep(.el-card__body) { padding: 20px 24px; }
 }
@@ -392,14 +392,14 @@ onMounted(() => {
   border-radius: 20px;
   padding: 24px;
   border: 1px solid $border-lighter;
-  box-shadow: 0 2px 12px rgba(107,82,68,0.06);
+  box-shadow: 0 2px 12px rgba(27,42,44,0.06);
   display: flex;
   gap: 20px;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 28px rgba(107,82,68,0.12);
+    box-shadow: 0 10px 28px rgba(27,42,44,0.12);
   }
 
   .card-left {
@@ -414,7 +414,7 @@ onMounted(() => {
     }
 
     .price-tag {
-      background: linear-gradient(135deg, #f4a57a 0%, #c96f42 100%);
+      background: linear-gradient(135deg, #3B837C 0%, #22524E 100%);
       color: white;
       border-radius: 10px;
       padding: 4px 12px;

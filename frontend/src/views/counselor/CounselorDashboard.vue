@@ -16,7 +16,7 @@
             <div class="stats">
               <div class="stat-item">
                 <span class="label">评分：</span>
-                <el-rate :model-value="counselorInfo?.rating" disabled show-score text-color="#ff9900" />
+                <el-rate :model-value="counselorInfo?.rating" disabled show-score text-color="#D9982F" />
               </div>
               <div class="stat-item">
                 <span class="label">咨询次数：</span>
@@ -39,28 +39,28 @@
 
         <div class="quick-access-grid">
           <div class="access-item" @click="navigateTo('/consultation/counselor/orders')">
-            <div class="access-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+            <div class="access-icon" style="background: linear-gradient(135deg, #3B837C 0%, #22524E 100%)">
               <el-icon :size="32"><Calendar /></el-icon>
             </div>
             <span>预约管理</span>
           </div>
 
           <div class="access-item" @click="navigateTo('/profile')">
-            <div class="access-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
+            <div class="access-icon" style="background: linear-gradient(135deg, #9FCBC4 0%, #C4746A 100%)">
               <el-icon :size="32"><User /></el-icon>
             </div>
             <span>个人资料</span>
           </div>
 
           <div class="access-item" @click="navigateTo('/counselor')">
-            <div class="access-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
+            <div class="access-icon" style="background: linear-gradient(135deg, #5AA79E 0%, #E2EFEC 100%)">
               <el-icon :size="32"><View /></el-icon>
             </div>
             <span>我的主页</span>
           </div>
 
           <div class="access-item" @click="navigateTo('/chat')">
-            <div class="access-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)">
+            <div class="access-icon" style="background: linear-gradient(135deg, #9FCBC4 0%, #E2EFEC 100%)">
               <el-icon :size="32"><ChatDotSquare /></el-icon>
             </div>
             <span>智能问答</span>
@@ -73,7 +73,7 @@
         <el-col :span="6">
           <el-card class="stat-card">
             <div class="stat-content">
-              <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+              <div class="stat-icon" style="background: linear-gradient(135deg, #3B837C 0%, #22524E 100%)">
                 <el-icon :size="28"><Calendar /></el-icon>
               </div>
               <div class="stat-info">
@@ -87,7 +87,7 @@
         <el-col :span="6">
           <el-card class="stat-card">
             <div class="stat-content">
-              <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
+              <div class="stat-icon" style="background: linear-gradient(135deg, #9FCBC4 0%, #C4746A 100%)">
                 <el-icon :size="28"><Clock /></el-icon>
               </div>
               <div class="stat-info">
@@ -101,7 +101,7 @@
         <el-col :span="6">
           <el-card class="stat-card">
             <div class="stat-content">
-              <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
+              <div class="stat-icon" style="background: linear-gradient(135deg, #5AA79E 0%, #E2EFEC 100%)">
                 <el-icon :size="28"><ChatDotRound /></el-icon>
               </div>
               <div class="stat-info">
@@ -115,7 +115,7 @@
         <el-col :span="6">
           <el-card class="stat-card">
             <div class="stat-content">
-              <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)">
+              <div class="stat-icon" style="background: linear-gradient(135deg, #9FCBC4 0%, #E2EFEC 100%)">
                 <el-icon :size="28"><Star /></el-icon>
               </div>
               <div class="stat-info">

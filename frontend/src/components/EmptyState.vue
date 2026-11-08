@@ -94,16 +94,16 @@ const iconComponent = computed(() => {
 // 根据类型选择颜色
 const iconColor = computed(() => {
   const colorMap = {
-    default: '#909399',
-    nodata: '#C0C4CC',
-    success: '#67C23A',
-    error: '#F56C6C',
-    search: '#e8845a',
-    cart: '#f4a57a',
-    chat: '#9b8bb4',
-    analysis: '#67C23A'
+    default: '#94A4A6',
+    nodata: '#A9B9B8',
+    success: '#6E915A',
+    error: '#C4746A',
+    search: '#2E6E68',
+    cart: '#3B837C',
+    chat: '#D9982F',
+    analysis: '#6E915A'
   }
-  return colorMap[props.type] || '#909399'
+  return colorMap[props.type] || '#94A4A6'
 })
 
 // 处理操作按钮点击

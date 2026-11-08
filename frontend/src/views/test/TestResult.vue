@@ -258,9 +258,9 @@ const getDimLevelText = (level) => dimLevelMapping[level] || '无'
 
 const getDimensionColor = (dimension) => {
   const percentage = getDimensionPercentage(dimension)
-  if (percentage >= 75) return '#67C23A'
-  if (percentage >= 50) return '#E6A23C'
-  return '#F56C6C'
+  if (percentage >= 75) return '#6E915A'
+  if (percentage >= 50) return '#D9982F'
+  return '#C4746A'
 }
 
 // 加载测试结果
@@ -465,7 +465,7 @@ onMounted(() => {
   margin-bottom: 24px;
   border-radius: 20px !important;
   border: 1px solid $border-lighter !important;
-  box-shadow: 0 4px 20px rgba(107,82,68,0.08) !important;
+  box-shadow: 0 4px 20px rgba(27,42,44,0.08) !important;
 
   :deep(.el-card__body) {
     padding: 32px;
@@ -501,27 +501,27 @@ onMounted(() => {
       text-align: center;
 
       &.level-none {
-        background: linear-gradient(135deg, #a8e6cf 0%, #56ab91 100%);
+        background: linear-gradient(135deg, #E2EFEC 0%, #6E915A 100%);
         color: white;
       }
 
       &.level-mild {
-        background: linear-gradient(135deg, #fde8d8 0%, #f4a57a 100%);
-        color: #3d2b1f;
+        background: linear-gradient(135deg, #F6F5F1 0%, #3B837C 100%);
+        color: #1B2A2C;
       }
 
       &.level-moderate {
-        background: linear-gradient(135deg, #f4a57a 0%, #e8845a 100%);
+        background: linear-gradient(135deg, #3B837C 0%, #2E6E68 100%);
         color: white;
       }
 
       &.level-severe {
-        background: linear-gradient(135deg, #e8845a 0%, #c96f42 100%);
+        background: linear-gradient(135deg, #2E6E68 0%, #22524E 100%);
         color: white;
       }
 
       &.level-neutral {
-        background: linear-gradient(135deg, #a0c4f0 0%, #6b8fc4 100%);
+        background: linear-gradient(135deg, #9FCBC4 0%, #558C96 100%);
         color: white;
       }
 
@@ -557,7 +557,7 @@ onMounted(() => {
   .description-section {
     margin-bottom: $spacing-xl;
     padding: 20px 24px;
-    background: rgba(232,132,90,0.06);
+    background: rgba(46,110,104,0.06);
     border-radius: 16px;
     border-left: 4px solid $primary-color;
 
@@ -611,8 +611,8 @@ onMounted(() => {
 
         .dimension-level {
           font-size: 11px;
-          color: #909399;
-          background: #f0f2f5;
+          color: #94A4A6;
+          background: #F6F5F1;
           padding: 1px 8px;
           border-radius: 10px;
         }
@@ -662,7 +662,7 @@ onMounted(() => {
   .ai-suggestion-card {
     margin-bottom: $spacing-xl;
     border-radius: 16px !important;
-    border: 1px solid rgba(232,132,90,0.2) !important;
+    border: 1px solid rgba(46,110,104,0.2) !important;
     background: linear-gradient(135deg, rgba(253,232,216,0.5) 0%, rgba(253,212,192,0.3) 100%) !important;
 
     .card-header {

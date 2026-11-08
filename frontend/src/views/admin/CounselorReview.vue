@@ -352,7 +352,7 @@ onMounted(() => loadCounselors())
 .pagination { display: flex; justify-content: center; margin-top: $spacing-lg; }
 
 .detail-content { display: flex; flex-direction: column; gap: 12px; max-height: 65vh; overflow-y: auto; padding-right: 4px; }
-.detail-section h4 { margin: 0 0 8px; font-size: 14px; color: #606266; font-weight: 600; }
-.bio-text { line-height: 1.8; color: #303133; font-size: 14px; white-space: pre-wrap; }
+.detail-section h4 { margin: 0 0 8px; font-size: 14px; color: #56696D; font-weight: 600; }
+.bio-text { line-height: 1.8; color: #1B2A2C; font-size: 14px; white-space: pre-wrap; }
 .cert-images { display: flex; flex-wrap: wrap; gap: 6px; }
 </style>

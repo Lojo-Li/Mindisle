@@ -484,7 +484,7 @@ onMounted(() => {
 :deep(.el-card) {
   border-radius: 20px !important;
   border: 1px solid $border-lighter !important;
-  box-shadow: 0 4px 20px rgba(107,82,68,0.08) !important;
+  box-shadow: 0 4px 20px rgba(27,42,44,0.08) !important;
 
   .el-card__body {
     padding: 40px;
@@ -529,7 +529,7 @@ h1 {
     border-left: 4px solid $primary-color;
     padding: 12px 16px;
     color: $text-secondary;
-    background: rgba(232,132,90,0.05);
+    background: rgba(46,110,104,0.05);
     border-radius: 0 8px 8px 0;
     margin: 16px 0;
   }
@@ -555,14 +555,14 @@ h1 {
 
     &.is-liked {
       color: $primary-color;
-      background: rgba(232, 132, 90, 0.08);
+      background: rgba(46, 110, 104, 0.08);
       border-color: $primary-lighter;
     }
 
     &.is-favorited {
-      color: #e8b55a;
+      color: #D9982F;
       background: rgba(232, 181, 90, 0.08);
-      border-color: #fce4b8;
+      border-color: #FAEFD7;
     }
 
     .count-badge {
@@ -737,7 +737,7 @@ h1 {
 
     &:hover {
       transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(107,82,68,0.12);
+      box-shadow: 0 8px 24px rgba(27,42,44,0.12);
     }
   }
 

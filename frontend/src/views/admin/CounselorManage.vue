@@ -291,7 +291,7 @@ onMounted(() => {
   margin: 0;
   font-size: 22px;
   font-weight: 600;
-  color: #1f2937;
+  color: #1B2A2C;
 }
 
 .search-card {

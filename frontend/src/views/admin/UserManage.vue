@@ -245,7 +245,7 @@ onMounted(() => loadUsers())
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  color: #303133;
+  color: #1B2A2C;
 }
 
 /* 用户信息列 */
@@ -258,7 +258,7 @@ onMounted(() => loadUsers())
 .user-name {
   font-size: 14px;
   font-weight: 500;
-  color: #303133;
+  color: #1B2A2C;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -267,7 +267,7 @@ onMounted(() => loadUsers())
 
 .user-email {
   font-size: 12px;
-  color: #909399;
+  color: #94A4A6;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -280,19 +280,19 @@ onMounted(() => loadUsers())
   flex-direction: column;
   gap: 3px;
   font-size: 12px;
-  color: #606266;
+  color: #56696D;
   line-height: 1.6;
 }
 
 .stats b {
-  color: #409eff;
+  color: #2E6E68;
   font-weight: 600;
 }
 
 /* 时间文字 */
 .time-text {
   font-size: 12px;
-  color: #606266;
+  color: #56696D;
 }
 
 /* 操作按钮组 */
@@ -317,15 +317,15 @@ onMounted(() => loadUsers())
 }
 
 .btn-detail {
-  background-color: #409eff !important;
+  background-color: #2E6E68 !important;
 }
 
 .btn-danger {
-  background-color: #f56c6c !important;
+  background-color: #C4746A !important;
 }
 
 .btn-success {
-  background-color: #67c23a !important;
+  background-color: #6E915A !important;
 }
 
 .action-btns .el-button:hover,
@@ -336,9 +336,9 @@ onMounted(() => loadUsers())
   filter: none !important;
 }
 
-.btn-detail:hover { background-color: #409eff !important; }
-.btn-danger:hover  { background-color: #f56c6c !important; }
-.btn-success:hover { background-color: #67c23a !important; }
+.btn-detail:hover { background-color: #2E6E68 !important; }
+.btn-danger:hover  { background-color: #C4746A !important; }
+.btn-success:hover { background-color: #6E915A !important; }
 
 /* 分页 */
 .pagination {
@@ -346,7 +346,7 @@ onMounted(() => loadUsers())
   justify-content: center;
   margin-top: 20px;
   padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid #EFEDE6;
 }
 
 /* 详情弹窗 */
@@ -372,7 +372,7 @@ onMounted(() => loadUsers())
   margin: 0 0 6px;
   font-size: 16px;
   font-weight: 600;
-  color: #303133;
+  color: #1B2A2C;
 }
 
 .header-info p {
@@ -381,7 +381,7 @@ onMounted(() => loadUsers())
   gap: 4px;
   margin: 4px 0;
   font-size: 13px;
-  color: #606266;
+  color: #56696D;
 }
 
 .header-tags {
@@ -406,7 +406,7 @@ onMounted(() => loadUsers())
 
 .stat-item {
   padding: 14px 8px;
-  background: #f5f7fa;
+  background: #F6F5F1;
   border-radius: 8px;
 }
 
@@ -414,7 +414,7 @@ onMounted(() => loadUsers())
   display: block;
   font-size: 22px;
   font-weight: 700;
-  color: #409eff;
+  color: #2E6E68;
   line-height: 1.2;
 }
 
@@ -422,6 +422,6 @@ onMounted(() => loadUsers())
   display: block;
   margin-top: 4px;
   font-size: 12px;
-  color: #909399;
+  color: #94A4A6;
 }
 </style>

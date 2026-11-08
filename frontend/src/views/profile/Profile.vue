@@ -25,25 +25,25 @@
         <!-- 数据统计行 -->
         <div class="stats-row">
           <div class="stat-cell" @click="navigateTo('/test')">
-            <el-icon :size="20" color="#e8845a"><DocumentCopy /></el-icon>
+            <el-icon :size="20" color="#2E6E68"><DocumentCopy /></el-icon>
             <span class="num">{{ statistics.test_count || 0 }}</span>
             <span class="lbl">心理测试</span>
           </div>
           <div class="stat-divider" />
           <div class="stat-cell" @click="navigateTo('/chat')">
-            <el-icon :size="20" color="#9b8bb4"><ChatDotSquare /></el-icon>
+            <el-icon :size="20" color="#D9982F"><ChatDotSquare /></el-icon>
             <span class="num">{{ statistics.chat_count || 0 }}</span>
             <span class="lbl">智能问答</span>
           </div>
           <div class="stat-divider" />
           <div class="stat-cell" @click="navigateTo('/counselor/orders')">
-            <el-icon :size="20" color="#56ab91"><Calendar /></el-icon>
+            <el-icon :size="20" color="#6E915A"><Calendar /></el-icon>
             <span class="num">{{ statistics.appointment_count || 0 }}</span>
             <span class="lbl">咨询预约</span>
           </div>
           <div class="stat-divider" />
           <div class="stat-cell" @click="navigateTo('/knowledge')">
-            <el-icon :size="20" color="#f4a57a"><Star /></el-icon>
+            <el-icon :size="20" color="#3B837C"><Star /></el-icon>
             <span class="num">{{ statistics.favorite_count || 0 }}</span>
             <span class="lbl">收藏内容</span>
           </div>
@@ -55,68 +55,68 @@
         <div class="section-title">快捷入口</div>
         <div class="quick-grid">
           <div class="quick-item" @click="router.push('/test?tab=history')">
-            <div class="quick-icon" style="background:linear-gradient(135deg,#fde8d8,#f4a57a)">
-              <el-icon :size="26" color="#c96f42"><DocumentCopy /></el-icon>
+            <div class="quick-icon" style="background:linear-gradient(135deg,#F6F5F1,#3B837C)">
+              <el-icon :size="26" color="#22524E"><DocumentCopy /></el-icon>
             </div>
             <span>我的测试</span>
           </div>
           <div class="quick-item" @click="navigateTo('/chat')">
-            <div class="quick-icon" style="background:linear-gradient(135deg,#ede8f5,#c4b5d8)">
-              <el-icon :size="26" color="#7b5ea7"><ChatDotSquare /></el-icon>
+            <div class="quick-icon" style="background:linear-gradient(135deg,#FBFAF7,#E2EFEC)">
+              <el-icon :size="26" color="#22524E"><ChatDotSquare /></el-icon>
             </div>
             <span>我的对话</span>
           </div>
           <div class="quick-item" @click="navigateTo('/counselor/orders')">
-            <div class="quick-icon" style="background:linear-gradient(135deg,#e0f5ee,#a8e6cf)">
-              <el-icon :size="26" color="#3d8a6e"><Calendar /></el-icon>
+            <div class="quick-icon" style="background:linear-gradient(135deg,#E2EFEC,#E2EFEC)">
+              <el-icon :size="26" color="#6E915A"><Calendar /></el-icon>
             </div>
             <span>我的预约</span>
           </div>
           <div class="quick-item" @click="navigateTo('/profile/favorites')">
-            <div class="quick-icon" style="background:linear-gradient(135deg,#fff9e6,#ffe082)">
-              <el-icon :size="26" color="#c68a00"><Star /></el-icon>
+            <div class="quick-icon" style="background:linear-gradient(135deg,#FBFAF7,#FAEFD7)">
+              <el-icon :size="26" color="#D9982F"><Star /></el-icon>
             </div>
             <span>我的收藏</span>
           </div>
           <div class="quick-item" @click="navigateTo('/profile/account')">
-            <div class="quick-icon" style="background:linear-gradient(135deg,#fff3e0,#ffcc80)">
-              <el-icon :size="26" color="#e65100"><Setting /></el-icon>
+            <div class="quick-icon" style="background:linear-gradient(135deg,#FBFAF7,#F1EBE0)">
+              <el-icon :size="26" color="#22524E"><Setting /></el-icon>
             </div>
             <span>账号设置</span>
           </div>
           <div class="quick-item" @click="goToPrivacy">
-            <div class="quick-icon" style="background:linear-gradient(135deg,#fce4ec,#f48fb1)">
-              <el-icon :size="26" color="#c2185b"><Lock /></el-icon>
+            <div class="quick-icon" style="background:linear-gradient(135deg,#F7E7E4,#F7E7E4)">
+              <el-icon :size="26" color="#C4746A"><Lock /></el-icon>
             </div>
             <span>隐私设置</span>
           </div>
           <div class="quick-item" @click="goToStatistics">
-            <div class="quick-icon" style="background:linear-gradient(135deg,#e8eaf6,#9fa8da)">
-              <el-icon :size="26" color="#3949ab"><DataAnalysis /></el-icon>
+            <div class="quick-icon" style="background:linear-gradient(135deg,#FBFAF7,#9FCBC4)">
+              <el-icon :size="26" color="#22524E"><DataAnalysis /></el-icon>
             </div>
             <span>数据统计</span>
           </div>
           <div class="quick-item" @click="goToCounselorApply" v-if="!isCounselor">
-            <div class="quick-icon" style="background:linear-gradient(135deg,#e8f5e9,#a5d6a7)">
-              <el-icon :size="26" color="#2e7d32"><Briefcase /></el-icon>
+            <div class="quick-icon" style="background:linear-gradient(135deg,#E2EFEC,#E2EFEC)">
+              <el-icon :size="26" color="#6E915A"><Briefcase /></el-icon>
             </div>
             <span>加入我们</span>
           </div>
           <div class="quick-item" @click="goToCounselorDashboard" v-else>
-            <div class="quick-icon" style="background:linear-gradient(135deg,#fff8e1,#ffca28)">
-              <el-icon :size="26" color="#f57f17"><Briefcase /></el-icon>
+            <div class="quick-icon" style="background:linear-gradient(135deg,#FBFAF7,#D9982F)">
+              <el-icon :size="26" color="#D9982F"><Briefcase /></el-icon>
             </div>
             <span>咨询师中心</span>
           </div>
           <div class="quick-item" @click="handleLogout">
-            <div class="quick-icon" style="background:linear-gradient(135deg,#f5f5f5,#eeeeee)">
-              <el-icon :size="26" color="#9e9e9e"><SwitchButton /></el-icon>
+            <div class="quick-icon" style="background:linear-gradient(135deg,#F6F5F1,#EFEDE6)">
+              <el-icon :size="26" color="#A9B9B8"><SwitchButton /></el-icon>
             </div>
             <span>退出登录</span>
           </div>
           <div class="quick-item" @click="handleDeleteAccount">
-            <div class="quick-icon" style="background:linear-gradient(135deg,#fde8e8,#ffcdd2)">
-              <el-icon :size="26" color="#e53935"><Delete /></el-icon>
+            <div class="quick-icon" style="background:linear-gradient(135deg,#F7E7E4,#F7E7E4)">
+              <el-icon :size="26" color="#C4746A"><Delete /></el-icon>
             </div>
             <span>注销账户</span>
           </div>
@@ -404,10 +404,10 @@ onMounted(() => {
 
 // ── 个人信息卡片 ──────────────────────────────────────
 .profile-card {
-  background: linear-gradient(150deg, #fde8d8 0%, #f9d4c0 50%, #fff 100%);
+  background: linear-gradient(150deg, #F6F5F1 0%, #E2EFEC 50%, #fff 100%);
   border-radius: 24px;
-  border: 1px solid rgba(232,132,90,0.18);
-  box-shadow: 0 4px 24px rgba(107,82,68,0.1);
+  border: 1px solid rgba(46,110,104,0.18);
+  box-shadow: 0 4px 24px rgba(27,42,44,0.1);
   padding: 32px 36px 0;
   margin-bottom: 24px;
   overflow: hidden;
@@ -461,8 +461,8 @@ onMounted(() => {
 
   .edit-btn {
     flex-shrink: 0;
-    background: rgba(232,132,90,0.12);
-    border-color: rgba(232,132,90,0.3);
+    background: rgba(46,110,104,0.12);
+    border-color: rgba(46,110,104,0.3);
     color: $primary-color;
 
     &:hover {
@@ -476,7 +476,7 @@ onMounted(() => {
 // 数据统计行
 .stats-row {
   display: flex;
-  border-top: 1px solid rgba(232,132,90,0.15);
+  border-top: 1px solid rgba(46,110,104,0.15);
 
   .stat-cell {
     flex: 1;
@@ -489,7 +489,7 @@ onMounted(() => {
     transition: background 0.2s;
     border-radius: 0 0 4px 4px;
 
-    &:hover { background: rgba(232,132,90,0.08); }
+    &:hover { background: rgba(46,110,104,0.08); }
 
     .num {
       font-size: 20px;
@@ -506,7 +506,7 @@ onMounted(() => {
 
   .stat-divider {
     width: 1px;
-    background: rgba(232,132,90,0.15);
+    background: rgba(46,110,104,0.15);
     margin: 12px 0;
   }
 }
@@ -516,7 +516,7 @@ onMounted(() => {
   background: #fff;
   border-radius: 24px;
   border: 1px solid $border-lighter;
-  box-shadow: 0 2px 12px rgba(107,82,68,0.06);
+  box-shadow: 0 2px 12px rgba(27,42,44,0.06);
   padding: 24px 28px 28px;
 }
 

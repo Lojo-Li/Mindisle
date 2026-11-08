@@ -241,6 +241,6 @@ onMounted(() => loadArticle())
 .cover-tip { font-size: 12px; color: $text-secondary; margin-top: $spacing-sm; }
 
 .editor-container { width: 100%; }
-.editor-toolbar { display: flex; align-items: center; padding: $spacing-sm; background: #f5f7fa; border: 1px solid $border-color; border-bottom: none; border-radius: $border-radius $border-radius 0 0; }
+.editor-toolbar { display: flex; align-items: center; padding: $spacing-sm; background: #F6F5F1; border: 1px solid $border-color; border-bottom: none; border-radius: $border-radius $border-radius 0 0; }
 :deep(.el-textarea__inner) { border-radius: 0 0 $border-radius $border-radius; }
 </style>

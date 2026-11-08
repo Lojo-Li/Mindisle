@@ -182,12 +182,12 @@ onMounted(() => loadData())
 
   &:hover {
     border-color: $primary-light;
-    box-shadow: 0 4px 16px rgba(107, 82, 68, 0.08);
+    box-shadow: 0 4px 16px rgba(27, 42, 44, 0.08);
   }
 
   &.unread {
-    background: rgba(232, 132, 90, 0.03);
-    border-color: rgba(232, 132, 90, 0.15);
+    background: rgba(46, 110, 104, 0.03);
+    border-color: rgba(46, 110, 104, 0.15);
   }
 
   .card-dot {

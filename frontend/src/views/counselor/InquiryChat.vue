@@ -252,7 +252,7 @@ onMounted(async () => {
   }
 
   &.ic-other .ic-bubble {
-    background: #f4f4f5;
+    background: #EFEDE6;
     color: $text-primary;
     border-bottom-left-radius: 4px;
   }

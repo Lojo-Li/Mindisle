@@ -374,7 +374,7 @@ onMounted(() => {
   margin-bottom: 24px;
   border-radius: 20px !important;
   border: 1px solid $border-lighter !important;
-  box-shadow: 0 4px 20px rgba(107,82,68,0.08) !important;
+  box-shadow: 0 4px 20px rgba(27,42,44,0.08) !important;
 
   :deep(.el-card__body) { padding: 8px 24px; }
 
@@ -395,7 +395,7 @@ onMounted(() => {
 .messages-card {
   border-radius: 20px !important;
   border: 1px solid $border-lighter !important;
-  box-shadow: 0 4px 20px rgba(107,82,68,0.08) !important;
+  box-shadow: 0 4px 20px rgba(27,42,44,0.08) !important;
 
   .message-list {
     max-height: 600px;
@@ -424,7 +424,7 @@ onMounted(() => {
       justify-content: flex-end;
 
       .message-bubble {
-        background: linear-gradient(135deg, #f4a57a 0%, #c96f42 100%);
+        background: linear-gradient(135deg, #3B837C 0%, #22524E 100%);
         color: white;
         border-radius: 18px 4px 18px 18px;
       }
@@ -435,7 +435,7 @@ onMounted(() => {
     padding: 12px 16px;
     max-width: 80%;
     word-break: break-word;
-    box-shadow: 0 2px 8px rgba(107,82,68,0.06);
+    box-shadow: 0 2px 8px rgba(27,42,44,0.06);
   }
 
   .message-text { line-height: 1.7; }

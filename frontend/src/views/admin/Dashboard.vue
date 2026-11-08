@@ -127,8 +127,8 @@ const initOrderChart = () => {
         { offset: 0, color: 'rgba(59, 130, 246, 0.3)' },
         { offset: 1, color: 'rgba(59, 130, 246, 0.05)' }
       ])},
-      lineStyle: { color: '#3b82f6', width: 2 },
-      itemStyle: { color: '#3b82f6' }
+      lineStyle: { color: '#558C96', width: 2 },
+      itemStyle: { color: '#558C96' }
     }]
   })
 }
@@ -148,8 +148,8 @@ const initUserChart = () => {
         { offset: 0, color: 'rgba(6, 182, 212, 0.3)' },
         { offset: 1, color: 'rgba(6, 182, 212, 0.05)' }
       ])},
-      lineStyle: { color: '#06b6d4', width: 2 },
-      itemStyle: { color: '#06b6d4' }
+      lineStyle: { color: '#558C96', width: 2 },
+      itemStyle: { color: '#558C96' }
     }]
   })
 }
@@ -262,19 +262,19 @@ onUnmounted(() => {
 }
 
 .stat-card.blue {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #558C96 0%, #2E6E68 100%);
 }
 
 .stat-card.red {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background: linear-gradient(135deg, #C4746A 0%, #C4746A 100%);
 }
 
 .stat-card.cyan {
-  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  background: linear-gradient(135deg, #558C96 0%, #558C96 100%);
 }
 
 .stat-card.orange {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: linear-gradient(135deg, #D9982F 0%, #D9982F 100%);
 }
 
 .stat-content {
@@ -308,7 +308,7 @@ onUnmounted(() => {
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
+  border: 1px solid #EFEDE6;
 }
 
 .chart-header {
@@ -319,7 +319,7 @@ onUnmounted(() => {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: #1f2937;
+  color: #1B2A2C;
 }
 
 .chart-container {
@@ -332,7 +332,7 @@ onUnmounted(() => {
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
+  border: 1px solid #EFEDE6;
 }
 
 .card-header {
@@ -346,7 +346,7 @@ onUnmounted(() => {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: #1f2937;
+  color: #1B2A2C;
 }
 
 .announcement-list {
@@ -360,13 +360,13 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: start;
   padding: 16px;
-  background: #f9fafb;
+  background: #F6F5F1;
   border-radius: 8px;
   transition: background-color 0.3s;
 }
 
 .announcement-item:hover {
-  background: #f3f4f6;
+  background: #F6F5F1;
 }
 
 .announcement-content {
@@ -377,18 +377,18 @@ onUnmounted(() => {
   margin: 0 0 8px 0;
   font-size: 16px;
   font-weight: 600;
-  color: #1f2937;
+  color: #1B2A2C;
 }
 
 .announcement-content p {
   margin: 0 0 8px 0;
   font-size: 14px;
-  color: #6b7280;
+  color: #56696D;
 }
 
 .announcement-date {
   font-size: 12px;
-  color: #9ca3af;
+  color: #94A4A6;
 }
 
 .announcement-actions {

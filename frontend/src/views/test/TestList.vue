@@ -502,7 +502,7 @@ onMounted(() => {
   border: 1px solid $border-lighter;
   border-radius: 16px;
   padding: 14px 20px;
-  box-shadow: 0 2px 10px rgba(107,82,68,0.05);
+  box-shadow: 0 2px 10px rgba(27,42,44,0.05);
 
   .category-pills {
     display: flex;
@@ -555,11 +555,11 @@ onMounted(() => {
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
-  box-shadow: 0 2px 12px rgba(107,82,68,0.06);
+  box-shadow: 0 2px 12px rgba(27,42,44,0.06);
 
   &:hover {
     transform: translateY(-6px);
-    box-shadow: 0 12px 32px rgba(107,82,68,0.14);
+    box-shadow: 0 12px 32px rgba(27,42,44,0.14);
 
     .test-cover img {
       transform: scale(1.05);
@@ -585,7 +585,7 @@ onMounted(() => {
     top: 12px;
     left: 12px;
     padding: 4px 10px;
-    background: linear-gradient(135deg, #f4a57a 0%, #c96f42 100%);
+    background: linear-gradient(135deg, #3B837C 0%, #22524E 100%);
     color: white;
     border-radius: 999px;
     font-size: 12px;
@@ -693,7 +693,7 @@ onMounted(() => {
   margin-bottom: 24px;
   border-radius: 16px !important;
   border: 1px solid $border-lighter !important;
-  box-shadow: 0 2px 12px rgba(107,82,68,0.06) !important;
+  box-shadow: 0 2px 12px rgba(27,42,44,0.06) !important;
   overflow: hidden;
 
   .banner-content {
@@ -740,8 +740,8 @@ onMounted(() => {
   transition: all 0.2s ease;
 
   &:hover {
-    background: rgba(232,132,90,0.06);
-    border-color: rgba(232,132,90,0.25);
+    background: rgba(46,110,104,0.06);
+    border-color: rgba(46,110,104,0.25);
     transform: translateX(4px);
   }
 

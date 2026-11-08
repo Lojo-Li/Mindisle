@@ -225,7 +225,7 @@ onMounted(() => loadDialogues())
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  color: #1f2937;
+  color: #1B2A2C;
 }
 
 .table-card {
@@ -279,13 +279,13 @@ onMounted(() => loadDialogues())
 }
 
 .message-item.user {
-  background: #f0f7ff;
-  border-left: 3px solid #409eff;
+  background: #FBFAF7;
+  border-left: 3px solid #2E6E68;
 }
 
 .message-item.assistant {
-  background: #f0fdf4;
-  border-left: 3px solid #67c23a;
+  background: #FBFAF7;
+  border-left: 3px solid #6E915A;
 }
 
 .message-role {

@@ -310,7 +310,7 @@ const loadAppointment = async () => {
         counselor: currentOrder.counselor,
         userInfo: currentOrder.user_info
       }
-      document.title = `与${appointment.value.userName}的咨询 - SoulStation`
+      document.title = `与${appointment.value.userName}的咨询 - Mindisle`
     } else {
       throw new Error('订单不存在')
     }
@@ -568,7 +568,7 @@ onUnmounted(() => {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f5f0eb;
+  background: #F1EBE0;
   padding-top: $header-height;
 }
 
@@ -589,7 +589,7 @@ onUnmounted(() => {
   flex-direction: column;
   background: #fff;
   border-radius: 24px;
-  box-shadow: 0 4px 32px rgba(107,82,68,0.1);
+  box-shadow: 0 4px 32px rgba(27,42,44,0.1);
   overflow: hidden;
   min-height: 0;
 }
@@ -600,7 +600,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(135deg, #faf7f4 0%, #fff 100%);
+  background: linear-gradient(135deg, #FBFAF7 0%, #fff 100%);
   border-bottom: 1px solid $border-lighter;
 }
 
@@ -611,7 +611,7 @@ onUnmounted(() => {
 }
 
 .header-avatar {
-  box-shadow: 0 2px 12px rgba(107,82,68,0.15);
+  box-shadow: 0 2px 12px rgba(27,42,44,0.15);
   border: 2px solid #fff;
 }
 
@@ -653,7 +653,7 @@ onUnmounted(() => {
   font-weight: 600;
   font-size: 14px;
   font-variant-numeric: tabular-nums;
-  background: rgba(232,132,90,0.08);
+  background: rgba(46,110,104,0.08);
   padding: 5px 14px;
   border-radius: 999px;
 }
@@ -661,7 +661,7 @@ onUnmounted(() => {
 // ── 用户信息面板 ──────────────────────────────────────
 .info-panel {
   border-bottom: 1px solid $border-lighter;
-  background: #fdfbf9;
+  background: #FBFAF7;
 
   &.collapsed { border-bottom: 1px solid $border-lighter; }
 }
@@ -674,7 +674,7 @@ onUnmounted(() => {
   cursor: pointer;
   user-select: none;
 
-  &:hover { background: rgba(232,132,90,0.03); }
+  &:hover { background: rgba(46,110,104,0.03); }
 
   .panel-title {
     font-size: 13px;
@@ -725,13 +725,13 @@ onUnmounted(() => {
   flex: 1;
   padding: 20px 24px;
   overflow-y: auto;
-  background: #faf8f6;
+  background: #FBFAF7;
   display: flex;
   flex-direction: column;
   gap: 4px;
 
   &::-webkit-scrollbar { width: 5px; }
-  &::-webkit-scrollbar-thumb { background: #e0d8d0; border-radius: 10px; }
+  &::-webkit-scrollbar-thumb { background: #E7E5DE; border-radius: 10px; }
 }
 
 .empty-chat {
@@ -755,7 +755,7 @@ onUnmounted(() => {
   span {
     font-size: 12px;
     color: $text-placeholder;
-    background: #faf8f6;
+    background: #FBFAF7;
     padding: 3px 16px;
     border-radius: 999px;
     border: 1px solid $border-lighter;
@@ -786,7 +786,7 @@ onUnmounted(() => {
     .message-meta { flex-direction: row-reverse; }
 
     .message-bubble {
-      background: linear-gradient(135deg, #e88a5a 0%, #d4754a 100%);
+      background: linear-gradient(135deg, #3B837C 0%, #22524E 100%);
       color: #fff;
       border-radius: 18px 6px 18px 18px;
     }
@@ -801,7 +801,7 @@ onUnmounted(() => {
 .msg-avatar {
   flex-shrink: 0;
   margin-top: 14px;
-  box-shadow: 0 1px 4px rgba(107,82,68,0.1);
+  box-shadow: 0 1px 4px rgba(27,42,44,0.1);
 }
 
 .message-body {
@@ -834,7 +834,7 @@ onUnmounted(() => {
   background: #fff;
   border-radius: 6px 18px 18px 18px;
   word-break: break-word;
-  box-shadow: 0 1px 6px rgba(107,82,68,0.06);
+  box-shadow: 0 1px 6px rgba(27,42,44,0.06);
   line-height: 1.65;
   font-size: 14px;
 }
@@ -842,7 +842,7 @@ onUnmounted(() => {
 .message-image .image-thumb {
   max-width: 220px;
   border-radius: 14px;
-  box-shadow: 0 2px 10px rgba(107,82,68,0.12);
+  box-shadow: 0 2px 10px rgba(27,42,44,0.12);
 }
 
 .message-file {
@@ -852,13 +852,13 @@ onUnmounted(() => {
   padding: 12px 16px;
   background: #fff;
   border-radius: 14px;
-  box-shadow: 0 1px 6px rgba(107,82,68,0.06);
+  box-shadow: 0 1px 6px rgba(27,42,44,0.06);
 
   .file-icon-wrap {
     width: 38px;
     height: 38px;
     border-radius: 10px;
-    background: rgba(232,132,90,0.1);
+    background: rgba(46,110,104,0.1);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -892,7 +892,7 @@ onUnmounted(() => {
     width: 5px;
     height: 5px;
     border-radius: 50%;
-    background: #c0c4cc;
+    background: #A9B9B8;
     animation: dotPulse 1.2s infinite;
 
     &:nth-child(2) { animation-delay: 0.2s; }
@@ -908,7 +908,7 @@ onUnmounted(() => {
 // ── 快捷回复 ──────────────────────────────────────────
 .quick-replies {
   padding: 12px 24px;
-  background: #fdfbf9;
+  background: #FBFAF7;
   border-top: 1px solid $border-lighter;
 }
 
@@ -941,7 +941,7 @@ onUnmounted(() => {
   &:hover {
     border-color: $primary-color;
     color: $primary-color;
-    background: rgba(232,132,90,0.05);
+    background: rgba(46,110,104,0.05);
   }
 }
 
@@ -964,9 +964,9 @@ onUnmounted(() => {
   background: transparent !important;
   color: $text-secondary;
 
-  &:hover { color: $primary-color; background: rgba(232,132,90,0.08) !important; }
-  &.recording { color: #f56c6c !important; background: rgba(245,108,108,0.1) !important; }
-  &.active { color: $primary-color !important; background: rgba(232,132,90,0.1) !important; }
+  &:hover { color: $primary-color; background: rgba(46,110,104,0.08) !important; }
+  &.recording { color: #C4746A !important; background: rgba(245,108,108,0.1) !important; }
+  &.active { color: $primary-color !important; background: rgba(46,110,104,0.1) !important; }
 }
 
 .toolbar-sep {
@@ -987,7 +987,7 @@ onUnmounted(() => {
 
   :deep(.el-textarea__inner) {
     border-radius: 14px;
-    background: #faf8f6;
+    background: #FBFAF7;
     border: 1px solid $border-lighter;
     resize: none;
     font-size: 14px;
@@ -997,7 +997,7 @@ onUnmounted(() => {
     &:focus {
       border-color: $primary-color;
       background: #fff;
-      box-shadow: 0 0 0 3px rgba(232,132,90,0.08);
+      box-shadow: 0 0 0 3px rgba(46,110,104,0.08);
     }
   }
 }

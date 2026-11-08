@@ -381,13 +381,13 @@ onMounted(() => {
     h2 {
       margin: 0 0 8px 0;
       font-size: 24px;
-      color: #303133;
+      color: #1B2A2C;
     }
 
     .subtitle {
       margin: 0;
       font-size: 14px;
-      color: #909399;
+      color: #94A4A6;
     }
   }
 }
@@ -395,7 +395,7 @@ onMounted(() => {
 .section {
   margin-bottom: 30px;
   padding-bottom: 20px;
-  border-bottom: 1px dashed #dcdfe6;
+  border-bottom: 1px dashed #E7E5DE;
 
   &:last-of-type {
     border-bottom: none;
@@ -405,7 +405,7 @@ onMounted(() => {
     margin: 0 0 20px 0;
     font-size: 18px;
     font-weight: 500;
-    color: #409eff;
+    color: #2E6E68;
     position: relative;
     padding-left: 12px;
 
@@ -417,7 +417,7 @@ onMounted(() => {
       transform: translateY(-50%);
       width: 4px;
       height: 18px;
-      background: #409eff;
+      background: #2E6E68;
       border-radius: 2px;
     }
   }
@@ -431,7 +431,7 @@ onMounted(() => {
 
 .unit {
   margin-left: 8px;
-  color: #909399;
+  color: #94A4A6;
   font-size: 14px;
 }
 

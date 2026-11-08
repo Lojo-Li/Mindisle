@@ -11,7 +11,7 @@
           @click="goBack"
           class="back-button"
         />
-        <el-icon :size="24" color="#e8845a">
+        <el-icon :size="24" color="#2E6E68">
           <ChatDotSquare />
         </el-icon>
         <h2>智能心理问答</h2>
@@ -185,7 +185,7 @@
                       </el-icon>
                     </template>
                     <div class="tag-popover-content" @click.stop>
-                      <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #5a4a3a;">为对话分配标签</div>
+                      <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #56696D;">为对话分配标签</div>
                       <el-checkbox-group
                         :model-value="chat.tags ? chat.tags.map(t => t.id) : []"
                         @change="(val) => onChatTagsChange(val, chat.id)"
@@ -213,7 +213,7 @@
         <!-- 未选择对话时的空状态 -->
         <div v-if="!currentChatId" class="chat-empty">
           <div style="text-align: center; padding: 80px 20px;">
-            <h3 style="margin-bottom: 12px; color: #5a4a3a; font-size: 18px; font-weight: 500;">选择一个对话或创建新对话</h3>
+            <h3 style="margin-bottom: 12px; color: #56696D; font-size: 18px; font-weight: 500;">选择一个对话或创建新对话</h3>
             <p style="margin-bottom: 24px; color: #999; font-size: 14px;">AI助手随时为您提供帮助</p>
             <el-button type="primary" :icon="Plus" @click="createNewChat">
               开始新对话
@@ -408,7 +408,7 @@ const inputMessage = ref('')
 const tags = ref([])
 const showTagManager = ref(false)
 const newTagName = ref('')
-const newTagColor = ref('#e8845a')
+const newTagColor = ref('#2E6E68')
 // 标签分配
 const tagPopoverChatId = ref(null)
 const showHistory = ref(false)
@@ -1008,10 +1008,10 @@ onBeforeUnmount(() => {
 
 .chat-header {
   height: 64px;
-  background: rgba(255, 252, 248, 0.92);
+  background: rgba(246, 245, 241, 0.92);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid $border-lighter;
-  box-shadow: 0 2px 12px rgba(107, 82, 68, 0.06);
+  box-shadow: 0 2px 12px rgba(27, 42, 44, 0.06);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1105,7 +1105,7 @@ onBeforeUnmount(() => {
       color: white !important;
       font-weight: 600;
       height: 40px;
-      box-shadow: 0 4px 12px rgba(232, 132, 90, 0.25) !important;
+      box-shadow: 0 4px 12px rgba(46, 110, 104, 0.25) !important;
     }
   }
 
@@ -1162,7 +1162,7 @@ onBeforeUnmount(() => {
 
         &:hover {
           color: $primary-color;
-          background: rgba(232, 132, 90, 0.1);
+          background: rgba(46, 110, 104, 0.1);
         }
       }
     }
@@ -1177,8 +1177,8 @@ onBeforeUnmount(() => {
     }
 
     &.active {
-      background: rgba(232, 132, 90, 0.1);
-      border: 1px solid rgba(232, 132, 90, 0.2);
+      background: rgba(46, 110, 104, 0.1);
+      border: 1px solid rgba(46, 110, 104, 0.2);
 
       .chat-title { color: $primary-dark; }
       .chat-preview { color: $primary-color; }
@@ -1331,13 +1331,13 @@ onBeforeUnmount(() => {
     .message-user { max-width: 68%; }
 
     .message-bubble {
-      background: linear-gradient(135deg, #f4a57a 0%, #c96f42 100%);
+      background: linear-gradient(135deg, #3B837C 0%, #22524E 100%);
       color: white;
       border-radius: 18px 4px 18px 18px;
       padding: 14px 18px;
       max-width: 100%;
       min-width: 56px;
-      box-shadow: 0 4px 16px rgba(232, 132, 90, 0.3);
+      box-shadow: 0 4px 16px rgba(46, 110, 104, 0.3);
       line-height: 1.65;
     }
   }
@@ -1401,7 +1401,7 @@ onBeforeUnmount(() => {
 
     &:focus {
       border-color: $primary-color !important;
-      box-shadow: 0 0 0 3px rgba(232, 132, 90, 0.12) !important;
+      box-shadow: 0 0 0 3px rgba(46, 110, 104, 0.12) !important;
     }
   }
 }

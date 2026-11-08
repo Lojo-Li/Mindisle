@@ -198,7 +198,7 @@ onMounted(loadDetail)
   background: #fff;
   border-radius: 20px;
   border: 1px solid $border-lighter;
-  box-shadow: 0 4px 20px rgba(107,82,68,0.08);
+  box-shadow: 0 4px 20px rgba(27,42,44,0.08);
   padding: 32px;
   display: flex;
   align-items: flex-start;
@@ -255,7 +255,7 @@ onMounted(loadDetail)
 .cd-card {
   border-radius: 16px !important;
   border: 1px solid $border-lighter !important;
-  box-shadow: 0 2px 12px rgba(107,82,68,0.06) !important;
+  box-shadow: 0 2px 12px rgba(27,42,44,0.06) !important;
   margin-bottom: 16px;
 
   :deep(.el-card__header) {
@@ -271,8 +271,8 @@ onMounted(loadDetail)
 .cd-tags { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .cd-specialty-tag {
-  background: rgba(232,132,90,0.1) !important;
-  border-color: rgba(232,132,90,0.3) !important;
+  background: rgba(46,110,104,0.1) !important;
+  border-color: rgba(46,110,104,0.3) !important;
   color: $primary-color !important;
 }
 

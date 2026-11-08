@@ -166,11 +166,11 @@ onMounted(() => loadFavorites())
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.25s, box-shadow 0.25s;
-  box-shadow: 0 2px 12px rgba(107,82,68,0.06);
+  box-shadow: 0 2px 12px rgba(27,42,44,0.06);
 
   &:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(107,82,68,0.13);
+    box-shadow: 0 10px 30px rgba(27,42,44,0.13);
 
     .cover-wrap img { transform: scale(1.06); }
   }
@@ -247,7 +247,7 @@ onMounted(() => loadFavorites())
       color: $text-secondary;
       padding: 0;
 
-      &:hover { color: #f56c6c; }
+      &:hover { color: #C4746A; }
     }
   }
 }

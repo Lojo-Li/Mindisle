@@ -252,7 +252,7 @@ onMounted(() => loadOrders())
 .page-header h2 { margin: 0; }
 
 .filter-bar { display: flex; gap: $spacing-md; margin-bottom: $spacing-lg; }
-.stats-row { display: flex; gap: $spacing-xl; padding: $spacing-lg; background: #f5f7fa; border-radius: $border-radius; margin-bottom: $spacing-lg; }
+.stats-row { display: flex; gap: $spacing-xl; padding: $spacing-lg; background: #F6F5F1; border-radius: $border-radius; margin-bottom: $spacing-lg; }
 .stat-item { display: flex; align-items: center; gap: $spacing-sm; }
 .stat-label { color: $text-secondary; }
 .stat-value { font-size: 18px; font-weight: 600; color: $primary-color; }
@@ -260,7 +260,7 @@ onMounted(() => loadOrders())
 .pagination { display: flex; justify-content: center; margin-top: $spacing-lg; }
 
 .detail-content { display: flex; flex-direction: column; gap: $spacing-lg; }
-.review-info { padding: $spacing-lg; background: #f5f7fa; border-radius: $border-radius; }
+.review-info { padding: $spacing-lg; background: #F6F5F1; border-radius: $border-radius; }
 .rating { display: flex; align-items: center; gap: $spacing-md; margin-bottom: $spacing-md; }
 .review-content { color: $text-secondary; line-height: 1.8; margin: $spacing-md 0; }
 .review-tags { display: flex; gap: $spacing-sm; flex-wrap: wrap; }

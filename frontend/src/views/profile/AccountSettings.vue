@@ -242,7 +242,7 @@ const handleDeleteAccount = async () => {
   background: #fff;
   border-radius: 20px;
   border: 1px solid $border-lighter;
-  box-shadow: 0 2px 12px rgba(107,82,68,0.06);
+  box-shadow: 0 2px 12px rgba(27,42,44,0.06);
   padding: 24px 28px;
   margin-bottom: 20px;
 }
@@ -258,7 +258,7 @@ const handleDeleteAccount = async () => {
   padding-bottom: 12px;
   border-bottom: 1px solid $border-lighter;
 
-  &.danger { color: #f56c6c; }
+  &.danger { color: #C4746A; }
 }
 
 // ── 账号信息行 ────────────────────────────────────────
@@ -307,7 +307,7 @@ const handleDeleteAccount = async () => {
   .danger-label {
     font-size: 14px;
     font-weight: 600;
-    color: #e63232;
+    color: #C4746A;
     margin: 0 0 4px;
   }
 

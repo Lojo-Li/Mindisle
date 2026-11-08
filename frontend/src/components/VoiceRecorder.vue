@@ -455,25 +455,25 @@ const transcribeAudio = async (blob, duration) => {
 .device-selector {
   :deep(.el-select) {
     .el-input__wrapper {
-      background: #f5f7fa;
+      background: #F6F5F1;
       border-radius: 20px;
       padding: 0 12px 0 8px;
       transition: all 0.2s;
 
       &:hover {
-        background: #eef0f4;
+        background: #F6F5F1;
       }
     }
 
     .el-input__inner {
       font-size: 12px;
-      color: #606266;
+      color: #56696D;
     }
 
     .el-input__suffix {
       .el-select__caret {
         font-size: 14px;
-        color: #c0c4cc;
+        color: #A9B9B8;
       }
     }
   }
@@ -506,7 +506,7 @@ const transcribeAudio = async (blob, duration) => {
   align-items: center;
   gap: 8px;
   padding: 4px 12px;
-  background: #f56c6c;
+  background: #C4746A;
   color: white;
   border-radius: 20px;
   font-size: 14px;
@@ -520,14 +520,14 @@ const transcribeAudio = async (blob, duration) => {
   transform: translateX(-50%);
   width: 200px;
   height: 6px;
-  background: #e0e0e0;
+  background: #E7E5DE;
   border-radius: 3px;
   overflow: hidden;
 }
 
 .volume-bar {
   height: 100%;
-  background: linear-gradient(90deg, #67c23a 0%, #e6a23c 70%, #f56c6c 100%);
+  background: linear-gradient(90deg, #6E915A 0%, #D9982F 70%, #C4746A 100%);
   transition: width 0.1s ease;
 }
 
@@ -537,10 +537,10 @@ const transcribeAudio = async (blob, duration) => {
   left: 50%;
   transform: translateX(-50%);
   padding: 6px 12px;
-  background: #fef0f0;
-  border: 1px solid #fbc4c4;
+  background: #F7E7E4;
+  border: 1px solid #F7E7E4;
   border-radius: 4px;
-  color: #f56c6c;
+  color: #C4746A;
   font-size: 12px;
   white-space: nowrap;
 }
@@ -564,8 +564,8 @@ const transcribeAudio = async (blob, duration) => {
   left: 50%;
   transform: translateX(-50%);
   padding: 6px 12px;
-  background: #f4f4f5;
-  border: 1px solid #d3d3d3;
+  background: #EFEDE6;
+  border: 1px solid #E7E5DE;
   border-radius: 4px;
   font-size: 11px;
   color: #666;

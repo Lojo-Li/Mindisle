@@ -1,5 +1,6 @@
 // ============================================
-// 公共样式 — 温暖治愈风
+// 公共样式 — 心屿 Mindisle
+// 视觉基准：mindisle.html / mindisle-home.html（仅取样式，源文件不改动）
 // ============================================
 @use './variables.scss' as *;
 @use 'sass:color';
@@ -14,6 +15,8 @@
 html, body {
   height: 100%;
   font-family: $font-family;
+  font-size: 14px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: $text-primary;
@@ -23,6 +26,21 @@ html, body {
 #app {
   height: 100%;
   background-color: $bg-page;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: rgba(46, 110, 104, 0.18);
+}
+
+:focus-visible {
+  outline: 2px solid $primary-color;
+  outline-offset: 3px;
+  border-radius: 6px;
 }
 
 // 通用容器
@@ -40,33 +58,33 @@ html, body {
   background-color: $bg-page;
 }
 
-// ---- 卡片样式 ----
+// ---- 卡片样式：白底 + 1px 浅线 + 极轻阴影 ----
 .card {
   background: $bg-white;
   border-radius: $border-radius-xl;
   box-shadow: $box-shadow-card;
-  border: 1px solid $border-lighter;
+  border: 1px solid $border-base;
   padding: $spacing-lg;
   transition: $transition-base;
 
   &:hover {
-    box-shadow: $box-shadow-dark;
+    box-shadow: $box-shadow-base;
     transform: translateY(-2px);
-    border-color: $border-base;
+    border-color: $primary-lighter;
   }
 }
 
 // ---- Element Plus 按钮覆盖 ----
 .el-button {
-  border-radius: $border-radius-full !important;
-  font-weight: 500;
+  border-radius: $border-radius-md !important;
+  font-weight: 540;
   letter-spacing: 0.02em;
-  transition: $transition-bounce !important;
+  transition: $transition-base !important;
 
   &.el-button--primary {
     background: $primary-gradient !important;
     border-color: transparent !important;
-    color: white !important;
+    color: #fff !important;
     box-shadow: $box-shadow-light;
 
     &:hover {
@@ -87,14 +105,14 @@ html, body {
     &:hover {
       border-color: $primary-color !important;
       color: $primary-color !important;
-      background: $bg-subtle !important;
+      background: $primary-lighter !important;
     }
   }
 }
 
 // ---- Element Plus 输入框覆盖 ----
 .el-input__wrapper {
-  border-radius: $border-radius-lg !important;
+  border-radius: $border-radius-md !important;
   background: $bg-white !important;
   box-shadow: 0 0 0 1px $border-base inset !important;
   transition: $transition-base !important;
@@ -118,7 +136,7 @@ html, body {
 }
 
 .el-textarea__inner {
-  border-radius: $border-radius-lg !important;
+  border-radius: $border-radius-md !important;
   border-color: $border-base !important;
   color: $text-primary !important;
   background: $bg-white !important;
@@ -146,8 +164,8 @@ html, body {
     }
 
     &.is-active {
-      color: $primary-color !important;
-      background: rgba($primary-color, 0.08) !important;
+      color: $primary-dark !important;
+      background: $primary-lighter !important;
       font-weight: 600;
     }
   }
@@ -167,7 +185,7 @@ html, body {
 
 // ---- Element Plus 对话框覆盖 ----
 .el-dialog {
-  border-radius: $border-radius-2xl !important;
+  border-radius: $border-radius-xl !important;
   overflow: hidden;
 
   .el-dialog__header {

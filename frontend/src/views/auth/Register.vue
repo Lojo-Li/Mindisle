@@ -4,8 +4,8 @@
     <div class="register-panel-left">
       <div class="panel-brand">
         <div class="brand-icon">🌸</div>
-        <h1 class="brand-name">心灵驿站</h1>
-        <p class="brand-tagline">SoulStation</p>
+        <h1 class="brand-name">心屿</h1>
+        <p class="brand-tagline">Mindisle</p>
       </div>
       <div class="panel-card">
         <h3>开启您的心灵之旅</h3>
@@ -133,7 +133,7 @@
       </div>
 
       <footer class="page-bottom">
-        © 2026 心灵驿站 · 守护您的心理健康
+        © 2026 心屿 · 守护您的心理健康
       </footer>
     </div>
   </div>
@@ -246,7 +246,7 @@ const handleRegister = async () => {
       code: registerForm.code,
       password: registerForm.password
     })
-    ElMessage.success('注册成功！欢迎加入心灵驿站 🌸')
+    ElMessage.success('注册成功！欢迎加入心屿 🌸')
     setTimeout(() => router.push('/'), 500)
   } catch (error) {
     console.error('注册失败:', error)
@@ -272,7 +272,7 @@ onBeforeUnmount(() => {
 
 .register-panel-left {
   flex: 0 0 42%;
-  background: linear-gradient(160deg, #e8d5f0 0%, #f4cdd8 50%, #fde8d0 100%);
+  background: linear-gradient(160deg, #FBFAF7 0%, #E2EFEC 50%, #F1EBE0 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -288,8 +288,8 @@ onBeforeUnmount(() => {
     z-index: 1;
 
     .brand-icon { font-size: 56px; margin-bottom: 12px; }
-    .brand-name { font-size: 32px; font-weight: 700; color: #3d2b1f; letter-spacing: 4px; margin-bottom: 4px; }
-    .brand-tagline { font-size: 13px; color: #9e8070; letter-spacing: 6px; text-transform: uppercase; }
+    .brand-name { font-size: 32px; font-weight: 700; color: #1B2A2C; letter-spacing: 4px; margin-bottom: 4px; }
+    .brand-tagline { font-size: 13px; color: #94A4A6; letter-spacing: 6px; text-transform: uppercase; }
   }
 
   .panel-card {
@@ -303,8 +303,8 @@ onBeforeUnmount(() => {
     position: relative;
     z-index: 1;
 
-    h3 { font-size: 17px; font-weight: 600; color: #3d2b1f; margin-bottom: 10px; }
-    p { font-size: 14px; line-height: 1.7; color: #6b5244; }
+    h3 { font-size: 17px; font-weight: 600; color: #1B2A2C; margin-bottom: 10px; }
+    p { font-size: 14px; line-height: 1.7; color: #56696D; }
   }
 
   .panel-steps {
@@ -329,7 +329,7 @@ onBeforeUnmount(() => {
         width: 26px;
         height: 26px;
         border-radius: 50%;
-        background: #e8845a;
+        background: #2E6E68;
         color: white;
         font-size: 13px;
         font-weight: 700;
@@ -339,7 +339,7 @@ onBeforeUnmount(() => {
         flex-shrink: 0;
       }
 
-      span { font-size: 13px; color: #4a3020; font-weight: 500; }
+      span { font-size: 13px; color: #22524E; font-weight: 500; }
     }
   }
 
@@ -355,7 +355,7 @@ onBeforeUnmount(() => {
 
 .register-panel-right {
   flex: 1;
-  background: #fffcf8;
+  background: #FFFFFF;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -371,8 +371,8 @@ onBeforeUnmount(() => {
 
   .form-header {
     margin-bottom: 28px;
-    h2 { font-size: 26px; font-weight: 700; color: #3d2b1f; margin-bottom: 6px; }
-    p { font-size: 14px; color: #9e8070; }
+    h2 { font-size: 26px; font-weight: 700; color: #1B2A2C; margin-bottom: 6px; }
+    p { font-size: 14px; color: #94A4A6; }
   }
 }
 
@@ -382,8 +382,8 @@ onBeforeUnmount(() => {
   :deep(.el-input__wrapper) {
     border-radius: 14px !important;
     padding: 4px 16px;
-    box-shadow: 0 0 0 1px #e8d5c5 inset !important;
-    &.is-focus { box-shadow: 0 0 0 2px rgba(232, 132, 90, 0.3) inset !important; }
+    box-shadow: 0 0 0 1px #E7E5DE inset !important;
+    &.is-focus { box-shadow: 0 0 0 2px rgba(46, 110, 104, 0.3) inset !important; }
   }
 
   :deep(.el-input__inner) { font-size: 14px; height: 40px; }
@@ -397,7 +397,7 @@ onBeforeUnmount(() => {
     .code-btn {
       white-space: nowrap;
       border-radius: 14px !important;
-      background: linear-gradient(135deg, #f4a57a 0%, #c96f42 100%) !important;
+      background: linear-gradient(135deg, #3B837C 0%, #22524E 100%) !important;
       border: none !important;
       font-weight: 600;
       min-width: 110px;
@@ -410,12 +410,12 @@ onBeforeUnmount(() => {
     margin-top: 8px;
     font-size: 12px;
 
-    .strength-label { color: #9e8070; margin-right: 8px; white-space: nowrap; }
+    .strength-label { color: #94A4A6; margin-right: 8px; white-space: nowrap; }
 
     .strength-bar {
       flex: 1;
       height: 4px;
-      background: #f0e0d0;
+      background: #EFEDE6;
       border-radius: 2px;
       overflow: hidden;
       margin-right: 8px;
@@ -424,16 +424,16 @@ onBeforeUnmount(() => {
     .strength-bar-fill {
       height: 100%;
       transition: width 0.3s;
-      &.weak { background: #e87a7a; }
-      &.medium { background: #e8b55a; }
-      &.strong { background: #72b087; }
+      &.weak { background: #C4746A; }
+      &.medium { background: #D9982F; }
+      &.strong { background: #6E915A; }
     }
 
     .strength-text {
       font-weight: 600;
-      &.weak { color: #e87a7a; }
-      &.medium { color: #e8b55a; }
-      &.strong { color: #72b087; }
+      &.weak { color: #C4746A; }
+      &.medium { color: #D9982F; }
+      &.strong { color: #6E915A; }
     }
   }
 
@@ -444,13 +444,13 @@ onBeforeUnmount(() => {
     font-weight: 600;
     letter-spacing: 2px;
     border-radius: 14px !important;
-    background: linear-gradient(135deg, #f4a57a 0%, #c96f42 100%) !important;
+    background: linear-gradient(135deg, #3B837C 0%, #22524E 100%) !important;
     border: none !important;
-    box-shadow: 0 6px 20px rgba(232, 132, 90, 0.38) !important;
+    box-shadow: 0 6px 20px rgba(46, 110, 104, 0.38) !important;
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 10px 28px rgba(232, 132, 90, 0.45) !important;
+      box-shadow: 0 10px 28px rgba(46, 110, 104, 0.45) !important;
     }
   }
 }
@@ -459,7 +459,7 @@ onBeforeUnmount(() => {
   text-align: center;
   margin-top: 16px;
   font-size: 14px;
-  color: #9e8070;
+  color: #94A4A6;
   .el-link { margin-left: 4px; font-weight: 600; font-size: 14px; }
 }
 
@@ -467,7 +467,7 @@ onBeforeUnmount(() => {
   position: absolute;
   bottom: 20px;
   font-size: 12px;
-  color: #c4b0a4;
+  color: #A9B9B8;
 }
 
 @media (max-width: 768px) {

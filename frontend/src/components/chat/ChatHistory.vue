@@ -28,7 +28,7 @@
             @click="openChat(item)"
           >
             <div class="item-icon">
-              <el-icon :size="20" color="#409eff"><ChatDotSquare /></el-icon>
+              <el-icon :size="20" color="#2E6E68"><ChatDotSquare /></el-icon>
             </div>
             <div class="item-content">
               <div class="item-title">{{ item.title || '未命名对话' }}</div>
@@ -77,7 +77,7 @@
             @click="viewTestResult(item)"
           >
             <div class="item-icon">
-              <el-icon :size="20" color="#67c23a"><List /></el-icon>
+              <el-icon :size="20" color="#6E915A"><List /></el-icon>
             </div>
             <div class="item-content">
               <div class="item-title">{{ item.testName }}</div>
@@ -273,7 +273,7 @@ onMounted(() => {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #303133;
+  color: #1B2A2C;
 }
 
 .history-tabs {
@@ -310,11 +310,11 @@ onMounted(() => {
 }
 
 .history-item:hover {
-  background-color: #f5f7fa;
+  background-color: #F6F5F1;
 }
 
 .history-item + .history-item {
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid #EFEDE6;
 }
 
 .item-icon {
@@ -324,7 +324,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f0f9ff;
+  background: #FBFAF7;
   border-radius: 8px;
   margin-right: 12px;
 }
@@ -337,7 +337,7 @@ onMounted(() => {
 .item-title {
   font-size: 14px;
   font-weight: 500;
-  color: #303133;
+  color: #1B2A2C;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -352,7 +352,7 @@ onMounted(() => {
 
 .item-date {
   font-size: 12px;
-  color: #909399;
+  color: #94A4A6;
 }
 
 .item-tag {

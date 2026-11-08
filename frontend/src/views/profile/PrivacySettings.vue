@@ -256,7 +256,7 @@ onMounted(() => {
   background: #fff;
   border-radius: 20px;
   border: 1px solid $border-lighter;
-  box-shadow: 0 2px 12px rgba(107,82,68,0.06);
+  box-shadow: 0 2px 12px rgba(27,42,44,0.06);
   padding: 24px 28px;
   margin-bottom: 18px;
 }
@@ -280,9 +280,9 @@ onMounted(() => {
     flex-shrink: 0;
     font-size: 18px;
 
-    &.chat   { background: linear-gradient(135deg, #ede8f5, #c4b5d8); color: #7b5ea7; }
-    &.test   { background: linear-gradient(135deg, #fde8d8, #f4a57a); color: #c96f42; }
-    &.danger { background: linear-gradient(135deg, #fce4ec, #f48fb1); color: #c2185b; }
+    &.chat   { background: linear-gradient(135deg, #FBFAF7, #E2EFEC); color: #22524E; }
+    &.test   { background: linear-gradient(135deg, #F6F5F1, #3B837C); color: #22524E; }
+    &.danger { background: linear-gradient(135deg, #F7E7E4, #F7E7E4); color: #C4746A; }
   }
 
   > div:last-child {
@@ -362,7 +362,7 @@ onMounted(() => {
       color: $text-primary;
       margin-bottom: 3px;
 
-      &.danger-lbl { color: #e53935; }
+      &.danger-lbl { color: #C4746A; }
     }
 
     .desc {

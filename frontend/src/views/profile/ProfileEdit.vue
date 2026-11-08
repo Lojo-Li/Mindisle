@@ -309,7 +309,7 @@ onMounted(() => {
 .edit-card {
   border-radius: 20px !important;
   border: 1px solid $border-lighter !important;
-  box-shadow: 0 4px 20px rgba(107,82,68,0.08) !important;
+  box-shadow: 0 4px 20px rgba(27,42,44,0.08) !important;
 
   :deep(.el-card__body) { padding: 36px 40px; }
 }

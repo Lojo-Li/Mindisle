@@ -3,16 +3,24 @@
     <!-- 左侧导航栏 -->
     <div class="sidebar">
       <div class="logo">
-        <el-icon :size="32" color="#fff"><ChatDotRound /></el-icon>
-        <span class="logo-text">心理咨询平台</span>
+        <div class="brand-mark">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M3 17.5c2.2 0 2.6-3.5 4.8-3.5s2.4 2.4 4.4 2.4 2.5-4.2 4.8-4.2c1.4 0 2.4.9 3 1.8" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/>
+            <circle cx="16.6" cy="7" r="2.1" fill="#F6D08A"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <b>心屿</b>
+          <span>Mindisle</span>
+        </div>
       </div>
 
       <el-menu
         :default-active="activeMenu"
         class="sidebar-menu"
-        background-color="#2d1f17"
-        text-color="#e8d5c5"
-        active-text-color="#f4c49e"
+        background-color="#FFFFFF"
+        text-color="#56696D"
+        active-text-color="#22524E"
         :collapse="isCollapse"
       >
         <el-menu-item index="/admin/dashboard" @click="navigateTo('/admin/dashboard')">
@@ -206,14 +214,15 @@ onMounted(() => {
   overflow: hidden;
 }
 
-/* 侧边导航 */
+/* 侧边导航：白底 + 细分隔线 + 青绿选中态 */
 .sidebar {
-  width: 220px;
-  min-width: 220px;
-  background-color: #2d1f17;
+  width: 250px;
+  min-width: 250px;
+  background-color: $bg-white;
+  border-right: 1px solid $border-base;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
+  transition: $transition-base;
   flex-shrink: 0;
   overflow: hidden;
 }
@@ -231,20 +240,43 @@ onMounted(() => {
 .logo {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 20px;
-  color: #f4c49e;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  gap: 11px;
+  padding: 22px 16px;
+  color: $text-primary;
+  border-bottom: 1px solid $border-lighter;
   overflow: hidden;
   white-space: nowrap;
 }
 
-.logo-text {
-  font-size: 17px;
-  font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  flex-shrink: 0;
+.brand-mark {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border-radius: 13px;
+  background: linear-gradient(150deg, #3B837C, #22524E);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px -8px rgba(46, 110, 104, 0.9);
+}
+
+.brand-text {
+  b {
+    display: block;
+    font-family: $font-family-serif;
+    font-size: 16px;
+    font-weight: 650;
+    letter-spacing: 2px;
+    line-height: 1.3;
+  }
+
+  span {
+    display: block;
+    font-size: 10.5px;
+    color: $text-secondary;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+  }
 }
 
 .sidebar-menu {
@@ -252,10 +284,11 @@ onMounted(() => {
   border: none !important;
   overflow-y: auto;
   overflow-x: hidden;
-  background-color: #2d1f17 !important;
+  background-color: $bg-white !important;
+  padding: 8px 0;
 
   &:not(.el-menu--collapse) {
-    width: 220px;
+    width: 250px;
   }
 
   &::-webkit-scrollbar {
@@ -267,30 +300,32 @@ onMounted(() => {
   }
 
   &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
+    background: $border-base;
     border-radius: 3px;
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: $border-light;
   }
 }
 
 :deep(.sidebar-menu .el-menu-item) {
   background-color: transparent !important;
-  color: rgba(255,255,255,0.75) !important;
-  border-radius: 10px;
+  color: $text-regular !important;
+  border-radius: $border-radius-md;
   margin: 2px 8px;
+  position: relative;
 }
 
 :deep(.sidebar-menu .el-menu-item:hover) {
-  background-color: rgba(232,132,90,0.15) !important;
-  color: #f4a57a !important;
+  background-color: $bg-subtle !important;
+  color: $text-primary !important;
 }
 
 :deep(.sidebar-menu .el-menu-item.is-active) {
-  background-color: rgba(232,132,90,0.25) !important;
-  color: #f4a57a !important;
+  background-color: $primary-lighter !important;
+  color: $primary-dark !important;
+  font-weight: 600;
 }
 
 /* 右侧主内容区 */
@@ -310,7 +345,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  box-shadow: 0 2px 12px rgba(107,82,68,0.08);
+  box-shadow: 0 2px 12px rgba(27,42,44,0.08);
   flex-shrink: 0;
   border-bottom: 1px solid $border-lighter;
 }

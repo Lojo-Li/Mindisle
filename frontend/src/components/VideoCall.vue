@@ -308,7 +308,7 @@ const onOverlayClick = () => {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: #0d0d0d;
+  background: #1B2A2C;
   color: #fff;
   display: flex;
   flex-direction: column;
@@ -338,7 +338,7 @@ const onOverlayClick = () => {
   width: 48px;
   height: 48px;
   border: 3px solid rgba(255, 255, 255, 0.15);
-  border-top-color: #67c23a;
+  border-top-color: #6E915A;
   border-radius: 50%;
   animation: vcSpin 0.8s linear infinite;
 }
@@ -373,7 +373,7 @@ const onOverlayClick = () => {
   max-height: 55vh;
   border-radius: 20px;
   object-fit: cover;
-  background: #1a1a2e;
+  background: #1B2A2C;
   transform: scaleX(-1); // 镜像（自拍视角）
 }
 
@@ -436,8 +436,8 @@ const onOverlayClick = () => {
 
   span { font-size: 12px; color: rgba(255, 255, 255, 0.7); }
 
-  &.hangup { background: #e74c3c; &:hover { background: #c0392b; transform: scale(1.08); } }
-  &.answer { background: #27ae60; &:hover { background: #219a52; transform: scale(1.08); } }
+  &.hangup { background: #C4746A; &:hover { background: #C4746A; transform: scale(1.08); } }
+  &.answer { background: #6E915A; &:hover { background: #6E915A; transform: scale(1.08); } }
   &.small { width: 56px; height: 56px; }
 }
 
@@ -472,7 +472,7 @@ const onOverlayClick = () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  background: #2a2a3e;
+  background: #1B2A2C;
   transform: scaleX(-1); // 镜像
 }
 

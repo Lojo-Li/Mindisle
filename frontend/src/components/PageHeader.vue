@@ -4,8 +4,16 @@
       <div class="header-content">
         <!-- Logo -->
         <div class="logo" @click="goHome">
-          <span class="logo-icon">🌸</span>
-          <span class="logo-text">心灵驿站</span>
+          <span class="logo-icon">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
+              <path d="M3 17.5c2.2 0 2.6-3.5 4.8-3.5s2.4 2.4 4.4 2.4 2.5-4.2 4.8-4.2c1.4 0 2.4.9 3 1.8" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/>
+              <circle cx="16.6" cy="7" r="2.1" fill="#F6D08A"/>
+            </svg>
+          </span>
+          <span class="brand-text">
+            <b>心屿</b>
+            <span>Mindisle</span>
+          </span>
         </div>
 
         <!-- 导航菜单 -->
@@ -273,11 +281,10 @@ onUnmounted(() => {
 @use '@/styles/variables.scss' as *;
 
 .page-header {
-  background: rgba(255, 252, 248, 0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid $border-lighter;
-  box-shadow: 0 2px 16px rgba(107, 82, 68, 0.06);
+  background: rgba(246, 245, 241, 0.86);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid transparent;
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -295,11 +302,11 @@ onUnmounted(() => {
 .logo {
   display: flex;
   align-items: center;
-  gap: $spacing-sm;
+  gap: 11px;
   cursor: pointer;
   flex-shrink: 0;
-  padding: 6px 10px;
-  border-radius: $border-radius-lg;
+  padding: 4px 8px;
+  border-radius: $border-radius-md;
   transition: $transition-base;
 
   &:hover {
@@ -307,16 +314,35 @@ onUnmounted(() => {
   }
 
   .logo-icon {
-    font-size: 28px;
-    line-height: 1;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    border-radius: 13px;
+    background: linear-gradient(150deg, #3B837C, #22524E);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 16px -8px rgba(46, 110, 104, 0.9);
   }
 
-  .logo-text {
-    font-size: 17px;
-    font-weight: 700;
-    color: $text-primary;
-    white-space: nowrap;
-    letter-spacing: 1px;
+  .brand-text {
+    b {
+      display: block;
+      font-family: $font-family-serif;
+      font-size: 16px;
+      font-weight: 650;
+      letter-spacing: 2px;
+      line-height: 1.3;
+      color: $text-primary;
+    }
+
+    span {
+      display: block;
+      font-size: 10.5px;
+      color: $text-secondary;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+    }
   }
 }
 
@@ -357,7 +383,7 @@ onUnmounted(() => {
 
       &.is-active {
         color: $primary-dark !important;
-        background: rgba(232, 132, 90, 0.1) !important;
+        background: rgba(46, 110, 104, 0.1) !important;
         border-bottom: none !important;
       }
 
@@ -417,11 +443,11 @@ onUnmounted(() => {
     color: white !important;
     font-weight: 600;
     padding: 0 20px !important;
-    box-shadow: 0 4px 12px rgba(232, 132, 90, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(46, 110, 104, 0.3) !important;
 
     &:hover {
       transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(232, 132, 90, 0.4) !important;
+      box-shadow: 0 6px 16px rgba(46, 110, 104, 0.4) !important;
     }
   }
 
@@ -467,7 +493,7 @@ onUnmounted(() => {
 @media (max-width: $breakpoint-sm) {
   .header-content { padding: 0 $spacing-md; }
   .search-box { display: none !important; }
-  .logo-text { display: none; }
+  .brand-text { display: none; }
 }
 
 /* 通知弹窗样式 */
@@ -503,7 +529,7 @@ onUnmounted(() => {
 
     &:hover { background: $bg-subtle; }
 
-    &.unread { background: rgba(232, 132, 90, 0.04); }
+    &.unread { background: rgba(46, 110, 104, 0.04); }
 
     .item-dot {
       width: 8px;

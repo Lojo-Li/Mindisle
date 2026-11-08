@@ -271,7 +271,7 @@ onMounted(() => loadOrders())
   &.active {
     background: $primary-color;
     color: #fff;
-    box-shadow: 0 2px 8px rgba(232,132,90,0.35);
+    box-shadow: 0 2px 8px rgba(46,110,104,0.35);
   }
 }
 
@@ -295,20 +295,20 @@ onMounted(() => loadOrders())
   background: #fff;
   border-radius: 20px;
   border: 1px solid $border-lighter;
-  box-shadow: 0 2px 14px rgba(107,82,68,0.07);
+  box-shadow: 0 2px 14px rgba(27,42,44,0.07);
   overflow: hidden;
   transition: transform 0.22s, box-shadow 0.22s;
 
   &:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 28px rgba(107,82,68,0.12);
+    box-shadow: 0 8px 28px rgba(27,42,44,0.12);
   }
 
-  &.status-pending    .card-stripe { background: #e6a23c; }
-  &.status-confirmed  .card-stripe { background: #409eff; }
-  &.status-in_progress .card-stripe { background: #409eff; }
-  &.status-completed  .card-stripe { background: #67c23a; }
-  &.status-cancelled  .card-stripe { background: #909399; }
+  &.status-pending    .card-stripe { background: #D9982F; }
+  &.status-confirmed  .card-stripe { background: #2E6E68; }
+  &.status-in_progress .card-stripe { background: #2E6E68; }
+  &.status-completed  .card-stripe { background: #6E915A; }
+  &.status-cancelled  .card-stripe { background: #94A4A6; }
 }
 
 .card-stripe {
@@ -379,7 +379,7 @@ onMounted(() => loadOrders())
   .type-badge {
     display: inline-block;
     padding: 2px 10px;
-    background: rgba(232,132,90,0.1);
+    background: rgba(46,110,104,0.1);
     color: $primary-color;
     border-radius: 999px;
     font-size: 12px;
@@ -390,7 +390,7 @@ onMounted(() => loadOrders())
 // 问题描述
 .problem-desc {
   padding: 10px 14px;
-  background: #faf7f5;
+  background: #FBFAF7;
   border-radius: 10px;
   margin-bottom: 2px;
   line-height: 1.55;

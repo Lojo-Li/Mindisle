@@ -49,7 +49,7 @@
               </div>
               <div class="hero-main-card">
                 <div class="hmc-emoji">🌿</div>
-                <p>心灵驿站</p>
+                <p>心屿</p>
                 <p class="hmc-sub">您的心理健康守护者</p>
               </div>
             </div>
@@ -66,7 +66,7 @@
     <!-- Her → Features 装饰分隔 -->
     <div class="section-divider">
       <svg class="wave-svg" viewBox="0 0 1440 80" preserveAspectRatio="none">
-        <path d="M0,40 C360,80 720,0 1440,40 L1440,0 L0,0 Z" fill="#fdf6ee"/>
+        <path d="M0,40 C360,80 720,0 1440,40 L1440,0 L0,0 Z" fill="#F6F5F1"/>
       </svg>
     </div>
 
@@ -160,7 +160,7 @@
             </div>
             <h3>{{ counselor.name }}</h3>
             <div class="counselor-rating">
-              <el-rate v-model="counselor.rating" disabled show-score text-color="#e8845a" />
+              <el-rate v-model="counselor.rating" disabled show-score text-color="#2E6E68" />
             </div>
             <div class="counselor-tags">
               <span v-for="tag in counselor.specialties" :key="tag" class="tag">{{ tag }}</span>
@@ -202,7 +202,7 @@
       <div class="container">
         <div class="footer-grid">
           <div class="footer-brand">
-            <div class="footer-logo">🌸 心灵驿站</div>
+            <div class="footer-logo">🌸 心屿</div>
             <p>专注心理健康服务，用专业与温暖陪伴每一位用户走过心灵低谷，找到属于自己的光。</p>
           </div>
           <div class="footer-links">
@@ -221,7 +221,7 @@
           </div>
         </div>
         <div class="footer-bottom">
-          © 2026 心灵驿站 · 守护您的心理健康 · 保持善良，保持温柔 🌸
+          © 2026 心屿 · 守护您的心理健康 · 保持善良，保持温柔 🌸
         </div>
       </div>
     </footer>
@@ -243,8 +243,8 @@ const features = ref([
     title: '智能问答',
     description: '24h AI 心理咨询助手，随时倾听您的心声',
     emoji: '🤖',
-    color: '#e8845a',
-    bg: 'rgba(232, 132, 90, 0.08)',
+    color: '#2E6E68',
+    bg: 'rgba(46, 110, 104, 0.08)',
     path: '/chat'
   },
   {
@@ -252,7 +252,7 @@ const features = ref([
     title: '心理测试',
     description: '9套专业量表，科学评估心理状态',
     emoji: '📝',
-    color: '#9b8bb4',
+    color: '#D9982F',
     bg: 'rgba(155, 139, 180, 0.08)',
     path: '/test'
   },
@@ -261,7 +261,7 @@ const features = ref([
     title: '预约咨询',
     description: '专业认证咨询师，一对一贴心服务',
     emoji: '👨‍⚕️',
-    color: '#72b087',
+    color: '#6E915A',
     bg: 'rgba(114, 176, 135, 0.08)',
     path: '/counselor'
   },
@@ -270,7 +270,7 @@ const features = ref([
     title: '心理知识',
     description: '科普文章与案例，丰富您的心理认知',
     emoji: '📚',
-    color: '#e8b55a',
+    color: '#D9982F',
     bg: 'rgba(232, 181, 90, 0.08)',
     path: '/knowledge'
   }
@@ -380,7 +380,7 @@ onMounted(() => {
   position: relative;
   padding: 100px 0 110px;
   overflow: hidden;
-  background: linear-gradient(160deg, #fff8f2 0%, #fdf0e8 50%, #f8eefd 100%);
+  background: linear-gradient(160deg, #FBFAF7 0%, #FBFAF7 50%, #F6F5F1 100%);
   min-height: 85vh;
   display: flex;
   align-items: center;
@@ -395,7 +395,7 @@ onMounted(() => {
 
   &.blob-1 {
     width: 600px; height: 600px;
-    background: rgba(232, 132, 90, 0.12);
+    background: rgba(46, 110, 104, 0.12);
     top: -180px; right: -120px;
   }
 
@@ -427,8 +427,8 @@ onMounted(() => {
   .hero-badge {
     display: inline-block;
     padding: 8px 20px;
-    background: rgba(232, 132, 90, 0.1);
-    border: 1px solid rgba(232, 132, 90, 0.25);
+    background: rgba(46, 110, 104, 0.1);
+    border: 1px solid rgba(46, 110, 104, 0.25);
     border-radius: 999px;
     font-size: 14px;
     font-weight: 600;
@@ -446,7 +446,7 @@ onMounted(() => {
     letter-spacing: -1px;
 
     .highlight {
-      background: linear-gradient(135deg, #f4a57a, #c96f42);
+      background: linear-gradient(135deg, #3B837C, #22524E);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -471,14 +471,14 @@ onMounted(() => {
       font-size: 17px;
       font-weight: 700;
       border-radius: 14px !important;
-      background: linear-gradient(135deg, #f4a57a 0%, #c96f42 100%) !important;
+      background: linear-gradient(135deg, #3B837C 0%, #22524E 100%) !important;
       border: none !important;
-      box-shadow: 0 8px 24px rgba(232, 132, 90, 0.38) !important;
+      box-shadow: 0 8px 24px rgba(46, 110, 104, 0.38) !important;
       letter-spacing: 1px;
 
       &:hover {
         transform: translateY(-3px);
-        box-shadow: 0 12px 32px rgba(232, 132, 90, 0.48) !important;
+        box-shadow: 0 12px 32px rgba(46, 110, 104, 0.48) !important;
       }
     }
 
@@ -519,17 +519,17 @@ onMounted(() => {
   transform: translate(-50%, -50%);
   width: 220px;
   height: 220px;
-  background: linear-gradient(140deg, #fde8d8 0%, #f4cdd8 100%);
+  background: linear-gradient(140deg, #F6F5F1 0%, #E2EFEC 100%);
   border-radius: 48px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 20px 56px rgba(107, 82, 68, 0.18);
+  box-shadow: 0 20px 56px rgba(27, 42, 44, 0.18);
 
   .hmc-emoji { font-size: 64px; margin-bottom: 12px; }
-  p { font-size: 17px; font-weight: 700; color: #3d2b1f; }
-  .hmc-sub { font-size: 12px; color: #9e8070; margin-top: 4px; }
+  p { font-size: 17px; font-weight: 700; color: #1B2A2C; }
+  .hmc-sub { font-size: 12px; color: #94A4A6; margin-top: 4px; }
 }
 
 .floating-card {
@@ -540,7 +540,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 10px 30px rgba(107, 82, 68, 0.12);
+  box-shadow: 0 10px 30px rgba(27, 42, 44, 0.12);
   border: 1px solid $border-lighter;
   white-space: nowrap;
 
@@ -569,7 +569,7 @@ onMounted(() => {
 // ===================== Stats =====================
 .stats-section {
   padding: 0;
-  background: linear-gradient(135deg, #fff8f2 0%, #fdf0e8 50%, #f8eefd 100%);
+  background: linear-gradient(135deg, #FBFAF7 0%, #FBFAF7 50%, #F6F5F1 100%);
 }
 
 .stats-grid {
@@ -584,11 +584,11 @@ onMounted(() => {
   justify-content: center;
   gap: 20px;
   padding: 48px 24px;
-  border-right: 1px solid rgba(232, 132, 90, 0.12);
+  border-right: 1px solid rgba(46, 110, 104, 0.12);
   transition: $transition-base;
 
   &:hover {
-    background: rgba(232, 132, 90, 0.04);
+    background: rgba(46, 110, 104, 0.04);
   }
 
   &:last-child { border-right: none; }
@@ -622,7 +622,7 @@ onMounted(() => {
   &.orn-top {
     width: 300px;
     height: 300px;
-    background: radial-gradient(circle, rgba(232, 132, 90, 0.06) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(46, 110, 104, 0.06) 0%, transparent 70%);
     top: -100px;
     right: -60px;
   }
@@ -667,7 +667,7 @@ onMounted(() => {
   .section-badge {
     display: inline-block;
     padding: 6px 18px;
-    background: rgba(232, 132, 90, 0.1);
+    background: rgba(46, 110, 104, 0.1);
     border-radius: 999px;
     font-size: 13px;
     font-weight: 600;
@@ -740,8 +740,8 @@ onMounted(() => {
 
   &:hover {
     transform: translateY(-10px);
-    box-shadow: 0 24px 56px rgba(107, 82, 68, 0.14);
-    border-color: rgba(232, 132, 90, 0.2);
+    box-shadow: 0 24px 56px rgba(27, 42, 44, 0.14);
+    border-color: rgba(46, 110, 104, 0.2);
 
     &::before { transform: scaleX(1); }
   }
@@ -879,7 +879,7 @@ onMounted(() => {
   &:hover {
     transform: translateY(-6px);
     box-shadow: $box-shadow-dark;
-    border-color: rgba(232, 132, 90, 0.2);
+    border-color: rgba(46, 110, 104, 0.2);
   }
 
   .counselor-top {
@@ -921,13 +921,13 @@ onMounted(() => {
     margin-bottom: 16px;
 
     .tag {
-      background: rgba(232, 132, 90, 0.08);
+      background: rgba(46, 110, 104, 0.08);
       color: $primary-dark;
       font-size: 12px;
       font-weight: 600;
       padding: 4px 12px;
       border-radius: 999px;
-      border: 1px solid rgba(232, 132, 90, 0.2);
+      border: 1px solid rgba(46, 110, 104, 0.2);
     }
   }
 
@@ -948,7 +948,7 @@ onMounted(() => {
 
 // ===================== Footer =====================
 .page-footer {
-  background: #2d1f17;
+  background: #1B2A2C;
   color: rgba(255, 255, 255, 0.85);
   padding: 80px 0 32px;
 }

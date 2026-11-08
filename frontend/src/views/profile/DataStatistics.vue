@@ -16,28 +16,28 @@
       <!-- 概览卡片 -->
       <div class="ds-stats-grid">
         <div class="ds-stat-card">
-          <div class="ds-stat-icon" style="--c:#e8845a">
+          <div class="ds-stat-icon" style="--c:#2E6E68">
             <el-icon :size="22"><DocumentCopy /></el-icon>
           </div>
             <div class="ds-stat-num">{{ overviewData.test_count || 0 }}</div>
           <div class="ds-stat-lbl">心理测试</div>
         </div>
         <div class="ds-stat-card">
-          <div class="ds-stat-icon" style="--c:#9b8bb4">
+          <div class="ds-stat-icon" style="--c:#D9982F">
             <el-icon :size="22"><ChatDotSquare /></el-icon>
           </div>
             <div class="ds-stat-num">{{ overviewData.chat_count || 0 }}</div>
           <div class="ds-stat-lbl">对话次数</div>
         </div>
         <div class="ds-stat-card">
-          <div class="ds-stat-icon" style="--c:#56ab91">
+          <div class="ds-stat-icon" style="--c:#6E915A">
             <el-icon :size="22"><Calendar /></el-icon>
           </div>
             <div class="ds-stat-num">{{ overviewData.appointment_count || 0 }}</div>
           <div class="ds-stat-lbl">预约次数</div>
         </div>
         <div class="ds-stat-card">
-          <div class="ds-stat-icon" style="--c:#f4a57a">
+          <div class="ds-stat-icon" style="--c:#3B837C">
             <el-icon :size="22"><Star /></el-icon>
           </div>
             <div class="ds-stat-num">{{ overviewData.favorite_count || 0 }}</div>
@@ -215,13 +215,13 @@ const renderActivityChart = (data) => {
         data: activities,
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(232, 132, 90, 0.3)' },
-            { offset: 1, color: 'rgba(232, 132, 90, 0.03)' }
+            { offset: 0, color: 'rgba(46, 110, 104, 0.3)' },
+            { offset: 1, color: 'rgba(46, 110, 104, 0.03)' }
           ])
         },
         lineStyle: {
           width: 3,
-          color: '#e8845a',
+          color: '#2E6E68',
           borderWidth: 2,
           borderColor: '#fff'
         }
@@ -330,16 +330,16 @@ const renderChatChart = (data) => {
         data: counts,
         itemStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: '#83bff6' },
-            { offset: 1, color: '#188df0' }
+            { offset: 0, color: '#9FCBC4' },
+            { offset: 1, color: '#2E6E68' }
           ]),
           borderRadius: [5, 5, 0, 0]
         },
         emphasis: {
           itemStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: '#2378f7' },
-              { offset: 1, color: '#83bff6' }
+              { offset: 0, color: '#2E6E68' },
+              { offset: 1, color: '#9FCBC4' }
             ])
           }
         }
@@ -436,7 +436,7 @@ onBeforeUnmount(() => {
   background: #fff;
   border-radius: 18px;
   border: 1px solid $border-lighter;
-  box-shadow: 0 2px 12px rgba(107,82,68,0.06);
+  box-shadow: 0 2px 12px rgba(27,42,44,0.06);
   padding: 24px 16px;
   display: flex;
   flex-direction: column;
@@ -449,7 +449,7 @@ onBeforeUnmount(() => {
   width: 48px;
   height: 48px;
   border-radius: 14px;
-  background: var(--c, #e8845a);
+  background: var(--c, #2E6E68);
   opacity: 0.85;
   display: flex;
   align-items: center;
@@ -473,7 +473,7 @@ onBeforeUnmount(() => {
 .ds-chart-card {
   border-radius: 20px !important;
   border: 1px solid $border-lighter !important;
-  box-shadow: 0 4px 20px rgba(107,82,68,0.08) !important;
+  box-shadow: 0 4px 20px rgba(27,42,44,0.08) !important;
   margin-bottom: 24px;
 
   :deep(.el-card__header) {
