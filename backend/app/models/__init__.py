@@ -4,6 +4,7 @@ from .test import PsychologicalTest, TestQuestion, TestResult, TestProgress
 from .chat import ChatDialogue, ChatMessage, ChatTag, ChatDialogueTag
 from .counselor import Counselor, Appointment, ConsultationReview, ConsultationMessage, CounselorInquiry, InquiryMessage
 from .knowledge import KnowledgeArticle, KnowledgeComment, KnowledgeCommentLike, KnowledgeFavorite, KnowledgeLike
+from .risk import RiskEvent, AiMessageSource, AiFeedback
 
 from .notification import Notification
 
@@ -15,5 +16,6 @@ __all__ = [
     "Counselor", "Appointment", "ConsultationReview", "ConsultationMessage",
     "CounselorInquiry", "InquiryMessage",
     "KnowledgeArticle", "KnowledgeComment", "KnowledgeCommentLike", "KnowledgeFavorite", "KnowledgeLike",
+    "RiskEvent", "AiMessageSource", "AiFeedback",
     "Notification"
 ]

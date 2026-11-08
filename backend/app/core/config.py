@@ -66,7 +66,32 @@ class Settings(BaseSettings):
     CHROMA_DB_PATH: str = "./chroma_db"
     CHROMA_COLLECTION_NAME: str = "psychology_kb"
     RAG_TOP_K: int = 3  # 检索返回的相似案例数量
-    RAG_DISTANCE_THRESHOLD: float = 3.0  # 距离阈值，超过此值视为相关性不足
+    # 距离阈值（L2 平方距离）。归一化向量下 d = 2 - 2cos，
+    # 取 1.2 约等于 cos >= 0.4，低于此相关度的案例不再注入 prompt。
+    # 旧值 3.0 相当于 cos >= -0.5，等于不过滤。
+    RAG_DISTANCE_THRESHOLD: float = 1.2
+
+    # ── AI 心理支持（E 线）──
+    AI_ASSISTANT_NAME: str = "小屿"
+
+    # 是否校验 AI 服务端 TLS 证书。
+    # 旧代码硬编码 verify=False，等于把用户的心理自述明文暴露给中间人。
+    # 只有在本地证书链确实有问题时才临时置 False，且不得用于线上。
+    AI_VERIFY_SSL: bool = True
+
+    # 风险热线（JSON 数组字符串，可在 .env 覆盖）
+    # 上线前请核对号码有效性，各地号码不同
+    CRISIS_HOTLINES_JSON: str = (
+        '[{"name":"全国心理援助热线","number":"12356",'
+        '"description":"国家卫健委统一热线，24 小时"},'
+        '{"name":"北京心理危机研究与干预中心","number":"010-82951332",'
+        '"description":"24 小时免费危机干预"},'
+        '{"name":"希望24热线","number":"400-161-9995",'
+        '"description":"24 小时心理危机干预"}]'
+    )
+
+    # 风险事件是否通知后台（写入 risk_events 后由前端轮询/后台查看）
+    RISK_PERSIST_ENABLED: bool = True
 
     class Config:
         env_file = ".env"
