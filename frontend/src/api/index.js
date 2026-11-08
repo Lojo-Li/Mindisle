@@ -3,8 +3,10 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
 // 创建axios实例
+// 默认走相对路径 /api，由 Vite devServer 代理到后端 8000 端口，
+// 这样可避免跨域问题，也便于团队协作时统一入口。
 const request = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json'
