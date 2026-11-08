@@ -63,6 +63,7 @@ const UserManage = () => import('@/views/admin/UserManage.vue')
 const OrderManage = () => import('@/views/admin/OrderManage.vue')
 const TestManage = () => import('@/views/admin/TestManage.vue')
 const DialogueManage = () => import('@/views/admin/DialogueManage.vue')
+const RiskManage = () => import('@/views/admin/RiskManage.vue')
 const SystemManage = () => import('@/views/admin/SystemManage.vue')
 
 const routes = [
@@ -318,6 +319,12 @@ const routes = [
         name: 'DialogueManage',
         component: DialogueManage,
         meta: { title: '对话管理 - 心理咨询平台' }
+      },
+      {
+        path: 'risks',
+        name: 'RiskManage',
+        component: RiskManage,
+        meta: { title: '风险工单 - 心理咨询平台' }
       },
       {
         path: 'article-editor',
