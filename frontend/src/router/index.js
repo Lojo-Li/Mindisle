@@ -83,8 +83,16 @@ const CounselorOverview = () => import('@/views/mindisle/views/CounselorOverview
 
 const routes = [
   {
+    // 默认入口：心屿登录首页（全屏 LandingPage，隐藏通用顶部导航）
     path: '/',
     name: 'HomePage',
+    component: MindisleLogin,
+    meta: { title: '心屿 Mindisle · 欢迎回来', hideHeader: true }
+  },
+  {
+    // 保留原营销首页，供其他成员继续测试，不影响其余板块
+    path: '/home',
+    name: 'MarketingHome',
     component: HomePage,
     meta: { title: '首页 - 心屿 Mindisle' }
   },
