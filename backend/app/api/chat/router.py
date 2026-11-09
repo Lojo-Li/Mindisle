@@ -474,8 +474,10 @@ async def send_message_stream(
                     full_response += content_chunk
                     yield f"data: {json.dumps({'content': content_chunk, 'done': False}, ensure_ascii=False)}\n\n"
             except Exception as ai_error:
+                # 原始报错只进日志，不写进对话内容
+                from app.services.ai_error import friendly_message
                 print(f"AI调用失败: {ai_error}")
-                full_response = f"抱歉，我遇到了一些问题：{str(ai_error)}。请稍后再试。"
+                full_response = friendly_message(ai_error)
                 yield f"data: {json.dumps({'content': full_response, 'done': False}, ensure_ascii=False)}\n\n"
 
             # ── 保存回复与引用溯源 ────────────────────────────────

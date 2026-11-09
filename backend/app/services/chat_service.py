@@ -387,7 +387,8 @@ class ChatService:
         try:
             ai_reply = ai_service.chat(messages=messages_list, stream=False)
         except Exception as e:
-            ai_reply = f"抱歉，我遇到了一些问题：{str(e)}。请稍后再试。"
+            from app.services.ai_error import friendly_message
+            ai_reply = friendly_message(e)
 
         # 保存 AI 回复
         ai_message = ChatMessage(
