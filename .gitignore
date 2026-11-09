@@ -88,3 +88,13 @@ Thumbs.db
 
 # Documentation
 docs/
+
+# WorkBuddy 本地工具数据（非项目源码，不要提交）
+.workbuddy/
+
+# 根目录设计稿副本（与 prototype/ 下文件完全重复）
+/mindisle.html
+/mindisle-home.html
+
+# 本地调试数据库
+/backend/soulstation_dev.db
