@@ -24,13 +24,13 @@ class RAGService:
         self._lock = threading.Lock()  # 防止并发初始化时的竞争条件
 
     def _get_embedding_function(self):
-        """懒加载 Sentence-Transformers 嵌入函数（先从本地加载）"""
+        """懒加载 Sentence-Transformers 嵌入函数（优先本地模型目录）"""
         if self._ef is None:
-            import os
             from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
             # 优先从本地目录加载，避免连 huggingface.co
             base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-            local_path = os.path.join(base_dir, self._LOCAL_MODEL_PATH)
+            # 归一化为绝对路径：带尾分隔符的相对路径会被当成模型名去联网拉取
+            local_path = os.path.abspath(os.path.join(base_dir, self._LOCAL_MODEL_PATH))
             if os.path.isdir(local_path):
                 logger.info(f"[RAG] 从本地加载嵌入模型: {local_path}")
                 self._ef = SentenceTransformerEmbeddingFunction(model_name=local_path)
@@ -97,13 +97,18 @@ class RAGService:
 
             sources = []
             ids = results.get("ids", [[]])[0]
+            metric = getattr(settings, "RAG_METRIC", "cosine")
+            min_sim = getattr(settings, "RAG_MIN_SIMILARITY", 0.45)
             for i, doc in enumerate(results["documents"][0]):
                 distance = results["distances"][0][i]
-                if distance > settings.RAG_DISTANCE_THRESHOLD:
+                # cosine: distance = 1 - 相似度；l2: 归一化向量下 d = 2 - 2cos
+                if metric == "cosine":
+                    score = max(0.0, min(1.0, 1 - distance))
+                else:
+                    score = max(0.0, min(1.0, 1 - distance / 2))
+                if score < min_sim:
                     continue
                 metadata = results["metadatas"][0][i] or {}
-                # L2 平方距离（归一化向量）换算余弦相似度：d = 2 - 2cos
-                score = max(0.0, min(1.0, 1 - distance / 2))
                 sources.append({
                     "vector_id": ids[i] if i < len(ids) else None,
                     "input": doc,
@@ -117,7 +122,7 @@ class RAGService:
             if sources:
                 print(f"[RAG] 查询「{query[:30]}」→ 命中 {len(sources)} 条")
             else:
-                print(f"[RAG] 查询「{query[:30]}」→ 无命中（阈值 {settings.RAG_DISTANCE_THRESHOLD}）")
+                print(f"[RAG] 查询「{query[:30]}」→ 无命中（相似度下限 {min_sim}）")
 
             return sources
 
