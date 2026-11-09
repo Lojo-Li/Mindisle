@@ -1,0 +1,110 @@
+/* ============================================================
+   心屿 · 屿灯（E 线 AI 心理支持）补充样式
+   依赖 MindisleShell 里 .mi-portal 定义的主题变量
+   ============================================================ */
+
+/* 气泡与来源需要纵向排列，所以给消息内容包一层 */
+.msg-body{display:flex;flex-direction:column;gap:7px;min-width:0;max-width:100%}
+
+/* ---------- 引用来源 ---------- */
+.src-toggle{
+  display:inline-flex;align-items:center;gap:6px;align-self:flex-start;
+  font-size:11.5px;padding:3.5px 11px;border-radius:20px;
+  border:1px solid var(--line);background:var(--surface-2);color:var(--ink-3);
+  transition:.2s var(--ease);cursor:pointer;font-family:inherit;
+}
+.src-toggle:hover{border-color:#C6DAD6;color:var(--sea-deep);background:var(--sea-soft)}
+.src-toggle b{font-weight:560;color:var(--sea-deep)}
+.src-toggle .dot{width:5px;height:5px;border-radius:50%;background:var(--sea);opacity:.7}
+
+.src-panel{
+  margin-top:2px;padding:12px 13px;border-radius:12px;
+  background:var(--surface-2);border:1px solid var(--line-2);
+  font-size:12px;line-height:1.7;color:var(--ink-2);
+  animation:srcIn .25s var(--ease);
+}
+@keyframes srcIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.src-item+.src-item{margin-top:9px;padding-top:9px;border-top:1px dashed var(--line)}
+.src-item b{display:block;font-weight:560;color:var(--ink);margin-bottom:3px;font-size:12px}
+.src-item p{margin:0;color:var(--ink-2)}
+.src-item span{display:block;margin-top:3px;color:var(--ink-3);font-size:11px}
+.src-foot{margin-top:10px;padding-top:8px;border-top:1px solid var(--line-2);
+  font-size:11px;color:var(--ink-3)}
+
+/* ---------- 答案反馈 ---------- */
+.msg-fb{display:flex;align-items:center;gap:9px;align-self:flex-start;
+  font-size:11.5px;color:var(--ink-3);margin-top:1px}
+.msg-fb button{
+  padding:2px 9px;border-radius:14px;border:1px solid var(--line);
+  background:var(--surface);color:var(--ink-2);font-size:11.5px;
+  transition:.2s var(--ease);cursor:pointer;font-family:inherit;
+}
+.msg-fb button:hover{border-color:#C6DAD6;color:var(--sea-deep)}
+.msg-fb button.on{border-color:var(--sea);background:var(--sea-soft);color:var(--sea-deep)}
+
+/* ---------- 风险提示 ---------- */
+.risk-slot{padding:0 20px}
+.risk-note{border-radius:13px;padding:12px 15px;margin-top:12px;
+  font-size:12.5px;line-height:1.7;animation:srcIn .3s var(--ease)}
+.risk-note.l1{background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
+.risk-note.l2{background:var(--lamp-soft);border:1px solid #EFD9AE;color:#7A5716}
+.risk-note.l3{background:var(--rose-soft);border:1px solid #E8C4BF;color:#8E4A42}
+.risk-note .rt{font-weight:600;margin-bottom:5px;font-size:13px}
+.risk-calls{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+.risk-call{display:flex;flex-direction:column;gap:1px;padding:8px 13px;border-radius:10px;
+  background:rgba(255,255,255,.85);text-decoration:none;border:1px solid rgba(0,0,0,.05);
+  transition:.2s var(--ease)}
+.risk-call:hover{background:#fff;transform:translateY(-1px)}
+.risk-call i{font-style:normal;font-size:10.5px;color:var(--ink-3)}
+.risk-call b{font-size:15px;color:var(--ink);letter-spacing:.4px;font-weight:600}
+.risk-act{margin-top:10px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.risk-btn{height:30px;padding:0 14px;border-radius:9px;background:var(--sea);
+  color:#fff;font-size:12px;transition:.2s var(--ease);cursor:pointer;border:none;font-family:inherit}
+.risk-btn:hover{background:var(--sea-deep)}
+.risk-btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink-2)}
+.risk-btn.ghost:hover{border-color:#C6DAD6;color:var(--ink)}
+
+/* ---------- L3 阻塞弹层 ---------- */
+.risk-mask{position:fixed;inset:0;background:rgba(20,32,33,.36);backdrop-filter:blur(3px);
+  display:flex;align-items:center;justify-content:center;z-index:2000;padding:24px;
+  animation:fadeIn .22s var(--ease)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.risk-modal{background:var(--surface);border-radius:20px;max-width:440px;width:100%;
+  padding:26px 26px 22px;box-shadow:var(--shadow-l);max-height:86vh;overflow-y:auto;
+  animation:modalIn .3s var(--ease)}
+@keyframes modalIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+.risk-modal .ico{width:44px;height:44px;border-radius:50%;background:var(--rose-soft);
+  display:flex;align-items:center;justify-content:center;margin-bottom:12px;color:var(--rose)}
+.risk-modal h3{font-size:17px;font-weight:600;margin-bottom:10px;letter-spacing:.2px}
+.risk-modal p{font-size:13px;color:var(--ink-2);line-height:1.78;margin-bottom:8px}
+.risk-modal p.strong{color:var(--ink)}
+.risk-modal .confirm{display:flex;align-items:center;gap:9px;font-size:12px;
+  color:var(--ink-2);margin:15px 0 11px;cursor:pointer}
+.risk-modal .ok{width:100%;height:39px;border-radius:11px;background:var(--rose);
+  color:#fff;font-size:13.5px;font-weight:540;transition:.2s var(--ease);
+  border:none;cursor:pointer;font-family:inherit}
+.risk-modal .ok:hover:not(:disabled){background:#B4655B}
+.risk-modal .ok:disabled{background:var(--line);color:var(--ink-3);cursor:not-allowed}
+.risk-modal .fine{font-size:11px;color:var(--ink-3);margin-top:11px;text-align:center}
+
+/* ---------- 免责声明 ---------- */
+.ai-disclaimer{margin-top:10px;text-align:center;font-size:11px;color:var(--ink-3);line-height:1.7}
+.ai-disclaimer a{color:var(--sea-deep);text-decoration:none;border-bottom:1px dotted currentColor}
+.ai-disclaimer a:hover{color:var(--sea)}
+
+/* ---------- 测评上下文提示 ---------- */
+.ai-ctx{display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:12px;
+  background:var(--sea-soft);border:1px solid #CFE0DC;font-size:12px;color:var(--sea-deep);
+  margin-bottom:6px;animation:srcIn .3s var(--ease)}
+.ai-ctx b{font-weight:560}
+.ai-ctx button{margin-left:auto;font-size:11.5px;color:var(--sea-deep);
+  border:1px solid #B9D5CF;border-radius:8px;padding:3px 9px;background:transparent;
+  cursor:pointer;font-family:inherit}
+.ai-ctx button:hover{background:#D6E8E4}
+
+/* 打字中 */
+.bubble.typing i{width:5px;height:5px;border-radius:50%;background:#B9C6C4;
+  display:inline-block;margin-right:3px;animation:blink 1.3s infinite}
+.bubble.typing i:nth-child(2){animation-delay:.18s}
+.bubble.typing i:nth-child(3){animation-delay:.36s}
+@keyframes blink{0%,60%,100%{opacity:.3}30%{opacity:1}}
