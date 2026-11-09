@@ -9,7 +9,7 @@ from sqlalchemy import and_, desc
 from typing import List
 import asyncio
 import json
-from app.core.database import get_db
+from app.core.database import get_db, SessionLocal
 from app.models.chat import ChatDialogue, ChatMessage
 from app.schemas.chat import (
     DialogueCreate, DialogueUpdate, DialogueListResponse,
@@ -20,6 +20,8 @@ from app.services.chat_service import chat_service
 from app.services.ai_service import ai_service
 from app.services.rag_service import rag_service
 from app.services.auth_service import AuthService
+from app.services.crisis_service import detect_risk, build_crisis_system_instruction
+from app.services.risk_service import risk_service
 
 router = APIRouter(prefix="/chat", tags=["智能问答"])
 security = HTTPBearer()
@@ -353,9 +355,19 @@ async def send_message_stream(
 ):
     """
     发送消息并获取 AI 回复（流式输出）
+
+    事件序列（SSE，每条均为 data: {...}\\n\\n）：
+      1. {"type": "risk", ...}              风险提示，先于正文下发
+      2. {"type": "sources", ...}           引用来源，供前端展示"参考 N 条"
+      3. {"content": "...", "done": false}  正文增量（可能多条）
+      4. {"content": "", "done": true, ...} 结束，携带 message_id 与风险字段
+      5. {"type": "title_update", ...}      首轮对话的主题
+
+    为什么 risk 要单独成事件：旧实现把它塞在 done 里，
+    前端收到 done 往往只处理"结束"，风险提示就被丢掉了。
     """
 
-    # 验证对话是否存在
+    # 用请求级会话做一次校验，随后不再在流式过程中持有它
     dialogue = db.query(ChatDialogue).filter(
         and_(
             ChatDialogue.id == dialogue_id,
@@ -370,131 +382,145 @@ async def send_message_stream(
             detail="对话不存在或无权访问"
         )
 
+    dialogue_title_current = (dialogue.title or "").strip()
+
     async def generate():
+        stream_db = SessionLocal()
         try:
             from app.models.user import User as UserModel
 
-            # 获取用户隐私设置
-            user = db.query(UserModel).filter(UserModel.id == user_id).first()
-            should_save = user.save_chat_history if user else True
+            user = stream_db.query(UserModel).filter(UserModel.id == user_id).first()
+            should_save = bool(user.save_chat_history) if user else True
 
-            # 保存用户消息
-            user_message = ChatMessage(
-                dialogue_id=dialogue_id,
-                role="user",
-                content=message_data.content
-            )
-            if should_save:
-                db.add(user_message)
-                db.flush()
-
-            # 获取历史消息
-            history_messages = db.query(ChatMessage).filter(
+            # 先取历史，此时还没写入本条，避免当前消息被重复拼进上下文
+            history_messages = stream_db.query(ChatMessage).filter(
                 and_(
                     ChatMessage.dialogue_id == dialogue_id,
                     ChatMessage.is_deleted == False
                 )
             ).order_by(desc(ChatMessage.created_at)).limit(10).all()
 
-            # RAG：检索相似心理咨询案例
-            similar_cases = rag_service.search_similar(message_data.content)
-            kb_context = ""
-            if similar_cases:
-                parts = []
-                for case in similar_cases:
-                    parts.append(
-                        f"相似问题：{case['input']}\n参考回答：{case['output']}"
+            # 写入用户消息，拿到 id 供风险事件关联
+            user_message_id = None
+            if should_save:
+                user_message = ChatMessage(
+                    dialogue_id=dialogue_id,
+                    role="user",
+                    content=message_data.content
+                )
+                stream_db.add(user_message)
+                stream_db.flush()
+                user_message_id = user_message.id
+                stream_db.commit()
+
+            # ── 风险判定：先落库、再下发 ────────────────────────────
+            verdict = detect_risk(message_data.content)
+            if verdict.is_risk:
+                try:
+                    risk_service.record_risk(
+                        stream_db, user_id, dialogue_id, user_message_id, verdict
                     )
+                    stream_db.commit()
+                except Exception as risk_error:
+                    stream_db.rollback()
+                    print(f"[风险事件落库失败] {risk_error}")
+
+                yield f"data: {json.dumps({'type': 'risk', 'risk': verdict.to_payload()}, ensure_ascii=False)}\n\n"
+
+            # ── RAG 检索，并保留结构化来源 ──────────────────────────
+            sources = rag_service.search_with_sources(message_data.content)
+            kb_context = ""
+            if sources:
+                parts = [
+                    f"相似问题：{s['input']}\n参考回答：{s['output']}" for s in sources
+                ]
                 kb_context = (
                     "以下是从心理咨询知识库中检索到的相似案例，供你参考。"
                     "请你**千万不要照搬参考回答中的生硬语气**，而是用温暖、共情、自然的口吻，"
-                    "把这些知识转化为对用户的贴心回应，让用户感受到你真心在乎ta的感受：\n\n"
+                    "把这些知识转化为对用户的贴心回应：\n\n"
                     + "\n\n---\n\n".join(parts)
                 )
 
-            # ── 危机检测 ────────────────────────────────────────────────
-            from app.services.crisis_service import detect_crisis, build_crisis_system_instruction
-            crisis_level, crisis_keywords = detect_crisis(message_data.content)
-            is_crisis = crisis_level > 0
-
-            # 构建消息列表
-            base_system_prompt = ai_service.generate_system_prompt(kb_context)
-            if is_crisis:
-                base_system_prompt += build_crisis_system_instruction(is_crisis)
-
-            messages_list = [
-                {"role": "system", "content": base_system_prompt}
+            source_payload = [
+                {
+                    "vector_id": s.get("vector_id"),
+                    "title": s.get("title"),
+                    "snippet": s.get("snippet"),
+                    "score": s.get("score"),
+                }
+                for s in sources
             ]
+            yield f"data: {json.dumps({'type': 'sources', 'sources': source_payload}, ensure_ascii=False)}\n\n"
+
+            # ── 组装 prompt ──────────────────────────────────────
+            base_system_prompt = ai_service.generate_system_prompt(kb_context)
+            if not sources:
+                base_system_prompt += (
+                    "\n\n【重要】知识库里没有检索到直接相关的条目。"
+                    "请明确说明这一点，把内容定位为一般性建议，不要编造依据。"
+                )
+            if verdict.is_risk:
+                base_system_prompt += build_crisis_system_instruction(True, verdict.level)
+
+            messages_list = [{"role": "system", "content": base_system_prompt}]
             for msg in reversed(history_messages):
-                messages_list.append({
-                    "role": msg.role,
-                    "content": msg.content
-                })
+                messages_list.append({"role": msg.role, "content": msg.content})
+            messages_list.append({"role": "user", "content": message_data.content})
 
-            # 添加当前用户消息
-            messages_list.append({
-                "role": "user",
-                "content": message_data.content
-            })
-
-            # 调用AI服务获取流式回复
+            # ── 流式生成 ────────────────────────────────────────
             full_response = ""
-
             try:
-                # 直接使用模型流式输出，降低首字和整体延迟
                 for content_chunk in ai_service.chat_stream(messages=messages_list):
                     full_response += content_chunk
-                    chunk = f"data: {json.dumps({'content': content_chunk, 'done': False}, ensure_ascii=False)}\n\n"
-                    yield chunk
-
+                    yield f"data: {json.dumps({'content': content_chunk, 'done': False}, ensure_ascii=False)}\n\n"
             except Exception as ai_error:
                 print(f"AI调用失败: {ai_error}")
                 full_response = f"抱歉，我遇到了一些问题：{str(ai_error)}。请稍后再试。"
-                chunk = f"data: {json.dumps({'content': full_response, 'done': False}, ensure_ascii=False)}\n\n"
-                yield chunk
+                yield f"data: {json.dumps({'content': full_response, 'done': False}, ensure_ascii=False)}\n\n"
 
-            # 保存AI回复（先 add+flush，保证消息计数准确）
-            ai_message = ChatMessage(
-                dialogue_id=dialogue_id,
-                role="assistant",
-                content=full_response
-            )
+            # ── 保存回复与引用溯源 ────────────────────────────────
+            ai_message_id = None
+            needs_title = False
             if should_save:
-                db.add(ai_message)
-                db.flush()  # flush 后 user+ai 均可见，计数为 2
-                message_count = db.query(ChatMessage).filter(
+                ai_message = ChatMessage(
+                    dialogue_id=dialogue_id,
+                    role="assistant",
+                    content=full_response
+                )
+                stream_db.add(ai_message)
+                stream_db.flush()
+                ai_message_id = ai_message.id
+
+                if source_payload:
+                    try:
+                        risk_service.save_sources(stream_db, ai_message_id, source_payload)
+                    except Exception as source_error:
+                        print(f"[引用溯源落库失败] {source_error}")
+
+                message_count = stream_db.query(ChatMessage).filter(
                     and_(
                         ChatMessage.dialogue_id == dialogue_id,
                         ChatMessage.is_deleted == False
                     )
                 ).count()
-                needs_title = chat_service._should_generate_dialogue_title(dialogue, message_count)
-                db.commit()
-            else:
-                needs_title = False
-                db.commit()
+                needs_title = (
+                    message_count == 2
+                    and dialogue_title_current in {"", "新对话", "未命名对话", "新聊天"}
+                )
 
-            # 立即发送完成信号，不等标题生成
-            msg_id = ai_message.id if should_save else None
-            done_data = {
-                'content': '',
-                'done': True,
-                'message_id': msg_id,
-                'crisis_detected': is_crisis,
-                'crisis_level': crisis_level,
-                'crisis_keywords': crisis_keywords if is_crisis else []
-            }
-            yield f"data: {json.dumps(done_data, ensure_ascii=False)}\n\n"
+            stream_db.commit()
 
-            # 后台异步生成标题，结束后推送 title_update 事件
+            yield f"data: {json.dumps({'content': '', 'done': True, 'message_id': ai_message_id, 'crisis_detected': verdict.is_risk, 'crisis_level': verdict.level, 'crisis_keywords': verdict.keywords, 'source_count': len(source_payload)}, ensure_ascii=False)}\n\n"
+
+            # 后台异步生成标题，结束后推送 title_update
             if needs_title:
                 _user_content = message_data.content
                 _ai_content = full_response
                 _dial_id = dialogue_id
 
                 def _bg_gen_title():
-                    from app.core.database import SessionLocal
-                    _db = SessionLocal()
+                    from app.core.database import SessionLocal as _SessionLocal
+                    _db = _SessionLocal()
                     try:
                         title = chat_service._generate_dialogue_topic(_user_content, _ai_content)
                         d = _db.query(ChatDialogue).filter(ChatDialogue.id == _dial_id).first()
@@ -515,11 +541,13 @@ async def send_message_stream(
                     pass
 
         except Exception as e:
-            db.rollback()
+            stream_db.rollback()
             print(f"流式生成失败: {e}")
             import traceback
             traceback.print_exc()
             yield f"data: {json.dumps({'error': str(e), 'done': True}, ensure_ascii=False)}\n\n"
+        finally:
+            stream_db.close()
 
     return StreamingResponse(
         generate(),

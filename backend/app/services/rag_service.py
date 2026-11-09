@@ -69,16 +69,16 @@ class RAGService:
                     )
         return self._collection
 
-    def search_similar(self, query: str, n_results: int = None) -> List[Dict]:
+    def search_with_sources(self, query: str, n_results: int = None) -> List[Dict]:
         """
-        检索与用户输入语义相似的心理咨询案例
+        检索相似案例，并返回可用于"引用出处"的结构化信息。
 
-        Args:
-            query: 用户当前消息
-            n_results: 返回结果数量，默认使用配置值
+        与 search_similar 的区别：额外返回 vector_id、score（换算到 0~1 的
+        相似度）、title 与 snippet，供前端展示"参考来源"并落库溯源。
 
         Returns:
-            List[Dict]: 相似案例列表，每项包含 input、output、distance
+            List[Dict]: 每项包含 vector_id / input / output / distance / score
+                        / title / snippet
         """
         if n_results is None:
             n_results = settings.RAG_TOP_K
@@ -95,30 +95,56 @@ class RAGService:
                 n_results=actual_n
             )
 
-            similar_cases = []
+            sources = []
+            ids = results.get("ids", [[]])[0]
             for i, doc in enumerate(results["documents"][0]):
                 distance = results["distances"][0][i]
                 if distance > settings.RAG_DISTANCE_THRESHOLD:
                     continue
-                metadata = results["metadatas"][0][i]
-                similar_cases.append({
+                metadata = results["metadatas"][0][i] or {}
+                # L2 平方距离（归一化向量）换算余弦相似度：d = 2 - 2cos
+                score = max(0.0, min(1.0, 1 - distance / 2))
+                sources.append({
+                    "vector_id": ids[i] if i < len(ids) else None,
                     "input": doc,
                     "output": metadata.get("output", ""),
-                    "distance": round(distance, 4)
+                    "distance": round(distance, 4),
+                    "score": round(score, 4),
+                    "title": (doc or "").strip()[:24] or "心理知识片段",
+                    "snippet": (metadata.get("output") or doc or "").strip()[:120],
                 })
 
-            if similar_cases:
-                print(f"[RAG] 查询: 「{query[:30]}」 → 命中 {len(similar_cases)} 条")
-                for idx, c in enumerate(similar_cases, 1):
-                    print(f"  [{idx}] 距离={c['distance']}  {c['input'][:40]}...")
+            if sources:
+                print(f"[RAG] 查询「{query[:30]}」→ 命中 {len(sources)} 条")
             else:
-                print(f"[RAG] 查询: 「{query[:30]}」 → 无命中（距离均超过阈值 {settings.RAG_DISTANCE_THRESHOLD}）")
+                print(f"[RAG] 查询「{query[:30]}」→ 无命中（阈值 {settings.RAG_DISTANCE_THRESHOLD}）")
 
-            return similar_cases
+            return sources
 
         except Exception as e:
             logger.warning(f"RAG 检索失败，跳过增强: {e}")
             return []
+
+    def search_similar(self, query: str, n_results: int = None) -> List[Dict]:
+        """
+        检索与用户输入语义相似的心理咨询案例（兼容旧调用）
+
+        Args:
+            query: 用户当前消息
+            n_results: 返回结果数量，默认使用配置值
+
+        Returns:
+            List[Dict]: 相似案例列表，每项包含 input、output、distance
+        """
+        sources = self.search_with_sources(query, n_results)
+        return [
+            {
+                "input": s["input"],
+                "output": s["output"],
+                "distance": s["distance"],
+            }
+            for s in sources
+        ]
 
     def get_collection_count(self) -> int:
         """获取知识库中的记录数量"""

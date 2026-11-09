@@ -14,7 +14,7 @@ from app.schemas.chat import (
 from app.services.ai_service import ai_service
 from app.services.rag_service import rag_service
 from app.services.crisis_service import (
-    detect_crisis,
+    detect_risk,
     build_crisis_system_instruction,
     get_crisis_level_label,
 )
@@ -363,15 +363,16 @@ class ChatService:
                 + "\n\n---\n\n".join(parts)
             )
 
-        # ── 危机检测 ────────────────────────────────────────────────────
-        crisis_level, crisis_keywords = detect_crisis(message_data.content)
-        is_crisis = crisis_level > 0
+        # ── 风险判定 ────────────────────────────────────────────────────
+        verdict = detect_risk(message_data.content)
+        crisis_level = verdict.level
+        crisis_keywords = verdict.keywords
+        is_crisis = verdict.is_risk
 
         # 构建消息列表（按时间正序）
         base_system_prompt = ai_service.generate_system_prompt(kb_context)
         if is_crisis:
-            crisis_instruction = build_crisis_system_instruction(is_crisis)
-            base_system_prompt += crisis_instruction
+            base_system_prompt += build_crisis_system_instruction(True, verdict.level)
 
         messages_list = [
             {"role": "system", "content": base_system_prompt}

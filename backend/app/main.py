@@ -139,6 +139,10 @@ app.include_router(notification_router, prefix="/api")
 from app.api.admin import router as admin_router
 app.include_router(admin_router, prefix="/api")
 
+# AI 心理支持路由（E 线：引用溯源 / 答案反馈 / 风险工单）
+from app.api.ai_support import router as ai_support_router
+app.include_router(ai_support_router, prefix="/api")
+
 # 静态文件服务 - 用于访问上传的头像等文件
 uploads_dir = Path("uploads")
 uploads_dir.mkdir(exist_ok=True)

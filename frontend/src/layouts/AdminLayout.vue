@@ -63,6 +63,11 @@
           <template #title>对话管理</template>
         </el-menu-item>
 
+        <el-menu-item index="/admin/risks" @click="navigateTo('/admin/risks')">
+          <el-icon><WarningFilled /></el-icon>
+          <template #title>风险工单</template>
+        </el-menu-item>
+
         <el-menu-item index="/admin/article-editor" @click="navigateTo('/admin/article-editor')">
           <el-icon><Edit /></el-icon>
           <template #title>文章编辑</template>
@@ -125,7 +130,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   HomeFilled, User, UserFilled, Avatar, List, Document, Notebook,
-  ChatDotRound, Edit, Setting, Fold, Expand, SwitchButton
+  ChatDotRound, Edit, Setting, Fold, Expand, SwitchButton, WarningFilled
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
