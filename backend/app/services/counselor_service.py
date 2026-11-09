@@ -8,6 +8,8 @@ from datetime import datetime, timedelta, date
 import uuid
 import logging
 
+from fastapi import HTTPException, status
+
 logger = logging.getLogger(__name__)
 
 from app.models.counselor import Counselor, Appointment, ConsultationReview
@@ -18,6 +20,58 @@ from app.schemas.counselor import (
     MessageResponse, MessageListResponse, SendMessageRequest,
     HandleOrderRequest, AddNoteRequest, FileUploadResponse
 )
+
+
+# 占用咨询师时段的有效预约状态；cancelled / refunded / completed 均释放时段
+ACTIVE_APPOINTMENT_STATUSES = ('pending', 'confirmed', 'in_progress')
+# 预约默认时长（分钟），与 Appointment.duration 保持一致
+DEFAULT_APPOINTMENT_MINUTES = 60
+# 按开始时间预筛查询窗口时向前回溯的最大分钟数，覆盖任意单条预约的时长
+_MAX_APPOINTMENT_MINUTES = 24 * 60
+
+
+def _appointment_interval(start: datetime, duration) -> tuple:
+    """返回预约占用的半开区间 [start, end)。"""
+    minutes = duration if duration and duration > 0 else DEFAULT_APPOINTMENT_MINUTES
+    return start, start + timedelta(minutes=minutes)
+
+
+def _intervals_overlap(a_start, a_end, b_start, b_end) -> bool:
+    """半开区间重叠判断；首尾相接（a_end == b_start）不算冲突。"""
+    return a_start < b_end and b_start < a_end
+
+
+def _active_appointments_in_window(db: Session, counselor_id, window_start, window_end):
+    """按开始时间预筛可能与 [window_start, window_end) 重叠的有效预约。
+
+    只使用与数据库方言无关的范围过滤，精确的重叠判断在 _has_time_conflict 中完成，
+    避免依赖 MySQL 专有的时间函数（项目同时支持 SQLite 本地模式）。
+    """
+    return db.query(Appointment).filter(
+        Appointment.counselor_id == counselor_id,
+        Appointment.status.in_(ACTIVE_APPOINTMENT_STATUSES),
+        Appointment.appointment_date < window_end,
+        Appointment.appointment_date >= window_start - timedelta(minutes=_MAX_APPOINTMENT_MINUTES),
+    ).all()
+
+
+def _has_time_conflict(db: Session, counselor_id, start, duration,
+                       appointments=None, exclude_appointment_id=None) -> bool:
+    """判断 [start, start+duration) 是否与同一咨询师已有的有效预约重叠。
+
+    创建预约与可预约时段查询共用本函数，保证两处判定口径一致。
+    appointments 允许调用方一次性预取，避免 slots 逐时段重复查询。
+    """
+    new_start, new_end = _appointment_interval(start, duration)
+    if appointments is None:
+        appointments = _active_appointments_in_window(db, counselor_id, new_start, new_end)
+    for appt in appointments:
+        if exclude_appointment_id is not None and appt.id == exclude_appointment_id:
+            continue
+        old_start, old_end = _appointment_interval(appt.appointment_date, appt.duration)
+        if _intervals_overlap(new_start, new_end, old_start, old_end):
+            return True
+    return False
 
 
 class CounselorService:
@@ -140,18 +194,21 @@ class CounselorService:
         except ValueError:
             raise ValueError("日期格式错误")
 
+        # 一次性取出可能影响当天时段的有效预约，与创建预约共用区间冲突判定
+        day_start = datetime.combine(appt_date, datetime.min.time())
+        active_appointments = _active_appointments_in_window(
+            db, counselor_id, day_start, day_start + timedelta(days=1))
+
         # 定义时段（09:00-18:00，每小时一个时段）
         time_slots = []
         for hour in range(9, 19):
             slot_time = f"{hour:02d}:00-{hour+1:02d}:00"
-            slot_start = datetime.combine(appt_date, datetime.min.time()).replace(hour=hour)
+            slot_start = day_start.replace(hour=hour)
 
-            # 检查该时段是否已被预约
-            existing_appointment = db.query(Appointment).filter(
-                Appointment.counselor_id == counselor_id,
-                Appointment.appointment_date == slot_start,
-                Appointment.status.in_(['pending', 'confirmed', 'in_progress'])
-            ).first()
+            # 检查该时段是否与已有预约的 [start, start+duration) 重叠
+            occupied = _has_time_conflict(
+                db, counselor_id, slot_start, DEFAULT_APPOINTMENT_MINUTES,
+                appointments=active_appointments)
 
             # 获取该时段价格
             price = None
@@ -162,7 +219,7 @@ class CounselorService:
 
             time_slots.append(TimeSlot(
                 time=slot_time,
-                available=existing_appointment is None,
+                available=not occupied,
                 price=price
             ))
 
@@ -547,32 +604,34 @@ class AppointmentService:
         appointment_data: AppointmentCreate
     ) -> AppointmentResponse:
         """创建预约"""
-        # 验证咨询师
+        # 验证咨询师。在同一事务内锁定该咨询师行，串行化同一咨询师的并发创建，
+        # 防止两个请求同时通过时段校验后各自插入（多 worker / 多线程部署）。
+        # SQLite 不支持 FOR UPDATE，SQLAlchemy 会自动忽略，本地模式不受影响。
         counselor = db.query(Counselor).filter(
             Counselor.id == appointment_data.counselor_id,
             Counselor.is_deleted == False,
             Counselor.status == 'active'
-        ).first()
+        ).with_for_update().first()
         if not counselor:
             raise ValueError("咨询师不存在")
 
-        # 解析预约时间
+        # 解析预约时间。保持原项目使用的无时区本地时间格式，
+        # 带时区偏移的输入一律返回 400，避免 aware/naive 比较触发 500。
         try:
             appt_datetime = datetime.fromisoformat(appointment_data.appointment_date.replace('Z', '+00:00'))
-        except ValueError:
+        except (ValueError, TypeError):
+            raise ValueError("日期时间格式错误")
+        if appt_datetime.tzinfo is not None:
             raise ValueError("日期时间格式错误")
 
         # 检查预约时间不能是过去
         if appt_datetime < datetime.now():
             raise ValueError("预约时间不能是过去的时间")
 
-        # 检查该时段是否已被预约
-        existing = db.query(Appointment).filter(
-            Appointment.counselor_id == appointment_data.counselor_id,
-            Appointment.appointment_date == appt_datetime,
-            Appointment.status.in_(['pending', 'confirmed', 'in_progress'])
-        ).first()
-        if existing:
+        # 检查预约区间 [start, start+duration) 是否与已有有效预约重叠
+        # 与 /counselor/{id}/slots 共用 _has_time_conflict，保证两处判定口径一致
+        if _has_time_conflict(db, appointment_data.counselor_id,
+                              appt_datetime, DEFAULT_APPOINTMENT_MINUTES):
             raise ValueError("该时段已被预约")
 
         # 确定价格
@@ -598,7 +657,7 @@ class AppointmentService:
             appointment_no=appointment_no,
             consultation_type=appointment_data.consultation_type,
             appointment_date=appt_datetime,
-            duration=60,
+            duration=DEFAULT_APPOINTMENT_MINUTES,
             user_name=appointment_data.user_name,
             user_contact=appointment_data.user_contact,
             problem_description=appointment_data.problem_description,
@@ -616,13 +675,13 @@ class AppointmentService:
             from app.services.email_service import EmailService
             from app.models.user import User
 
+            # 格式化预约时间（用户与咨询师两类邮件共用，无条件定义）
+            appointment_date_str = appt_datetime.strftime("%Y-%m-%d")
+            appointment_time_str = appt_datetime.strftime("%H:%M")
+
             # 获取用户信息
             user = db.query(User).filter(User.id == user_id).first()
             if user and user.email:
-                # 格式化预约时间
-                appointment_date_str = appt_datetime.strftime("%Y-%m-%d")
-                appointment_time_str = appt_datetime.strftime("%H:%M")
-
                 # 发送给用户
                 try:
                     EmailService.send_appointment_confirmation_user(
@@ -637,11 +696,13 @@ class AppointmentService:
                 except Exception as e:
                     logger.error(f"发送用户预约邮件失败: {e}")
 
-            # 发送给咨询师（如果咨询师有邮箱）
-            if counselor.email:
+            # 发送给咨询师。counselors 表无 email 列，邮箱取自关联的 users 表
+            counselor_user = db.query(User).filter(User.id == counselor.user_id).first()
+            counselor_email = counselor_user.email if counselor_user else None
+            if counselor_email:
                 try:
                     EmailService.send_appointment_confirmation_counselor(
-                        email=counselor.email,
+                        email=counselor_email,
                         counselor_name=counselor.name,
                         user_name=appointment_data.user_name or (user.nickname if user else "用户"),
                         appointment_date=appointment_date_str,
@@ -755,10 +816,10 @@ class AppointmentService:
         page_size: int = 10
     ) -> Dict[str, Any]:
         """获取咨询师收到的预约列表"""
-        # 先获取咨询师ID（通过user_id）
+        # 先获取咨询师ID（通过user_id）。非咨询师直接拒绝访问
         counselor = db.query(Counselor).filter(Counselor.user_id == counselor_id).first()
         if not counselor:
-            raise ValueError("咨询师档案不存在")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="仅咨询师可访问")
 
         # 查询该咨询师的预约订单
         q = db.query(Appointment).filter(Appointment.counselor_id == counselor.id)
@@ -781,18 +842,17 @@ class AppointmentService:
         items = []
         for appt in appointments:
             appt_data = AppointmentResponse.model_validate(appt)
-            # 添加用户信息
-            if appt.user:
-                # 添加用户基本信息
-                from app.models.user import User
-                user_info = {
-                    "id": appt.user.id,
-                    "nickname": appt.user.nickname,
-                    "email": appt.user.email,
-                    "phone": appt.user.phone
+            # 添加用户信息。显式查询 users 表，不依赖 Appointment.user 关系
+            # （模型未定义该关系，直接访问会抛 AttributeError 导致接口 500）
+            from app.models.user import User
+            user = db.query(User).filter(User.id == appt.user_id).first()
+            if user:
+                appt_data.user_info = {
+                    "id": user.id,
+                    "nickname": user.nickname,
+                    "email": user.email,
+                    "phone": user.phone
                 }
-                # 将用户信息附加到预约数据中
-                appt_data.user_info = user_info
             items.append(appt_data)
 
         return {
@@ -806,12 +866,13 @@ class AppointmentService:
     def cancel_appointment(db: Session, user_id: int, appointment_id: int, reason: Optional[str] = None) -> bool:
         """取消预约"""
         appointment = db.query(Appointment).filter(
-            Appointment.id == appointment_id,
-            Appointment.user_id == user_id
+            Appointment.id == appointment_id
         ).first()
 
         if not appointment:
             raise ValueError("预约不存在")
+        if appointment.user_id != user_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="无权操作此预约")
 
         if appointment.status in ['completed', 'cancelled', 'refunded']:
             raise ValueError(f"预约状态为{appointment.status}，无法取消")
@@ -846,11 +907,17 @@ class AppointmentService:
                 except Exception as e:
                     logger.error(f"发送用户取消邮件失败: {e}")
 
-            # 通知咨询师
-            if appointment.counselor and appointment.counselor.email:
+            # 通知咨询师。邮箱取自关联的 users 表
+            counselor_email = None
+            if appointment.counselor:
+                counselor_user = db.query(User).filter(
+                    User.id == appointment.counselor.user_id
+                ).first()
+                counselor_email = counselor_user.email if counselor_user else None
+            if counselor_email:
                 try:
                     EmailService.send_appointment_cancelled(
-                        email=appointment.counselor.email,
+                        email=counselor_email,
                         nickname=appointment.counselor.name,
                         appointment_date=appointment_date_str,
                         appointment_time=appointment_time_str,
@@ -892,12 +959,13 @@ class AppointmentService:
         """提交评价"""
         # 验证预约
         appointment = db.query(Appointment).filter(
-            Appointment.id == appointment_id,
-            Appointment.user_id == user_id
+            Appointment.id == appointment_id
         ).first()
 
         if not appointment:
             raise ValueError("预约不存在")
+        if appointment.user_id != user_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="无权操作此预约")
 
         if appointment.status != 'completed':
             raise ValueError("只能评价已完成的咨询")
@@ -921,6 +989,9 @@ class AppointmentService:
         )
 
         db.add(review)
+        # 会话工厂为 autoflush=False，必须先 flush 把新评价写入当前事务，
+        # 否则下方聚合查询统计不到本次评价，导致 rating / review_count 滞后
+        db.flush()
 
         # 更新咨询师统计
         counselor = db.query(Counselor).filter(
