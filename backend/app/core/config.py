@@ -66,9 +66,12 @@ class Settings(BaseSettings):
     CHROMA_DB_PATH: str = "./chroma_db"
     CHROMA_COLLECTION_NAME: str = "psychology_kb"
     RAG_TOP_K: int = 3  # 检索返回的相似案例数量
-    # 距离阈值（L2 平方距离）。归一化向量下 d = 2 - 2cos，
-    # 取 1.2 约等于 cos >= 0.4，低于此相关度的案例不再注入 prompt。
-    # 旧值 3.0 相当于 cos >= -0.5，等于不过滤。
+    # 距离度量。cosine 时 distance = 1 - 相似度，阈值语义最直观；
+    # l2 时 distance 为平方欧氏距离，需按归一化假设换算。
+    RAG_METRIC: str = "cosine"
+    # 相似度下限（0~1）。低于此值的案例不再注入 prompt。
+    RAG_MIN_SIMILARITY: float = 0.45
+    # 兼容旧配置：当 RAG_METRIC=l2 时作为距离阈值使用
     RAG_DISTANCE_THRESHOLD: float = 1.2
 
     # ── AI 心理支持（E 线）──

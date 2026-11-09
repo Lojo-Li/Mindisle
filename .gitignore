@@ -98,3 +98,7 @@ docs/
 
 # 本地调试数据库
 /backend/soulstation_dev.db
+# 本地向量库与开发数据（重建脚本生成）
+backend/chroma_db_local/
+backend/chroma_db_probe/
+backend/soulstation.db
