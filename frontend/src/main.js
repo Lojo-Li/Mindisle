@@ -10,6 +10,7 @@ import router from './router'
 
 // 导入全局样式
 import '@/styles/common.scss'
+import '@/styles/ai-support.css'
 ['token', 'userInfo', 'userRole', 'adminToken', 'adminInfo'].forEach(key => {
   localStorage.removeItem(key)
 })
