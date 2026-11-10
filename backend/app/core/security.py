@@ -55,12 +55,16 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 
 
 def decode_access_token(token: str) -> Optional[dict]:
-    """解码访问令牌"""
-    try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        return payload
-    except JWTError:
-        return None
+    """解码访问令牌（全站统一入口）。
+
+    B/C/D/E 各模块均调用本函数，因此这里统一委托给 A 线的 auth_guard：
+    除签名/有效期校验外，额外校验登出黑名单，使已登出的令牌在所有
+    业务线都立即失效。返回契约保持 ``None`` 表示无效，各模块原有 401
+    分支无需任何改动。
+    """
+    from app.core.auth_guard import decode_payload
+
+    return decode_payload(token)
 
 
 def get_current_user(
