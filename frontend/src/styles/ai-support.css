@@ -208,3 +208,39 @@
   .mi-portal .src-toggle{font-size:12px;padding:5px 12px}
   .mi-portal .src-item{font-size:12px;line-height:1.7}
 }
+
+/* ---------- 新建 / 切换对话 ----------
+   之前只有左侧「最近对话」列表，没有任何新建入口；
+   窄屏下列表还被隐藏，用户想重新开一段就完全找不到地方。 */
+.mi-portal .sess-head{display:flex;align-items:center;justify-content:space-between;
+  gap:8px;margin-bottom:8px}
+.mi-portal .sess-new{font-size:11.5px;padding:4px 9px;border-radius:9px;
+  border:1px solid var(--line);background:var(--surface);color:var(--sea-deep);
+  cursor:pointer;font-family:inherit;transition:.2s var(--ease);white-space:nowrap}
+.mi-portal .sess-new:hover{background:var(--sea-soft);border-color:#C6DAD6}
+
+/* 右下角的面板：桌面和窄屏都能用，窄屏下是唯一的会话入口 */
+.mi-portal .chat{position:relative}
+.mi-portal .sess-panel{position:absolute;top:58px;right:12px;z-index:40;width:264px;
+  max-height:62%;overflow:auto;background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;box-shadow:0 12px 32px rgba(30,50,48,.14);padding:8px;
+  animation:srcIn .18s var(--ease)}
+.mi-portal .sp-head{display:flex;align-items:center;justify-content:space-between;
+  padding:4px 6px 8px;border-bottom:1px solid var(--line-2)}
+.mi-portal .sp-head b{font-size:11.5px;color:var(--ink-3);font-weight:560;letter-spacing:.3px}
+.mi-portal .sp-head button{font-size:11.5px;padding:3px 9px;border-radius:8px;
+  border:1px solid var(--line);background:var(--surface);color:var(--sea-deep);
+  cursor:pointer;font-family:inherit;transition:.2s var(--ease)}
+.mi-portal .sp-head button:hover{background:var(--sea-soft);border-color:#C6DAD6}
+.mi-portal .sp-list{margin-top:6px;display:flex;flex-direction:column;gap:2px}
+.mi-portal .sp-item{display:flex;flex-direction:column;gap:2px;text-align:left;
+  padding:8px 9px;border-radius:9px;border:none;background:transparent;
+  cursor:pointer;font-family:inherit;transition:.16s var(--ease)}
+.mi-portal .sp-item:hover{background:var(--surface-2)}
+.mi-portal .sp-item.active{background:var(--sea-soft)}
+.mi-portal .sp-item b{font-size:12.5px;font-weight:560;color:var(--ink);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mi-portal .sp-item span{font-size:11px;color:var(--ink-3);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mi-portal .sp-empty{font-size:11.5px;color:var(--ink-3);text-align:center;padding:10px 0;margin:0}
+.mi-portal .icon-btn.on{background:var(--sea-soft);border-color:#C6DAD6;color:var(--sea-deep)}

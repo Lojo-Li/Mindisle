@@ -11,7 +11,10 @@
 
       <div class="lamp-shell">
         <div class="sess-list" data-list="sessions">
-          <div class="sess-label">最近对话</div>
+          <div class="sess-head">
+            <div class="sess-label">最近对话</div>
+            <button class="sess-new" type="button" @click="newChat" title="开启一段新的对话">＋ 新建</button>
+          </div>
           <div
             v-for="s in sessions"
             :key="s.id"
@@ -34,9 +37,27 @@
               <h4>屿灯</h4>
               <span><i></i>{{ statusText }}</span>
             </div>
-            <button class="icon-btn" style="margin-left:auto" title="更多">
+            <button class="icon-btn" style="margin-left:auto" title="对话列表"
+                    :class="{ on: showSessPanel }" @click="showSessPanel = !showSessPanel">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
             </button>
+          </div>
+
+          <!-- 对话切换面板：窄屏下左侧列表被隐藏，这里是唯一的会话入口 -->
+          <div class="sess-panel" v-if="showSessPanel">
+            <div class="sp-head">
+              <b>最近对话</b>
+              <button type="button" @click="newChat">＋ 新建</button>
+            </div>
+            <div class="sp-list">
+              <button v-for="s in sessions" :key="s.id" type="button"
+                      class="sp-item" :class="{ active: s.id === activeId }"
+                      @click="pickSession(s.id)">
+                <b>{{ s.title || '新的对话' }}</b>
+                <span>{{ s.last_message || fmtDate(s.created_at) }}</span>
+              </button>
+              <p class="sp-empty" v-if="!sessions.length">还没有对话</p>
+            </div>
           </div>
 
           <!-- 风险提示：L2 常驻提示卡 / L3 强调卡
@@ -342,6 +363,7 @@ const showHelps = ref(false)      // 自助动作是否展开
 const ackedLevel = ref(0)         // 本轮消息里用户已确认过的风险等级
 const userInitial = ref('我')
 const sending = ref(false)
+const showSessPanel = ref(false)   // 对话切换面板
 
 const statusText = computed(() => (sending.value ? '正在回应…' : '在线 · 正在听'))
 
@@ -370,6 +392,7 @@ onMounted(async () => {
 
 async function open(id) {
   activeId.value = id
+  showSessPanel.value = false
   loading.value = true
   messages.value = []
   risk.value = null
@@ -397,6 +420,37 @@ async function open(id) {
   } finally {
     loading.value = false
   }
+}
+
+/* ---------------- 新建 / 切换对话 ---------------- */
+async function newChat() {
+  showSessPanel.value = false
+  // 当前这段对话本来就是空的，直接复用，避免连点几次堆出一堆空会话
+  if (activeId.value && messages.value.length === 0) {
+    focusInput()
+    return
+  }
+  try {
+    const c = pickData(await createChat({ title: '新的对话' }))
+    sessions.value.unshift({
+      id: c.id,
+      title: c.title || '新的对话',
+      created_at: c.created_at
+    })
+    await open(c.id)
+    focusInput()
+  } catch (e) {
+    toast('新建对话失败，请稍后再试')
+  }
+}
+
+function pickSession(id) {
+  showSessPanel.value = false
+  if (id !== activeId.value) open(id)
+}
+
+function focusInput() {
+  nextTick(() => rootEl.value?.querySelector('#chatInput')?.focus())
 }
 
 /* ---------------- 发送 ---------------- */
@@ -555,7 +609,16 @@ function applyContextFromQuery() {
 /* ---------------- 事件 ---------------- */
 function onClick(e) {
   const g = e.target.closest('[data-go]')
-  if (g) { go(g.getAttribute('data-go'), router) }
+  if (g) {
+    go(g.getAttribute('data-go'), router)
+    return
+  }
+  // 点面板以外的地方收起，避免它一直挡着对话
+  if (showSessPanel.value &&
+      !e.target.closest('.sess-panel') &&
+      !e.target.closest('.chat-head .icon-btn')) {
+    showSessPanel.value = false
+  }
 }
 
 function scrollBottom() {
