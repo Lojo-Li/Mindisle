@@ -84,6 +84,9 @@ const MyAppointmentsView = () => import('@/views/mindisle/views/MyAppointmentsVi
 const RecordsView = () => import('@/views/mindisle/views/RecordsView.vue')
 const TrendView = () => import('@/views/mindisle/views/TrendView.vue')
 const CounselorOverview = () => import('@/views/mindisle/views/CounselorOverview.vue')
+const CounselorScheduleView = () => import('@/views/mindisle/views/CounselorScheduleView.vue')
+const CounselorSessionsView = () => import('@/views/mindisle/views/CounselorSessionsView.vue')
+const CounselorProfileView = () => import('@/views/mindisle/views/CounselorProfileView.vue')
 
 const routes = [
   {
@@ -244,7 +247,11 @@ const routes = [
     props: { role: 'counselor' },
     meta: { title: '咨询师工作台 - 心屿 Mindisle', requiresAuth: true, requiresCounselor: true, hideHeader: true, crumb: '咨询师工作台' },
     children: [
-      { path: '', name: 'CounselorOverview', component: CounselorOverview, meta: { title: '咨询师工作台 - 心屿 Mindisle', crumb: '咨询师工作台' } }
+      { path: '', name: 'CounselorOverview', component: CounselorOverview, meta: { title: '咨询师工作台 - 心屿 Mindisle', crumb: '咨询师工作台' } },
+      { path: 'schedule', name: 'CounselorSchedule', component: CounselorScheduleView, meta: { title: '时段管理 - 心屿 Mindisle', crumb: '时段管理' } },
+      { path: 'orders', name: 'CounselorOrderList', component: CounselorSessionsView, props: { mode: 'orders' }, meta: { title: '预约订单 - 心屿 Mindisle', crumb: '预约订单' } },
+      { path: 'sessions', name: 'CounselorSessions', component: CounselorSessionsView, props: { mode: 'sessions' }, meta: { title: '咨询会话 - 心屿 Mindisle', crumb: '咨询会话' } },
+      { path: 'profile', name: 'CounselorProfile', component: CounselorProfileView, meta: { title: '个人中心 - 心屿 Mindisle', crumb: '个人中心' } }
     ]
   },
   {

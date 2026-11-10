@@ -134,10 +134,10 @@ const MENUS = {
   ],
   counselor: [
     { label: '咨询师工作台', text: '概览', short: '概览', path: '/counselor/dashboard', icon: ICONS.home },
-    { text: '时段管理', short: '时段', path: '/counselor/schedule', icon: ICONS.booking },
-    { text: '预约订单', short: '订单', path: '/consultation/counselor/orders', icon: ICONS.booking },
-    { text: '咨询会话', short: '会话', path: '/chat', icon: ICONS.lamp },
-    { label: '我的', text: '个人中心', short: '我的', path: '/profile', icon: ICONS.records }
+    { text: '时段管理', short: '时段', path: '/counselor/dashboard/schedule', icon: ICONS.booking },
+    { text: '预约订单', short: '订单', path: '/counselor/dashboard/orders', icon: ICONS.booking },
+    { text: '咨询会话', short: '会话', path: '/counselor/dashboard/sessions', icon: ICONS.lamp },
+    { label: '我的', text: '个人中心', short: '我的', path: '/counselor/dashboard/profile', icon: ICONS.records }
   ]
 }
 
@@ -178,8 +178,16 @@ function toggleTheme() {
   if (host) host.setAttribute('data-theme', theme.value)
 }
 
+// 当前激活的菜单：取与 route.path 匹配的「最长路径」，
+// 否则父级（如 /counselor/dashboard）会因为 startsWith 命中子路由而一直高亮
+const activePath = computed(() => {
+  const paths = (MENUS[props.role] || MENUS.user).map(m => m.path)
+  const hits = paths.filter(p => route.path === p || route.path.startsWith(p + '/'))
+  return hits.sort((a, b) => b.length - a.length)[0] || ''
+})
+
 function isActive(item) {
-  return route.path === item.path || route.path.startsWith(item.path + '/')
+  return item.path === activePath.value
 }
 function navigate(item) { router.push(item.path) }
 function doSearch(e) { router.push({ path: '/knowledge', query: { q: e.target.value } }) }
