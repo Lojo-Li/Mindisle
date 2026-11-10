@@ -2,6 +2,20 @@
 import request from './index'
 
 /**
+ * 管理员登录
+ * 注意：管理员走独立接口 /admin/login，与用户端 /auth/login 的令牌类型不同，
+ * 之前登录页只调用了用户登录接口，导致「管理员」身份永远登不进去。
+ * @param {Object} data - { username, password }
+ */
+export function adminLogin(data) {
+  return request({
+    url: '/admin/login',
+    method: 'post',
+    data
+  })
+}
+
+/**
  * 获取仪表盘统计数据
  */
 export function getDashboardStats() {
@@ -192,7 +206,11 @@ export function getAdminTestList(params) {
   return request({
     url: '/admin/tests',
     method: 'get',
-    params
+    params: {
+      keyword: params && params.keyword,
+      page: params && params.page,
+      page_size: (params && (params.page_size || params.pageSize)) || 20
+    }
   })
 }
 
@@ -218,9 +236,20 @@ export function getAdminTestDetail(id) {
  */
 export function createTest(data) {
   return request({
-    url: '/admin/test',
+    url: '/admin/tests',
     method: 'post',
     data
+  })
+}
+
+/**
+ * 上架 / 下架心理测试
+ */
+export function toggleTestStatus(id, isActive) {
+  return request({
+    url: `/admin/test/${id}/status`,
+    method: 'patch',
+    data: { is_active: isActive }
   })
 }
 

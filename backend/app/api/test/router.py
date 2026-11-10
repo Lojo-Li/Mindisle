@@ -18,10 +18,72 @@ from app.schemas.test import (
     TestTrendResponseSchema, ApiResponse, ComprehensiveAnalysisResponse
 )
 from app.services.test_service import TestService
+from app.services.interpretation_service import InterpretationService
 from app.services.ai_service import AIService
 from app.services.chat_service import chat_service
 
 router = APIRouter(prefix="/test", tags=["心理测试"])
+
+
+def _serialize_result(db: Session, result: TestResult) -> dict:
+    """统一的结果序列化。
+
+    除展示字段外，额外返回【评分追溯】与【结构化解释】所需信息：
+    answers（原始作答）、scoring_rules / result_rules（规则快照）、interpretation。
+    """
+    test = db.query(PsychologicalTest).filter(
+        PsychologicalTest.id == result.test_id
+    ).first()
+
+    try:
+        interpretation = InterpretationService.build(
+            test=test,
+            result_data={
+                "total_score": result.total_score,
+                "dimension_scores": result.dimension_scores,
+                "result_level": result.result_level,
+                "result_title": result.result_title,
+                "result_description": result.result_description,
+            },
+            answers=result.answers or {},
+        )
+    except Exception as exc:  # 解释失败不影响结果返回
+        import logging
+        logging.getLogger(__name__).warning(f"[结果解释] 生成失败 result_id={result.id}: {exc}")
+        interpretation = None
+
+    # 满分（题数 × 单题上限），前端画环与显示分母都依赖它
+    max_score = None
+    if test and test.total_questions:
+        max_score = test.total_questions * TestService._max_option_value(
+            test.option_type, test.scoring_rules
+        )
+
+    return {
+        "id": result.id,
+        "test_id": result.test_id,
+        "test_code": result.test_code,
+        "test_title": result.test_title,
+        "total_score": result.total_score,
+        "dimension_scores": result.dimension_scores,
+        "result_level": result.result_level,
+        "result_title": result.result_title,
+        "result_description": result.result_description,
+        "suggestions": result.suggestions,
+        "ai_suggestion": result.ai_suggestion,
+        "is_favorite": result.is_favorite,
+        "created_at": result.created_at.isoformat(),
+        # ---- 评分追溯 ----
+        "answers": result.answers or {},
+        "max_score": max_score,
+        "total_questions": test.total_questions if test else None,
+        "option_type": test.option_type if test else None,
+        "score_type": test.score_type if test else None,
+        "scoring_rules": test.scoring_rules if test else None,
+        "result_rules": test.result_rules if test else None,
+        # ---- 结果解释 ----
+        "interpretation": interpretation,
+    }
 
 
 @router.get("/list", response_model=ApiResponse)
@@ -66,6 +128,8 @@ async def get_test_list(
 @router.get("/history", response_model=ApiResponse)
 async def get_test_history(
     test_id: Optional[int] = Query(None, description="筛选特定测试"),
+    level: Optional[str] = Query(None, description="按结果等级筛选"),
+    favorite_only: bool = Query(False, description="只看收藏"),
     page: int = Query(1, ge=1, description="页码"),
     page_size: int = Query(10, ge=1, le=100, description="每页数量"),
     db: Session = Depends(get_db),
@@ -74,9 +138,12 @@ async def get_test_history(
     """
     获取用户测试历史
 
-    支持按测试ID筛选、分页查询
+    支持按测试ID、结果等级、收藏状态筛选，支持分页
     """
-    result = TestService.get_test_history(db, current_user.id, test_id, page, page_size)
+    result = TestService.get_test_history(
+        db, current_user.id, test_id, page, page_size,
+        level=level, favorite_only=favorite_only
+    )
 
     # 计算每项的 max_score
     def calc_max_score(item):
@@ -88,21 +155,23 @@ async def get_test_history(
             return total * 4
         return None
 
-    items_data = [
-        {
+    items_data = []
+    for item in result["items"]:
+        max_score = calc_max_score(item)
+        items_data.append({
             "id": item.id,
             "test_id": item.test_id,
             "test_code": item.test_code,
             "test_title": item.test_title,
             "total_score": item.total_score,
-            "max_score": calc_max_score(item),
+            "max_score": max_score,
+            "score_rate": round(item.total_score / max_score * 100)
+            if (max_score and item.total_score is not None) else None,
             "result_level": item.result_level,
             "result_title": item.result_title,
             "is_favorite": item.is_favorite,
             "created_at": item.created_at.isoformat()
-        }
-        for item in result["items"]
-    ]
+        })
 
     return ApiResponse(
         code=200,
@@ -198,7 +267,7 @@ async def save_progress(
 
 
 @router.post("/{test_id}/submit", response_model=ApiResponse)
-async def submit_test(
+def submit_test(
     test_id: int,
     request: SubmitTestRequest,
     db: Session = Depends(get_db),
@@ -208,9 +277,30 @@ async def submit_test(
     提交测试答案
 
     自动计算分数并生成结果解读
+
+    注意：这里刻意使用同步 def 而非 async def。
+    提交过程中会调用 AI 生成补充建议（同步阻塞调用），
+    若写在 async 接口里会占住事件循环，导致其他所有请求一起排队超时。
+    FastAPI 会把同步接口放到线程池执行，不阻塞其他请求。
     """
     if not current_user:
         raise HTTPException(status_code=401, detail="请先登录")
+
+    test = db.query(PsychologicalTest).filter(PsychologicalTest.id == test_id).first()
+    if not test:
+        raise HTTPException(status_code=404, detail="测试不存在")
+
+    # 不允许跳过题目直接提交：缺答会被按最低分静默计入，从而低估困扰程度。
+    # 这里显式拦住，让前端提示用户补齐，避免产生不可信的分数。
+    answered = {int(k) for k, v in (request.answers or {}).items() if int(v or 0) > 0}
+    missing = [q for q in range(1, (test.total_questions or 0) + 1) if q not in answered]
+    if missing:
+        preview = "、".join(str(q) for q in missing[:5])
+        more = f" 等 {len(missing)} 题" if len(missing) > 5 else " 题"
+        raise HTTPException(
+            status_code=400,
+            detail=f"还有题目未作答（第 {preview}{more}），请补齐后再提交"
+        )
 
     save_record = current_user.save_test_records if hasattr(current_user, 'save_test_records') else True
     result = TestService.submit_test(db, current_user.id, test_id, request, save_record=save_record)
@@ -221,21 +311,7 @@ async def submit_test(
     return ApiResponse(
         code=200,
         message="测试完成",
-        data={
-            "id": result.id,
-            "test_id": result.test_id,
-            "test_code": result.test_code,
-            "test_title": result.test_title,
-            "total_score": result.total_score,
-            "dimension_scores": result.dimension_scores,
-            "result_level": result.result_level,
-            "result_title": result.result_title,
-            "result_description": result.result_description,
-            "suggestions": result.suggestions,
-            "ai_suggestion": result.ai_suggestion,
-            "is_favorite": result.is_favorite,
-            "created_at": result.created_at.isoformat()
-        }
+        data=_serialize_result(db, result)
     )
 
 
@@ -259,21 +335,7 @@ async def get_test_result(
     return ApiResponse(
         code=200,
         message="成功",
-        data={
-            "id": result.id,
-            "test_id": result.test_id,
-            "test_code": result.test_code,
-            "test_title": result.test_title,
-            "total_score": result.total_score,
-            "dimension_scores": result.dimension_scores,
-            "result_level": result.result_level,
-            "result_title": result.result_title,
-            "result_description": result.result_description,
-            "suggestions": result.suggestions,
-            "ai_suggestion": result.ai_suggestion,
-            "is_favorite": result.is_favorite,
-            "created_at": result.created_at.isoformat()
-        }
+        data=_serialize_result(db, result)
     )
 
 
@@ -317,6 +379,15 @@ async def favorite_result(
 
     result = TestService.add_favorite(db, result_id, current_user.id)
 
+    if not result:
+        raise HTTPException(status_code=404, detail="结果不存在")
+
+    return ApiResponse(
+        code=200,
+        message="收藏成功",
+        data={"id": result.id, "is_favorite": True}
+    )
+
 
 @router.delete("/result/{result_id}/favorite", response_model=ApiResponse)
 async def unfavorite_result(
@@ -332,10 +403,13 @@ async def unfavorite_result(
 
     result = TestService.remove_favorite(db, result_id, current_user.id)
 
+    if not result:
+        raise HTTPException(status_code=404, detail="结果不存在")
+
     return ApiResponse(
         code=200,
-        message="成功",
-        data=result
+        message="已取消收藏",
+        data={"id": result.id, "is_favorite": False}
     )
 
 
@@ -385,14 +459,47 @@ async def get_progress(
             data=None
         )
 
+    # current_question 语义应为「第一道未作答的题」，而不是已答题号的最大值，
+    # 否则用户中途退出再进入会被定位到最后一题。
+    answered = {int(k) for k in (progress.answers or {}).keys()}
+    test = db.query(PsychologicalTest).filter(PsychologicalTest.id == test_id).first()
+    total = (test.total_questions if test else 0) or (max(answered) if answered else 0)
+    first_unanswered = next((q for q in range(1, total + 1) if q not in answered), None)
+
     return ApiResponse(
         code=200,
         message="成功",
         data={
             "answers": progress.answers,
-            "current_question": progress.current_question,
+            "current_question": first_unanswered or (max(answered) if answered else 1),
+            "answered_count": len(answered),
+            "total_questions": total or None,
             "updated_at": progress.updated_at.isoformat()
         }
+    )
+
+
+@router.delete("/{test_id}/progress", response_model=ApiResponse)
+async def clear_progress(
+    test_id: int,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    """
+    清除答题进度
+
+    供「再测一次」使用：必须先把上一次的作答清空，
+    否则进入答题页会自动恢复旧答案，用户看到的不是一份空白问卷。
+    """
+    if not current_user:
+        raise HTTPException(status_code=401, detail="请先登录")
+
+    deleted = TestService.clear_progress(db, current_user.id, test_id)
+
+    return ApiResponse(
+        code=200,
+        message="进度已清空",
+        data={"cleared": deleted}
     )
 
 

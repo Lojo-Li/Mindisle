@@ -91,7 +91,13 @@ request.interceptors.response.use(
           ElMessage.error(errorMessage)
       }
     } else if (error.request) {
-      ElMessage.error('网络连接失败，请检查网络')
+      // 区分「真的连不上」和「连上了但服务器太久没回」
+      const isTimeout = error.code === 'ECONNABORTED' || /timeout/i.test(error.message || '')
+      ElMessage.error(
+        isTimeout
+          ? '请求超时，服务器处理较慢，请稍后重试'
+          : '无法连接服务，请确认后端已启动'
+      )
     } else {
       ElMessage.error('请求配置错误')
     }
