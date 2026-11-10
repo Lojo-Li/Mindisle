@@ -4,9 +4,10 @@ AI 服务 - 基于豆包 API
 import os
 import time
 import httpx
-from typing import Iterator
+from typing import Iterator, Optional
 from openai import OpenAI
 from app.core.config import settings
+from app.services import llm_config
 
 
 # ---- 熔断状态 ----
@@ -41,21 +42,56 @@ class AIService:
     """AI 服务类"""
 
     def __init__(self):
-        """初始化 AI 客户端"""
-        # 创建httpx客户端，禁用SSL验证以避免Windows上的SSL错误
-        # 超时收紧：连接 8s、读 30s。原来 60s 会把请求挂很久。
-        http_client = httpx.Client(
+        """初始化 AI 客户端（配置可变，见 _ensure_client）"""
+        self.client: Optional[OpenAI] = None
+        self.model: str = ""
+        self._signature = None
+        self._http_client: Optional[httpx.Client] = None
+        self._ensure_client()
+
+    # ── 配置热加载 ────────────────────────────────────────────────
+    def _build_client(self, cfg: llm_config.LLMConfig) -> None:
+        """按给定配置重建客户端；旧的连接池顺手关掉，避免句柄泄漏。"""
+        try:
+            if self._http_client is not None:
+                self._http_client.close()
+        except Exception:
+            pass
+
+        # 超时收紧：连接 8s、读 30s。
+        self._http_client = httpx.Client(
             timeout=httpx.Timeout(30.0, connect=8.0),
             limits=httpx.Limits(max_keepalive_connections=50, max_connections=100),
             verify=settings.AI_VERIFY_SSL  # 默认校验证书，见 config.AI_VERIFY_SSL
         )
-
         self.client = OpenAI(
-            base_url=settings.LLM_ACTIVE_BASE_URL,
-            api_key=settings.LLM_ACTIVE_API_KEY,
-            http_client=http_client
+            base_url=cfg.base_url,
+            api_key=cfg.api_key,
+            http_client=self._http_client
         )
-        self.model = settings.LLM_ACTIVE_MODEL
+        self.model = cfg.model
+
+    def _ensure_client(self) -> llm_config.LLMConfig:
+        """每次调用前确认配置未变；变了就重建客户端并清掉熔断状态。
+
+        这样换 key 只需要改 llm.json（或环境变量后重启），不需要动代码，
+        也不会出现"换了 key 还被上一次的失败锁在熔断期里"的情况。
+        """
+        global _FAIL_STREAK, _OPEN_UNTIL
+
+        cfg = llm_config.load()
+        if self.client is not None and cfg.signature == self._signature:
+            return cfg
+
+        changed = self._signature is not None
+        self._build_client(cfg)
+        self._signature = cfg.signature
+
+        if changed:
+            _FAIL_STREAK = 0
+            _OPEN_UNTIL = 0.0
+            print(f"[AI] 配置已切换 → {cfg.source} / {cfg.model} / {cfg.masked_key}")
+        return cfg
 
     @staticmethod
     def circuit_open() -> bool:
@@ -84,6 +120,9 @@ class AIService:
             str: AI 的回复内容
         """
         global _FAIL_STREAK, _OPEN_UNTIL
+
+        # 先确认配置是否有变化（换 key 会顺带清掉熔断）
+        self._ensure_client()
 
         # 熔断中：不再发起网络请求，立刻返回错误。
         # 这样即使端点不可用，主流程（提交测评）也不会被拖住。
@@ -142,37 +181,45 @@ class AIService:
                 time.sleep(wait_time)
 
                 # 重新创建客户端（连接可能已损坏）
-                http_client = httpx.Client(
-                    timeout=httpx.Timeout(30.0, connect=8.0),
-                    limits=httpx.Limits(max_keepalive_connections=50, max_connections=100),
-                    verify=settings.AI_VERIFY_SSL
-                )
-                self.client = OpenAI(
-                    base_url=settings.LLM_ACTIVE_BASE_URL,
-                    api_key=settings.LLM_ACTIVE_API_KEY,
-                    http_client=http_client
-                )
+                self._build_client(llm_config.load())
 
     def chat_stream(
         self,
         messages: list,
         temperature: float = 0.7,
-        max_tokens: int = 2000
+        max_tokens: int = 2000,
+        max_retries: int = 2,
     ) -> Iterator[str]:
-        """发起流式聊天请求，逐块返回文本。"""
-        try:
-            stream_response = self.client.chat.completions.create(
-                model=self.model,
-                messages=messages,
-                stream=True,
-                temperature=temperature,
-                max_tokens=max_tokens,
-            )
-            for chunk in stream_response:
-                if chunk.choices and chunk.choices[0].delta.content:
-                    yield chunk.choices[0].delta.content
-        except Exception as e:
-            raise Exception(f"AI 服务流式调用失败: {str(e)}")
+        """发起流式聊天请求，逐块返回文本。
+
+        网关偶尔会直接掐断连接（Windows 上表现为 WinError 10054）。只要还没
+        往前端吐过任何字符，重试就是安全的；一旦已经吐过就不再重试，否则用户
+        会看到重复的半句话。
+        """
+        self._ensure_client()
+
+        for attempt in range(max_retries):
+            emitted = False
+            try:
+                stream_response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    stream=True,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                )
+                for chunk in stream_response:
+                    if chunk.choices and chunk.choices[0].delta.content:
+                        emitted = True
+                        yield chunk.choices[0].delta.content
+                return
+            except Exception as e:
+                if emitted or attempt == max_retries - 1:
+                    raise Exception(f"AI 服务流式调用失败: {str(e)}")
+                wait = attempt + 1
+                print(f"[AI] 流式中断，{wait}s 后重试（第 {attempt + 2} 次）：{e}")
+                time.sleep(wait)
+                self._build_client(llm_config.load())
 
     def generate_system_prompt(self, context: str = "") -> str:
         """

@@ -894,3 +894,48 @@ async def toggle_test_status_endpoint(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"切换量表状态失败: {str(e)}"
         )
+
+
+# ── 大模型配置状态 ────────────────────────────────────────────────
+@router.get("/llm/status", summary="查看当前生效的大模型配置")
+async def llm_status(
+    probe: bool = Query(False, description="是否发一次真实请求探测密钥是否有效"),
+    current_admin: Admin = Depends(get_current_admin)
+):
+    """返回打码后的密钥与来源，方便确认"现在用的到底是哪把 key、还有没有效"。
+
+    换 key 的标准动作：改 backend/llm.json（或部署环境里的同名文件），
+    保存即生效，无需重启；密钥失效时这里能第一时间看出来。
+    """
+    import time as _time
+    from app.services import llm_config
+    from app.services.ai_service import ai_service, AIService
+
+    cfg = llm_config.load()
+    # 触发一次热加载检查，保证返回的是"下一次请求真正会用到的"配置
+    ai_service._ensure_client()
+
+    data = {
+        **cfg.describe(),
+        "circuit_open": AIService.circuit_open(),
+        "probe_ok": None,
+        "latency_ms": None,
+        "probe_error": None,
+    }
+
+    if probe:
+        # 直接打一次最小请求，不走熔断器——探测本身不应该把服务打进熔断
+        started = _time.time()
+        try:
+            ai_service.client.chat.completions.create(
+                model=ai_service.model,
+                messages=[{"role": "user", "content": "ping"}],
+                max_tokens=4,
+            )
+            data["probe_ok"] = True
+            data["latency_ms"] = int((_time.time() - started) * 1000)
+        except Exception as exc:
+            data["probe_ok"] = False
+            data["probe_error"] = str(exc)[:200]
+
+    return {"code": 200, "message": "ok", "data": data}

@@ -113,3 +113,11 @@ backend/soulstation.db
 !.env.example
 backend/.env
 backend/.env.local
+
+# 运行时密钥文件（支持热重载，改完即生效，不进仓库）
+backend/llm.json
+backend/llm.local.json
+!backend/llm.example.json
+
+# 数据库备份
+backend/soulstation.db.bak-*

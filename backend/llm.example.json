@@ -1,0 +1,6 @@
+{
+  "_说明": "模板文件，入库。真正生效的是同目录下的 llm.json（已 gitignore）。",
+  "base_url": "https://api.deepseek.com/v1",
+  "api_key": "sk-替换成你自己的密钥",
+  "model": "deepseek-flash"
+}
