@@ -10,6 +10,20 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+# HuggingFace 的离线开关必须在导入 sentence-transformers 之前写进进程环境，
+# 放进 .env 是无效的（那个库直接读 os.environ）。
+# 本地已有模型时强制离线：否则离线/断网环境下每次检索都会去联网重试，
+# 表现为"发消息后迟迟不出字"，很难从日志看出原因。
+_MODELS_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "models")
+)
+if os.path.isdir(_MODELS_DIR) and os.listdir(_MODELS_DIR):
+    os.environ.setdefault("HF_HUB_OFFLINE", "1")
+    os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+else:
+    # 没有本地模型又需要下载时，国内直连 huggingface.co 经常超时，默认走镜像
+    os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")
+
 
 class RAGService:
     """RAG 向量检索服务，延迟初始化避免启动时加载大模型"""

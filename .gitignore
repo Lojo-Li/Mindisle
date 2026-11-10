@@ -102,3 +102,10 @@ docs/
 backend/chroma_db_local/
 backend/chroma_db_probe/
 backend/soulstation.db
+
+# 环境变量与密钥（绝不入库）
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.local
