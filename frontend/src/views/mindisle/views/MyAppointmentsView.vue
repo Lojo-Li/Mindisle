@@ -256,7 +256,7 @@ function goBooking() {
 }
 
 function enterChat(a) {
-  router.push('/consultation/user/' + a.id)
+  router.push('/workspace/chat/' + a.id)
 }
 
 function goReview(a) {

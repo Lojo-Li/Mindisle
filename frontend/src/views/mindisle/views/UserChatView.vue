@@ -1,6 +1,5 @@
 <template>
-<div class="chat-page">
-<section class="chat-view" data-view="chat" ref="rootEl">
+<section class="view active" data-view="chat" ref="rootEl">
 
   <!-- 加载中 -->
   <div v-if="loading" class="card">
@@ -179,14 +178,13 @@
   </div>
 
   <!-- 图片预览 -->
-  <div v-if="previewSrc" class="overlay open" @click.self="previewSrc = ''">
+  <div v-if="previewSrc" class="preview-mask" @click.self="previewSrc = ''">
     <img :src="previewSrc" class="preview-img" alt="预览" />
   </div>
 
   <!-- 视频/语音通话（状态由 Pinia callStore 管理） -->
   <VideoCall />
 </section>
-</div>
 </template>
 
 <script setup>
@@ -480,166 +478,23 @@ function goBack() {
 </script>
 
 <style scoped>
-/* 独立页：不依赖 MindisleShell 的 .mi-portal 容器，
-   这里把心屿设计变量与基础排版就地定义，保证与主界面视觉一致 */
-.chat-page {
-  --bg: #F6F5F1;
-  --surface: #FFFFFF;
-  --surface-2: #FBFAF7;
-  --ink: #1B2A2C;
-  --ink-2: #56696D;
-  --ink-3: #94A4A6;
-  --sea: #2E6E68;
-  --sea-deep: #22524E;
-  --sea-soft: #E2EFEC;
-  --lamp: #D9982F;
-  --lamp-soft: #FAEFD7;
-  --sand: #F1EBE0;
-  --rose-soft: #F7E7E4;
-  --line: #E7E5DE;
-  --shadow-s: 0 1px 2px rgba(27, 42, 44, .05);
+/* 本页作为 /workspace/chat/:id 挂在 MindisleShell 布局下，
+   心屿变量（--sea/--surface/--line…）与 .card/.btn/.tag 等工具类均由 .mi-portal 提供，
+   这里只补充聊天页专属样式，不再自行定义设计变量。 */
 
-  min-height: 100vh;
-  background: var(--bg);
-  padding: 26px 32px 32px;
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
-    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-  color: var(--ink);
-}
-
-.chat-page *,
-.chat-page *::before,
-.chat-page *::after { box-sizing: border-box; }
-
-.chat-view {
-  max-width: 1180px;
-  margin: 0 auto;
-}
-
-/* 心屿通用组件（就地实现，与 MindisleShell 保持一致） */
-.chat-page .card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  box-shadow: var(--shadow-s);
-}
-
-.chat-page .empty {
-  text-align: center;
-  padding: 46px 20px;
-  color: var(--ink-3);
-  font-size: 13px;
-}
-
-.empty-mark {
-  font-size: 26px;
-  color: var(--sea);
-  opacity: .42;
-  margin-bottom: 10px;
-}
-
-.empty-title {
-  font-size: 14px;
-  font-weight: 590;
-  color: var(--ink);
-  letter-spacing: .2px;
-}
-
-.empty-sub {
-  margin-top: 6px;
-  font-size: 12.5px;
-  color: var(--ink-3);
-}
-
-.chat-page .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 38px;
-  padding: 0 16px;
-  border-radius: 11px;
-  border: 1px solid transparent;
-  font-size: 13.5px;
-  font-weight: 540;
-  font-family: inherit;
-  cursor: pointer;
-  transition: transform .18s, box-shadow .18s, border-color .18s, background .18s;
-  white-space: nowrap;
-}
-
-.chat-page .btn-primary {
-  background: linear-gradient(160deg, #357B74, #22524E);
-  color: #fff;
-  box-shadow: 0 8px 20px -12px rgba(34, 82, 78, .9);
-}
-
-.chat-page .btn-primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 26px -12px rgba(34, 82, 78, .85);
-}
-
-.chat-page .btn-ghost {
-  background: var(--surface);
-  border-color: var(--line);
-  color: var(--ink-2);
-}
-
-.chat-page .btn-ghost:hover:not(:disabled) {
-  border-color: #CFDCD9;
-  color: var(--ink);
-  box-shadow: var(--shadow-s);
-}
-
-.chat-page .btn-soft {
-  background: var(--sea-soft);
-  color: var(--sea-deep);
-}
-
-.chat-page .btn-soft:hover:not(:disabled) {
-  background: #D6E8E4;
-}
-
-.chat-page .btn-sm {
-  height: 32px;
-  padding: 0 13px;
-  font-size: 12.5px;
-  border-radius: 9px;
-}
-
-.chat-page .tag {
-  display: inline-flex;
-  align-items: center;
-  font-size: 11px;
-  padding: 2.5px 9px;
-  border-radius: 20px;
-  background: var(--sand);
-  color: #8A7A62;
-  letter-spacing: .3px;
-  font-weight: 520;
-}
-
-.chat-page .tag.sea { background: var(--sea-soft); color: var(--sea-deep) }
-.chat-page .tag.lamp { background: var(--lamp-soft); color: #8F6316 }
-.chat-page .tag.rose { background: var(--rose-soft); color: #96574E }
-
-.chat-page .overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 3000;
+/* 占满主区高度，让消息区内部滚动而非整页滚动 */
+.view[data-view="chat"] {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(20, 34, 36, .62);
-  backdrop-filter: blur(3px);
+  flex-direction: column;
+  padding-bottom: 24px;
 }
 
-/* ---------- 聊天主体 ---------- */
 .chat-shell {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 84px);
-  min-height: 520px;
+  flex: 1 1 auto;
+  height: calc(100vh - 120px);
+  min-height: 480px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -652,50 +507,54 @@ function goBack() {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 16px 22px;
+  padding: 15px 20px;
   border-bottom: 1px solid var(--line);
-  background: var(--surface-2, #FBFAF7);
+  background: var(--surface-2);
   flex-wrap: wrap;
+  flex: 0 0 auto;
 }
 
 .chat-peer {
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 12px;
   min-width: 0;
 }
 
 .chat-avatar {
   flex: 0 0 auto;
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 600;
   color: #fff;
   background: linear-gradient(160deg, #357B74, #22524E);
+  letter-spacing: .5px;
 }
 
 .chat-peer-text h3 {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   font-size: 15px;
   font-weight: 600;
   color: var(--ink);
   letter-spacing: .2px;
+  line-height: 1.4;
 }
 
 .chat-peer-meta {
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin-top: 5px;
+  gap: 6px;
+  margin-top: 4px;
   font-size: 12px;
   color: var(--ink-3);
+  flex-wrap: wrap;
 }
 
 .online-dot {
@@ -703,6 +562,7 @@ function goBack() {
   height: 6px;
   border-radius: 50%;
   background: #C3CFCE;
+  flex: 0 0 auto;
 }
 
 .online-dot.on {
@@ -710,13 +570,14 @@ function goBack() {
   box-shadow: 0 0 0 3px rgba(78, 154, 106, .14);
 }
 
-.dot-sep { opacity: .5 }
+.dot-sep { opacity: .45 }
 
 .chat-head-actions {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .timer-badge {
@@ -731,28 +592,36 @@ function goBack() {
   font-size: 12.5px;
   font-weight: 560;
   font-variant-numeric: tabular-nums;
+  letter-spacing: .3px;
 }
 
 /* ---------- 信息条 ---------- */
 .info-strip {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
-  padding: 11px 22px;
+  gap: 18px;
+  padding: 10px 20px;
   border-bottom: 1px solid var(--line);
   background: var(--surface);
   font-size: 12px;
   color: var(--ink-3);
+  flex: 0 0 auto;
+}
+
+.info-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
 }
 
 .info-item b {
   font-weight: 560;
   color: var(--ink-2);
-  margin-left: 3px;
 }
 
 .info-note {
-  min-width: 0;
+  max-width: 340px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -762,16 +631,17 @@ function goBack() {
 .chat-body {
   flex: 1 1 auto;
   overflow-y: auto;
-  padding: 22px;
+  overscroll-behavior: contain;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 13px;
   background:
-    radial-gradient(circle at 18% 12%, rgba(46, 110, 104, .035), transparent 42%),
+    radial-gradient(circle at 16% 10%, rgba(46, 110, 104, .04), transparent 45%),
     var(--surface);
 }
 
-.chat-body::-webkit-scrollbar { width: 8px }
+.chat-body::-webkit-scrollbar { width: 7px }
 .chat-body::-webkit-scrollbar-thumb {
   background: #DFE5E3;
   border-radius: 8px;
@@ -780,7 +650,7 @@ function goBack() {
 .chat-empty {
   margin: auto;
   text-align: center;
-  padding: 40px 20px;
+  padding: 32px 20px;
 }
 
 .date-sep {
@@ -795,7 +665,7 @@ function goBack() {
 
 .system-line {
   align-self: center;
-  max-width: 78%;
+  max-width: 76%;
   padding: 7px 14px;
   border-radius: 20px;
   background: var(--lamp-soft);
@@ -809,7 +679,7 @@ function goBack() {
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  max-width: 78%;
+  max-width: 76%;
 }
 
 .bubble-row.self {
@@ -819,13 +689,13 @@ function goBack() {
 
 .bubble-avatar {
   flex: 0 0 auto;
-  width: 32px;
-  height: 32px;
-  border-radius: 11px;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   color: #fff;
   background: linear-gradient(160deg, #B9B0A0, #9A9081);
@@ -839,7 +709,7 @@ function goBack() {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
 }
 
 .bubble-row.self .bubble-main {
@@ -850,45 +720,46 @@ function goBack() {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 11.5px;
+  font-size: 11px;
   color: var(--ink-3);
+  padding: 0 2px;
 }
 
 .bubble-time {
   font-variant-numeric: tabular-nums;
-  opacity: .8;
+  opacity: .82;
 }
 
 .bubble {
   display: inline-block;
-  padding: 10px 14px;
-  border-radius: 14px 14px 14px 4px;
-  background: var(--surface-2, #FBFAF7);
+  padding: 9px 13px;
+  border-radius: 13px 13px 13px 4px;
+  background: var(--surface-2);
   border: 1px solid var(--line);
   color: var(--ink);
   font-size: 13.5px;
-  line-height: 1.85;
+  line-height: 1.8;
   white-space: pre-wrap;
   word-break: break-word;
   max-width: 100%;
 }
 
 .bubble-row.self .bubble {
-  border-radius: 14px 14px 4px 14px;
+  border-radius: 13px 13px 4px 13px;
   background: linear-gradient(160deg, #357B74, #22524E);
   border-color: transparent;
   color: #fff;
-  box-shadow: 0 8px 20px -14px rgba(34, 82, 78, .9);
+  box-shadow: 0 8px 20px -16px rgba(34, 82, 78, .9);
 }
 
 .bubble-img-wrap {
-  max-width: 260px;
+  max-width: 240px;
 }
 
 .bubble-img {
   max-width: 100%;
-  max-height: 260px;
-  border-radius: 13px;
+  max-height: 240px;
+  border-radius: 12px;
   border: 1px solid var(--line);
   cursor: zoom-in;
   display: block;
@@ -900,8 +771,8 @@ function goBack() {
   align-items: center;
   gap: 9px;
   padding: 9px 12px;
-  border-radius: 13px;
-  background: var(--surface-2, #FBFAF7);
+  border-radius: 12px;
+  background: var(--surface-2);
   border: 1px solid var(--line);
   color: var(--ink-2);
 }
@@ -914,7 +785,7 @@ function goBack() {
 
 .file-name {
   font-size: 12.5px;
-  max-width: 180px;
+  max-width: 170px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -922,34 +793,36 @@ function goBack() {
 
 /* ---------- 输入区 ---------- */
 .chat-input {
+  flex: 0 0 auto;
   border-top: 1px solid var(--line);
-  padding: 13px 22px 18px;
+  padding: 12px 20px 16px;
   background: var(--surface);
 }
 
 .input-tools {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 9px;
+  gap: 5px;
+  margin-bottom: 8px;
 }
 
 .tool-btn {
-  width: 30px;
-  height: 30px;
+  width: 29px;
+  height: 29px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 9px;
+  border-radius: 8px;
   border: 1px solid transparent;
   background: transparent;
   color: var(--ink-3);
   cursor: pointer;
   transition: background .18s, color .18s, border-color .18s;
+  padding: 0;
 }
 
 .tool-btn:hover {
-  background: var(--surface-2, #FBFAF7);
+  background: var(--surface-2);
   border-color: var(--line);
   color: var(--ink);
 }
@@ -962,7 +835,7 @@ function goBack() {
 .upload-hint {
   font-size: 11.5px;
   color: var(--ink-3);
-  margin-left: 4px;
+  margin-left: 5px;
 }
 
 .input-row {
@@ -973,10 +846,10 @@ function goBack() {
 
 .input-textarea {
   flex: 1 1 auto;
-  min-height: 72px;
-  max-height: 160px;
-  padding: 11px 14px;
-  border-radius: 13px;
+  min-height: 66px;
+  max-height: 150px;
+  padding: 10px 13px;
+  border-radius: 12px;
   border: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink);
@@ -998,8 +871,8 @@ function goBack() {
 }
 
 .send-btn {
-  height: 44px;
-  padding: 0 22px;
+  height: 42px;
+  padding: 0 20px;
   flex: 0 0 auto;
 }
 
@@ -1011,34 +884,48 @@ function goBack() {
 
 /* ---------- 已结束 ---------- */
 .chat-closed {
+  flex: 0 0 auto;
   border-top: 1px solid var(--line);
-  padding: 18px 22px;
+  padding: 16px 20px;
   display: flex;
   align-items: center;
   gap: 14px;
   font-size: 13px;
   color: var(--ink-3);
-  background: var(--surface-2, #FBFAF7);
+  background: var(--surface-2);
 }
 
-/* ---------- 预览 ---------- */
+/* ---------- 图片预览 ---------- */
+.preview-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20, 34, 36, .62);
+  backdrop-filter: blur(3px);
+}
+
 .preview-img {
-  max-width: 88vw;
-  max-height: 88vh;
+  max-width: 86vw;
+  max-height: 86vh;
   border-radius: 14px;
   box-shadow: 0 24px 60px -20px rgba(27, 42, 44, .5);
 }
 
-@media (max-width: 720px) {
+@media (max-width: 860px) {
   .chat-shell {
-    height: calc(100vh - 96px);
+    height: calc(100vh - 150px);
+    min-height: 420px;
     border-radius: 14px;
   }
-  .chat-head, .chat-body, .chat-input {
-    padding-left: 14px;
-    padding-right: 14px;
-  }
-  .bubble-row { max-width: 92% }
-  .chat-head-actions { margin-left: 0; width: 100%; }
+  .chat-head { padding: 12px 14px; gap: 10px }
+  .chat-body { padding: 14px }
+  .chat-input { padding: 10px 14px 14px }
+  .info-strip { padding: 9px 14px; gap: 12px }
+  .bubble-row { max-width: 90% }
+  .chat-head-actions { margin-left: 0; width: 100% }
+  .info-note { max-width: 100% }
 }
 </style>

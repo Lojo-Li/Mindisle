@@ -117,6 +117,7 @@ const routes = [
       { path: 'lamp', name: 'WorkspaceLamp', component: LampView, meta: { title: '屿灯 - 心屿 Mindisle', crumb: '屿灯' } },
       { path: 'booking', name: 'WorkspaceBooking', component: BookingView, meta: { title: '咨询预约 - 心屿 Mindisle', crumb: '咨询预约' } },
       { path: 'appointments', name: 'WorkspaceAppointments', component: MyAppointmentsView, meta: { title: '我的预约 - 心屿 Mindisle', crumb: '我的预约' } },
+      { path: 'chat/:id', name: 'WorkspaceUserChat', component: UserChatView, meta: { title: '咨询对话 - 心屿 Mindisle', crumb: '咨询对话' } },
       { path: 'records', name: 'WorkspaceRecords', component: RecordsView, meta: { title: '我的记录 - 心屿 Mindisle', crumb: '我的记录' } },
       { path: 'trend/:id?', name: 'WorkspaceTrend', component: TrendView, meta: { title: '测评趋势 - 心屿 Mindisle', crumb: '测评趋势' } }
     ]
@@ -297,8 +298,8 @@ const routes = [
   {
     path: '/consultation/user/:id',
     name: 'ConsultationChatUser',
-    component: UserChatView,
-    meta: { title: '咨询对话 - 心屿 Mindisle', requiresAuth: true }
+    // 兼容旧链接：统一到心屿布局内的对话页
+    redirect: to => ({ path: '/workspace/chat/' + to.params.id })
   },
   {
     path: '/consultation/counselor/:id',

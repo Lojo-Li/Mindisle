@@ -181,6 +181,10 @@ function toggleTheme() {
 // 当前激活的菜单：取与 route.path 匹配的「最长路径」，
 // 否则父级（如 /counselor/dashboard）会因为 startsWith 命中子路由而一直高亮
 const activePath = computed(() => {
+  // 咨询对话页（/workspace/chat/:id）没有独立菜单项，归属到「我的预约」
+  if (/^\/workspace\/chat\//.test(route.path)) {
+    return '/workspace/appointments'
+  }
   const paths = (MENUS[props.role] || MENUS.user).map(m => m.path)
   const hits = paths.filter(p => route.path === p || route.path.startsWith(p + '/'))
   return hits.sort((a, b) => b.length - a.length)[0] || ''
