@@ -108,3 +108,20 @@
 .bubble.typing i:nth-child(2){animation-delay:.18s}
 .bubble.typing i:nth-child(3){animation-delay:.36s}
 @keyframes blink{0%,60%,100%{opacity:.3}30%{opacity:1}}
+
+/* ---------- 移动端 ----------
+   风险提示是安全信息，手机上不能被挤成一条细线，也不能小到点不中。 */
+@media (max-width:820px){
+  .risk-slot{padding:0 10px}
+  .risk-note{font-size:13px;padding:13px 14px;line-height:1.75}
+  .risk-note .risk-btn{min-height:36px;font-size:12.5px}
+  .risk-call{padding:10px 13px}
+  .risk-call b{font-size:15px}
+  .risk-modal{padding:22px 18px 18px;max-height:82vh;width:100%}
+  .risk-modal .risk-call b{font-size:15px}
+
+  .msg-fb{font-size:12px}
+  .msg-fb button{min-height:32px;padding:0 12px;font-size:12px}
+  .src-toggle{font-size:12px;padding:5px 12px}
+  .src-item{font-size:12px;line-height:1.7}
+}

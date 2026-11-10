@@ -79,6 +79,21 @@
     </div>
     <router-view />
   </main>
+
+  <!-- 移动端底部导航：窄屏隐藏侧边栏后，这是唯一的导航入口 -->
+  <nav class="tabbar" aria-label="主导航">
+    <button
+      v-for="(item, i) in menu"
+      :key="item.path + i"
+      class="tab-item"
+      :class="{ active: isActive(item) }"
+      :aria-current="isActive(item) ? 'page' : undefined"
+      @click="navigate(item)"
+    >
+      <span class="tab-ico" v-html="item.icon"></span>
+      <span class="tab-text">{{ item.short || item.text }}</span>
+    </button>
+  </nav>
 </div>
 <div class="toast" id="toast">
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8FD8C9" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
@@ -108,17 +123,17 @@ const ICONS = {
 
 const MENUS = {
   user: [
-    { label: '工作台', text: '概览', path: '/workspace/home', icon: ICONS.home },
-    { text: '心理测评', path: '/workspace/assess', icon: ICONS.assess },
-    { text: '屿灯 · 情绪支持', path: '/workspace/lamp', icon: ICONS.lamp, badge: 'AI' },
-    { text: '咨询预约', path: '/workspace/booking', icon: ICONS.booking },
-    { label: '我的', text: '我的记录', path: '/workspace/records', icon: ICONS.records }
+    { label: '工作台', text: '概览', short: '概览', path: '/workspace/home', icon: ICONS.home },
+    { text: '心理测评', short: '测评', path: '/workspace/assess', icon: ICONS.assess },
+    { text: '屿灯 · 情绪支持', short: '屿灯', path: '/workspace/lamp', icon: ICONS.lamp, badge: 'AI' },
+    { text: '咨询预约', short: '预约', path: '/workspace/booking', icon: ICONS.booking },
+    { label: '我的', text: '我的记录', short: '记录', path: '/workspace/records', icon: ICONS.records }
   ],
   counselor: [
-    { label: '咨询师工作台', text: '概览', path: '/counselor/dashboard', icon: ICONS.home },
-    { text: '预约订单', path: '/consultation/counselor/orders', icon: ICONS.booking },
-    { text: '咨询会话', path: '/chat', icon: ICONS.lamp },
-    { label: '我的', text: '个人中心', path: '/profile', icon: ICONS.records }
+    { label: '咨询师工作台', text: '概览', short: '概览', path: '/counselor/dashboard', icon: ICONS.home },
+    { text: '预约订单', short: '订单', path: '/consultation/counselor/orders', icon: ICONS.booking },
+    { text: '咨询会话', short: '会话', path: '/chat', icon: ICONS.lamp },
+    { label: '我的', text: '个人中心', short: '我的', path: '/profile', icon: ICONS.records }
   ]
 }
 
@@ -638,5 +653,67 @@ function logout() { userStore.logout() }
   background:var(--surface); color:var(--ink); border-color:var(--line)
 }
 .mi-portal[data-theme="dark"] .main{background:var(--bg)}
+
+/* ===================== 移动端适配（≤820px） =====================
+   桌面端隐藏底部导航；窄屏隐藏侧边栏后由它接管导航。
+   ---- 关键点 ----
+   1. 高度用 100dvh：手机地址栏收缩时不会把内容顶出屏幕
+   2. 底部留出 tabbar + 安全区，iPhone 手势条不会压住内容
+   3. 输入框字号 16px：低于 16px 时 iOS 会在聚焦瞬间放大整个页面
+   4. 触控目标不小于 44px
+*/
+.mi-portal .tabbar{display:none}
+
+@media (max-width:820px){
+  .mi-portal{--tabbar-h:58px;--safe-b:env(safe-area-inset-bottom, 0px)}
+  .mi-portal .app{height:100vh;height:100dvh}
+  .mi-portal .main{padding-bottom:calc(var(--tabbar-h) + var(--safe-b))}
+
+  /* ---- 底部导航 ---- */
+  .mi-portal .tabbar{
+    display:flex;position:fixed;left:0;right:0;bottom:0;z-index:60;
+    background:rgba(255,255,255,.94);backdrop-filter:blur(16px);
+    border-top:1px solid var(--line);
+    padding:6px 4px calc(6px + var(--safe-b));
+  }
+  .mi-portal .tab-item{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+    padding:7px 0 5px;border-radius:12px;color:var(--ink-3);
+    font-size:10.5px;line-height:1;min-height:44px;
+    transition:color .2s,background .2s;
+  }
+  .mi-portal .tab-item.active{color:var(--sea-deep);background:var(--sea-soft)}
+  .mi-portal .tab-ico{display:flex;align-items:center;justify-content:center;height:20px}
+  .mi-portal .tab-ico svg{width:20px;height:20px}
+  .mi-portal .tab-text{white-space:nowrap}
+
+  /* ---- 顶栏 ---- */
+  .mi-portal .topbar{height:54px;gap:10px}
+  .mi-portal .icon-btn{width:40px;height:40px}
+  .mi-portal .crumb{font-size:12.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* ---- 内容区 ---- */
+  .mi-portal .view{padding:4px 16px 24px}
+
+  /* 屿灯页：手机上是聊天工具，先给对话，不给 200px 的标题 */
+  .mi-portal .view[data-view="lamp"] .page-head{display:none}
+  .mi-portal .lamp-shell{
+    grid-template-columns:1fr;gap:0;
+    height:calc(100dvh - 54px - var(--tabbar-h) - var(--safe-b) - 8px);
+    min-height:320px;
+  }
+  .mi-portal .chat{height:100%;min-height:0;border-radius:16px}
+  .mi-portal .chat-body{padding:16px 14px;gap:13px}
+  .mi-portal .msg{max-width:88%}
+  .mi-portal .bubble{font-size:14px;line-height:1.7}
+  .mi-portal .chat-foot{padding:10px 12px 12px}
+  .mi-portal .composer input{font-size:16px}
+  .mi-portal .chip{font-size:12px;padding:7px 12px;min-height:32px}
+
+  /* ---- 其他 ---- */
+  .mi-portal .modal{width:calc(100vw - 32px)}
+  .mi-portal .result-grid{grid-template-columns:1fr}
+  .mi-portal .slots{grid-template-columns:repeat(2,1fr)}
+}
 
 </style>
