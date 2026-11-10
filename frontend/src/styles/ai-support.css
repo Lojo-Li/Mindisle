@@ -4,124 +4,207 @@
    ============================================================ */
 
 /* 气泡与来源需要纵向排列，所以给消息内容包一层 */
-.msg-body{display:flex;flex-direction:column;gap:7px;min-width:0;max-width:100%}
+.mi-portal .msg-body{display:flex;flex-direction:column;gap:7px;min-width:0;max-width:100%}
 
 /* ---------- 引用来源 ---------- */
-.src-toggle{
+.mi-portal .src-toggle{
   display:inline-flex;align-items:center;gap:6px;align-self:flex-start;
   font-size:11.5px;padding:3.5px 11px;border-radius:20px;
   border:1px solid var(--line);background:var(--surface-2);color:var(--ink-3);
   transition:.2s var(--ease);cursor:pointer;font-family:inherit;
 }
-.src-toggle:hover{border-color:#C6DAD6;color:var(--sea-deep);background:var(--sea-soft)}
-.src-toggle b{font-weight:560;color:var(--sea-deep)}
-.src-toggle .dot{width:5px;height:5px;border-radius:50%;background:var(--sea);opacity:.7}
+.mi-portal .src-toggle:hover{border-color:#C6DAD6;color:var(--sea-deep);background:var(--sea-soft)}
+.mi-portal .src-toggle b{font-weight:560;color:var(--sea-deep)}
+.mi-portal .src-toggle .dot{width:5px;height:5px;border-radius:50%;background:var(--sea);opacity:.7}
+/* 平均相似度：一条回答"靠不靠得住"的第一眼信号 */
+.mi-portal .src-avg{margin-left:2px;padding:1px 6px;border-radius:8px;font-size:10.5px;
+  background:var(--sea-soft);color:var(--sea-deep);font-weight:560}
 
-.src-panel{
+.mi-portal .src-panel{
   margin-top:2px;padding:12px 13px;border-radius:12px;
   background:var(--surface-2);border:1px solid var(--line-2);
   font-size:12px;line-height:1.7;color:var(--ink-2);
   animation:srcIn .25s var(--ease);
 }
 @keyframes srcIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-.src-item+.src-item{margin-top:9px;padding-top:9px;border-top:1px dashed var(--line)}
-.src-item b{display:block;font-weight:560;color:var(--ink);margin-bottom:3px;font-size:12px}
-.src-item p{margin:0;color:var(--ink-2)}
-.src-item span{display:block;margin-top:3px;color:var(--ink-3);font-size:11px}
-.src-foot{margin-top:10px;padding-top:8px;border-top:1px solid var(--line-2);
+.mi-portal .src-item+.src-item{margin-top:11px;padding-top:11px;border-top:1px dashed var(--line)}
+.mi-portal .src-top{display:flex;align-items:baseline;gap:8px;margin-bottom:5px}
+.mi-portal .src-top b{flex:1;min-width:0;font-weight:560;color:var(--ink);font-size:12px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mi-portal .src-score{flex:0 0 auto;font-size:10.5px;color:var(--sea-deep);font-weight:600}
+/* 相似度进度条：比一个百分比数字更容易读 */
+.mi-portal .src-bar{height:3px;border-radius:2px;background:var(--line-2);overflow:hidden;margin-bottom:6px}
+.mi-portal .src-bar i{display:block;height:100%;border-radius:2px;
+  background:linear-gradient(90deg,#7FB3AB,var(--sea));transition:width .4s var(--ease)}
+.mi-portal .src-item p{margin:0;color:var(--ink-2)}
+.mi-portal .src-foot{margin-top:10px;padding-top:8px;border-top:1px solid var(--line-2);
   font-size:11px;color:var(--ink-3)}
 
+/* 无依据：如实标注，不假装有出处 */
+.mi-portal .src-none{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;
+  font-size:11px;color:var(--ink-3);padding:3px 10px;border-radius:20px;
+  border:1px dashed var(--line);background:transparent}
+.mi-portal .src-none .dot{width:5px;height:5px;border-radius:50%;background:var(--ink-3);opacity:.45}
+
 /* ---------- 答案反馈 ---------- */
-.msg-fb{display:flex;align-items:center;gap:9px;align-self:flex-start;
-  font-size:11.5px;color:var(--ink-3);margin-top:1px}
-.msg-fb button{
+.mi-portal .msg-fb{display:flex;align-items:center;gap:9px;align-self:flex-start;
+  font-size:11.5px;color:var(--ink-3);margin-top:1px;flex-wrap:wrap}
+.mi-portal .msg-fb button{
   padding:2px 9px;border-radius:14px;border:1px solid var(--line);
   background:var(--surface);color:var(--ink-2);font-size:11.5px;
   transition:.2s var(--ease);cursor:pointer;font-family:inherit;
 }
-.msg-fb button:hover{border-color:#C6DAD6;color:var(--sea-deep)}
-.msg-fb button.on{border-color:var(--sea);background:var(--sea-soft);color:var(--sea-deep)}
+.mi-portal .msg-fb button:hover{border-color:#C6DAD6;color:var(--sea-deep)}
+.mi-portal .msg-fb button.on{border-color:var(--sea);background:var(--sea-soft);color:var(--sea-deep)}
+/* 追问原因时，"跳过"弱化，避免变成负担 */
+.mi-portal .msg-fb button.skip{border-color:transparent;background:transparent;color:var(--ink-3);
+  text-decoration:underline;text-underline-offset:2px}
 
-/* ---------- 风险提示 ---------- */
-.risk-slot{padding:0 20px}
-.risk-note{border-radius:13px;padding:12px 15px;margin-top:12px;
-  font-size:12.5px;line-height:1.7;animation:srcIn .3s var(--ease)}
-.risk-note.l1{background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
-.risk-note.l2{background:var(--lamp-soft);border:1px solid #EFD9AE;color:#7A5716}
-.risk-note.l3{background:var(--rose-soft);border:1px solid #E8C4BF;color:#8E4A42}
-.risk-note .rt{font-weight:600;margin-bottom:5px;font-size:13px}
-.risk-calls{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
-.risk-call{display:flex;flex-direction:column;gap:1px;padding:8px 13px;border-radius:10px;
-  background:rgba(255,255,255,.85);text-decoration:none;border:1px solid rgba(0,0,0,.05);
+/* ---------- 风险提示 ----------
+   刻意避开鲜红与感叹号：危机场景里，刺激的颜色会加剧恐慌。
+   L3 用深墨绿（稳、可信），L2 用暖琥珀（提醒但不刺眼）。 */
+.mi-portal .risk-slot{padding:0 20px}
+.mi-portal .risk-note{border-radius:14px;padding:13px 15px;margin-top:12px;
+  font-size:12.5px;line-height:1.75;animation:srcIn .3s var(--ease)}
+.mi-portal .risk-note.l1{background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
+.mi-portal .risk-note.l2{background:linear-gradient(180deg,#FDF7EA,#FBF2E1);
+  border:1px solid #ECDCBB;color:#6F5318}
+.mi-portal .risk-note.l3{background:linear-gradient(180deg,#F1F7F5,#E9F2EF);
+  border:1px solid #BFD6D0;color:#23534E;
+  box-shadow:inset 3px 0 0 var(--lamp)}
+
+.mi-portal .risk-head{display:flex;gap:10px;align-items:flex-start}
+.mi-portal .risk-mark{flex:0 0 26px;width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.75);color:var(--sea-deep);margin-top:1px}
+.mi-portal .risk-note.l2 .risk-mark{color:#A9772A}
+.mi-portal .risk-copy{min-width:0}
+.mi-portal .risk-note .rt{font-weight:600;margin-bottom:4px;font-size:13.5px;letter-spacing:.2px}
+.mi-portal .risk-note .rs{opacity:.92}
+
+.mi-portal .risk-calls{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+.mi-portal .risk-call{display:flex;flex-direction:column;gap:1px;padding:8px 13px;border-radius:10px;
+  background:rgba(255,255,255,.88);text-decoration:none;border:1px solid rgba(0,0,0,.05);
   transition:.2s var(--ease)}
-.risk-call:hover{background:#fff;transform:translateY(-1px)}
-.risk-call i{font-style:normal;font-size:10.5px;color:var(--ink-3)}
-.risk-call b{font-size:15px;color:var(--ink);letter-spacing:.4px;font-weight:600}
-.risk-act{margin-top:10px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
-.risk-btn{height:30px;padding:0 14px;border-radius:9px;background:var(--sea);
+.mi-portal .risk-call:hover{background:#fff;transform:translateY(-1px)}
+.mi-portal .risk-call i{font-style:normal;font-size:10.5px;color:var(--ink-3)}
+.mi-portal .risk-call b{font-size:15px;color:var(--ink);letter-spacing:.4px;font-weight:600}
+
+.mi-portal .risk-act{margin-top:11px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.mi-portal .risk-btn{height:32px;padding:0 15px;border-radius:9px;background:var(--sea);
   color:#fff;font-size:12px;transition:.2s var(--ease);cursor:pointer;border:none;font-family:inherit}
-.risk-btn:hover{background:var(--sea-deep)}
-.risk-btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink-2)}
-.risk-btn.ghost:hover{border-color:#C6DAD6;color:var(--ink)}
+.mi-portal .risk-btn:hover{background:var(--sea-deep)}
+.mi-portal .risk-btn.ghost{background:rgba(255,255,255,.7);border:1px solid rgba(0,0,0,.07);color:var(--ink-2)}
+.mi-portal .risk-btn.ghost:hover{background:#fff;color:var(--ink)}
+
+/* "看看能做什么"展开的具体动作：给到可以立刻执行的最小步骤 */
+.mi-portal .risk-help{margin-top:11px;padding:11px 13px;border-radius:11px;
+  background:rgba(255,255,255,.72);border:1px solid rgba(0,0,0,.04);
+  font-size:12px;line-height:1.8;animation:srcIn .25s var(--ease)}
+.mi-portal .risk-help p{margin:0 0 4px;color:var(--ink-2)}
+.mi-portal .risk-help ol{margin:0;padding-left:17px}
+.mi-portal .risk-help li+li{margin-top:3px}
+.mi-portal .risk-help b{font-weight:600;color:var(--ink)}
+
+/* 尊重自主性：允许收起来，但收起后仍留一条热线 */
+.mi-portal .risk-later{margin-top:9px;font-size:11.5px;color:var(--ink-3);background:none;border:none;
+  padding:0;cursor:pointer;font-family:inherit;text-decoration:underline;text-underline-offset:3px}
+.mi-portal .risk-later:hover{color:var(--ink-2)}
+.mi-portal .risk-mini{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;
+  padding:8px 13px;border-radius:11px;background:var(--surface-2);
+  border:1px solid var(--line);font-size:11.5px;color:var(--ink-3)}
+.mi-portal .risk-mini a{color:var(--sea-deep);font-weight:600;text-decoration:none}
+.mi-portal .risk-mini button{margin-left:auto;background:none;border:none;font-size:11.5px;
+  color:var(--ink-3);cursor:pointer;font-family:inherit;text-decoration:underline}
 
 /* ---------- L3 阻塞弹层 ---------- */
-.risk-mask{position:fixed;inset:0;background:rgba(20,32,33,.36);backdrop-filter:blur(3px);
+.mi-portal .risk-mask{position:fixed;inset:0;background:rgba(20,32,33,.36);backdrop-filter:blur(3px);
   display:flex;align-items:center;justify-content:center;z-index:2000;padding:24px;
   animation:fadeIn .22s var(--ease)}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.risk-modal{background:var(--surface);border-radius:20px;max-width:440px;width:100%;
+.mi-portal .risk-modal{background:var(--surface);border-radius:20px;max-width:440px;width:100%;
   padding:26px 26px 22px;box-shadow:var(--shadow-l);max-height:86vh;overflow-y:auto;
   animation:modalIn .3s var(--ease)}
 @keyframes modalIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
-.risk-modal .ico{width:44px;height:44px;border-radius:50%;background:var(--rose-soft);
-  display:flex;align-items:center;justify-content:center;margin-bottom:12px;color:var(--rose)}
-.risk-modal h3{font-size:17px;font-weight:600;margin-bottom:10px;letter-spacing:.2px}
-.risk-modal p{font-size:13px;color:var(--ink-2);line-height:1.78;margin-bottom:8px}
-.risk-modal p.strong{color:var(--ink)}
-.risk-modal .confirm{display:flex;align-items:center;gap:9px;font-size:12px;
+/* 与提示卡同一套语气：琥珀色警示 + 深绿主按钮，稳重而非惊悚 */
+.mi-portal .risk-modal .ico{width:44px;height:44px;border-radius:50%;background:var(--lamp-soft);
+  display:flex;align-items:center;justify-content:center;margin-bottom:12px;color:#A9772A}
+.mi-portal .risk-modal h3{font-size:17px;font-weight:600;margin-bottom:10px;letter-spacing:.2px}
+.mi-portal .risk-modal p{font-size:13px;color:var(--ink-2);line-height:1.78;margin-bottom:8px}
+.mi-portal .risk-modal p.strong{color:var(--ink)}
+.mi-portal .risk-modal .confirm{display:flex;align-items:center;gap:9px;font-size:12px;
   color:var(--ink-2);margin:15px 0 11px;cursor:pointer}
-.risk-modal .ok{width:100%;height:39px;border-radius:11px;background:var(--rose);
+.mi-portal .risk-modal .ok{width:100%;height:39px;border-radius:11px;background:var(--sea);
   color:#fff;font-size:13.5px;font-weight:540;transition:.2s var(--ease);
   border:none;cursor:pointer;font-family:inherit}
-.risk-modal .ok:hover:not(:disabled){background:#B4655B}
-.risk-modal .ok:disabled{background:var(--line);color:var(--ink-3);cursor:not-allowed}
-.risk-modal .fine{font-size:11px;color:var(--ink-3);margin-top:11px;text-align:center}
+.mi-portal .risk-modal .ok:hover:not(:disabled){background:var(--sea-deep)}
+.mi-portal .risk-modal .ok:disabled{background:var(--line);color:var(--ink-3);cursor:not-allowed}
+.mi-portal .risk-modal .fine{font-size:11px;color:var(--ink-3);margin-top:11px;text-align:center}
 
 /* ---------- 免责声明 ---------- */
-.ai-disclaimer{margin-top:10px;text-align:center;font-size:11px;color:var(--ink-3);line-height:1.7}
-.ai-disclaimer a{color:var(--sea-deep);text-decoration:none;border-bottom:1px dotted currentColor}
-.ai-disclaimer a:hover{color:var(--sea)}
+.mi-portal .ai-disclaimer{margin-top:10px;text-align:center;font-size:11px;color:var(--ink-3);line-height:1.7}
+.mi-portal .ai-disclaimer a{color:var(--sea-deep);text-decoration:none;border-bottom:1px dotted currentColor}
+.mi-portal .ai-disclaimer a:hover{color:var(--sea)}
 
 /* ---------- 测评上下文提示 ---------- */
-.ai-ctx{display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:12px;
+.mi-portal .ai-ctx{display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:12px;
   background:var(--sea-soft);border:1px solid #CFE0DC;font-size:12px;color:var(--sea-deep);
   margin-bottom:6px;animation:srcIn .3s var(--ease)}
-.ai-ctx b{font-weight:560}
-.ai-ctx button{margin-left:auto;font-size:11.5px;color:var(--sea-deep);
+.mi-portal .ai-ctx b{font-weight:560}
+.mi-portal .ai-ctx button{margin-left:auto;font-size:11.5px;color:var(--sea-deep);
   border:1px solid #B9D5CF;border-radius:8px;padding:3px 9px;background:transparent;
   cursor:pointer;font-family:inherit}
-.ai-ctx button:hover{background:#D6E8E4}
+.mi-portal .ai-ctx button:hover{background:#D6E8E4}
 
 /* 打字中 */
-.bubble.typing i{width:5px;height:5px;border-radius:50%;background:#B9C6C4;
+.mi-portal .bubble.typing i{width:5px;height:5px;border-radius:50%;background:#B9C6C4;
   display:inline-block;margin-right:3px;animation:blink 1.3s infinite}
-.bubble.typing i:nth-child(2){animation-delay:.18s}
-.bubble.typing i:nth-child(3){animation-delay:.36s}
+.mi-portal .bubble.typing i:nth-child(2){animation-delay:.18s}
+.mi-portal .bubble.typing i:nth-child(3){animation-delay:.36s}
 @keyframes blink{0%,60%,100%{opacity:.3}30%{opacity:1}}
+
+/* ---------- 空态入口 ----------
+   空白输入框是"开口"的最高门槛。给三个具体入口，
+   让不知道怎么开始的人也能起步。 */
+.mi-portal .empty-state{display:flex;flex-direction:column;gap:14px;padding:8px 0 24px;
+  max-width:520px;margin:auto;width:100%}
+.mi-portal .empty-lead h3{font-size:16px;font-weight:600;color:var(--ink);margin:0 0 5px;letter-spacing:.2px}
+.mi-portal .empty-lead p{font-size:12.5px;color:var(--ink-3);margin:0}
+.mi-portal .entry-list{display:flex;flex-direction:column;gap:9px}
+.mi-portal .entry{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  padding:13px 14px;border-radius:13px;border:1px solid var(--line);
+  background:var(--surface);cursor:pointer;font-family:inherit;
+  transition:.22s var(--ease)}
+.mi-portal .entry:hover{border-color:#C6DAD6;background:var(--surface-2);transform:translateY(-1px);
+  box-shadow:0 4px 14px rgba(46,110,104,.06)}
+.mi-portal .entry-ico{flex:0 0 34px;width:34px;height:34px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--sea-soft);color:var(--sea-deep)}
+.mi-portal .entry-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.mi-portal .entry-text b{font-size:13px;font-weight:560;color:var(--ink)}
+.mi-portal .entry-text i{font-style:normal;font-size:11.5px;color:var(--ink-3);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mi-portal .entry-arrow{flex:0 0 auto;color:var(--ink-3);font-size:14px;transition:.2s var(--ease)}
+.mi-portal .entry:hover .entry-arrow{color:var(--sea);transform:translateX(2px)}
+.mi-portal .empty-note{font-size:11.5px;color:var(--ink-3);text-align:center;margin:2px 0 0}
+
+/* 首字延迟时的安抚句 */
+.mi-portal .slow-hint{margin:4px 0 0;font-size:11.5px;color:var(--ink-3);
+  animation:srcIn .3s var(--ease)}
 
 /* ---------- 移动端 ----------
    风险提示是安全信息，手机上不能被挤成一条细线，也不能小到点不中。 */
 @media (max-width:820px){
-  .risk-slot{padding:0 10px}
-  .risk-note{font-size:13px;padding:13px 14px;line-height:1.75}
-  .risk-note .risk-btn{min-height:36px;font-size:12.5px}
-  .risk-call{padding:10px 13px}
-  .risk-call b{font-size:15px}
-  .risk-modal{padding:22px 18px 18px;max-height:82vh;width:100%}
-  .risk-modal .risk-call b{font-size:15px}
+  .mi-portal .risk-slot{padding:0 10px}
+  .mi-portal .risk-note{font-size:13px;padding:13px 14px;line-height:1.75}
+  .mi-portal .risk-note .risk-btn{min-height:36px;font-size:12.5px}
+  .mi-portal .risk-call{padding:10px 13px}
+  .mi-portal .risk-call b{font-size:15px}
+  .mi-portal .risk-modal{padding:22px 18px 18px;max-height:82vh;width:100%}
+  .mi-portal .risk-modal .risk-call b{font-size:15px}
 
-  .msg-fb{font-size:12px}
-  .msg-fb button{min-height:32px;padding:0 12px;font-size:12px}
-  .src-toggle{font-size:12px;padding:5px 12px}
-  .src-item{font-size:12px;line-height:1.7}
+  .mi-portal .msg-fb{font-size:12px}
+  .mi-portal .msg-fb button{min-height:32px;padding:0 12px;font-size:12px}
+  .mi-portal .src-toggle{font-size:12px;padding:5px 12px}
+  .mi-portal .src-item{font-size:12px;line-height:1.7}
 }

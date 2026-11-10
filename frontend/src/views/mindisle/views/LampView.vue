@@ -39,24 +39,58 @@
             </button>
           </div>
 
-          <!-- 风险提示：L2 常驻黄条 / L3 红条 -->
-          <div class="risk-slot" v-if="risk && risk.level >= 2">
+          <!-- 风险提示：L2 常驻提示卡 / L3 强调卡
+               设计原则：不用鲜红和感叹号。危机场景里，刺激的颜色会加剧恐慌，
+               这里要传递的是"有人在"而不是"出事了"。 -->
+          <div class="risk-slot" v-if="risk && risk.level >= 2 && !(risk.level === 2 && riskDismissed)">
             <div class="risk-note" :class="'l' + risk.level">
-              <div class="rt">{{ risk.level >= 3 ? '你的安全最重要' : '我们注意到你现在可能不太好受' }}</div>
-              <div>
-                {{ risk.level >= 3
-                  ? '如果你现在有伤害自己的念头，请先停一停。下面这些电话 24 小时有人接，不需要你解释太多。'
-                  : '这些热线 24 小时免费，可以直接打。也可以预约一位咨询师当面聊聊。' }}
+              <div class="risk-head">
+                <span class="risk-mark" aria-hidden="true">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5.9 1.2.9 1.9v.3h5.4v-.3c0-.7.3-1.4.9-1.9A6 6 0 0 0 12 3z"/><path d="M9 18h6M10 21h4"/></svg>
+                </span>
+                <div class="risk-copy">
+                  <div class="rt">{{ risk.level >= 3 ? '我先陪你把这一刻稳住' : '听起来你现在不太轻松' }}</div>
+                  <div class="rs">
+                    {{ risk.level >= 3
+                      ? '如果你有伤害自己的念头，先不用一个人扛。下面这些电话 24 小时有人接，不需要你解释太多。'
+                      : '这些热线 24 小时免费，随时可以打。也可以先看看，此刻能为自己做点什么。' }}
+                  </div>
+                </div>
               </div>
+
               <div class="risk-calls">
-                <a v-for="h in hotlines" :key="h.number" class="risk-call" :href="'tel:' + h.number">
+                <a v-for="h in hotlines.slice(0, 2)" :key="h.number" class="risk-call" :href="'tel:' + h.number">
                   <i>{{ h.name }}</i><b>{{ h.number }}</b>
                 </a>
               </div>
+
               <div class="risk-act">
-                <button class="risk-btn" data-go="booking">预约咨询师</button>
-                <button v-if="risk.level >= 3" class="risk-btn ghost" @click="showModal = true">查看求助方式</button>
+                <button class="risk-btn" data-go="booking">找人聊聊</button>
+                <button class="risk-btn ghost" @click="showHelps = !showHelps">
+                  {{ showHelps ? '收起' : '看看能做什么' }}
+                </button>
+                <button v-if="risk.level >= 3" class="risk-btn ghost" @click="showModal = true">全部求助方式</button>
               </div>
+
+              <div class="risk-help" v-if="showHelps">
+                <p>现在就能做的三件小事，选一件就行：</p>
+                <ol>
+                  <li><b>把脚踩实。</b>感受脚底和地面的接触，慢慢数 10 次呼吸。</li>
+                  <li><b>喝口温水。</b>让身体先慢下来，情绪会跟着松一点。</li>
+                  <li><b>写下此刻。</b>一句话就够，写完不用给任何人看。</li>
+                </ol>
+              </div>
+
+              <!-- L2 允许"先自己待会儿"，但把热线缩成一行留在原地，
+                   尊重自主性的同时不撤掉求助通道 -->
+              <button class="risk-later" v-if="risk.level === 2" @click="riskDismissed = true">先自己待会儿</button>
+            </div>
+          </div>
+          <div class="risk-slot" v-else-if="risk && risk.level === 2 && riskDismissed">
+            <div class="risk-mini">
+              <span>需要的时候，这两个号码一直都在</span>
+              <a :href="'tel:' + hotlines[0].number">{{ hotlines[0].number }}</a>
+              <button @click="riskDismissed = false">展开</button>
             </div>
           </div>
           <div class="risk-slot" v-else-if="risk && risk.level === 1">
@@ -76,36 +110,71 @@
                   <template v-if="m.typing"><i></i><i></i><i></i></template>
                   <template v-else>{{ m.content }}</template>
                 </div>
+                <!-- 等待本身会让人焦虑，首字超过 3 秒时先给一句话 -->
+                <p class="slow-hint" v-if="m.typing && m.slowHint">我在，慢慢说，不用急着组织语言。</p>
 
-                <!-- 引用来源 -->
-                <template v-if="m.sources && m.sources.length">
+                <!-- 引用来源：能核对到原文，才算"有依据"。
+                     历史消息的来源按需拉取，所以即使还没加载也要给入口，
+                     否则"点开才加载"的按钮永远不会出现。 -->
+                <template v-if="m.sources.length || (m.canLoadSrc && !m.srcLoaded)">
                   <button class="src-toggle" type="button" @click="toggleSources(m)">
-                    <span class="dot"></span>参考 <b>{{ m.sources.length }}</b> 条知识
+                    <span class="dot"></span>
+                    <template v-if="m.sources.length">依据 · <b>{{ m.sources.length }}</b> 条
+                      <span class="src-avg">{{ avgScore(m) }}%</span>
+                    </template>
+                    <template v-else>查看依据</template>
                   </button>
                   <div class="src-panel" v-show="m.showSrc">
                     <div class="src-item" v-for="(s, j) in m.sources" :key="j">
-                      <b>{{ s.title || '心理知识片段' }}</b>
+                      <div class="src-top">
+                        <b>{{ s.title || '心理知识片段' }}</b>
+                        <span class="src-score">{{ Math.round((s.score || 0) * 100) }}%</span>
+                      </div>
+                      <div class="src-bar"><i :style="{ width: Math.round((s.score || 0) * 100) + '%' }"></i></div>
                       <p>{{ s.snippet }}</p>
-                      <span>相似度 {{ Math.round((s.score || 0) * 100) }}%</span>
                     </div>
-                    <div class="src-foot">以上为检索到的知识条目，回答由 AI 转述，可对照原文核对。</div>
+                    <div class="src-foot">回答由 AI 转述知识库条目，可对照原文核对。</div>
                   </div>
                 </template>
+                <!-- 负向证明：没检索到依据时直接说，不假装有 -->
+                <div class="src-none" v-else-if="m.noSource">
+                  <span class="dot"></span>这条回答没有检索到直接依据，是通用回应
+                </div>
 
-                <!-- 答案反馈 -->
+                <!-- 答案反馈：点"没有"再问一句哪里不对，否则数据进库也没法用 -->
                 <div class="msg-fb" v-if="m.messageId && !m.typing">
-                  <span v-if="m.feedback" class="done">感谢反馈，会用来改进知识库</span>
+                  <span v-if="m.feedback" class="done">谢谢你的反馈，会用来改进</span>
+                  <template v-else-if="m.askReason">
+                    <span>哪里不太对</span>
+                    <button v-for="r in FEEDBACK_REASONS" :key="r" type="button"
+                            @click="sendFeedback(m, -1, r)">{{ r }}</button>
+                    <button type="button" class="skip" @click="m.askReason = false">跳过</button>
+                  </template>
                   <template v-else>
                     <span>这条回答有帮助吗</span>
                     <button type="button" @click="sendFeedback(m, 1)">有</button>
-                    <button type="button" @click="sendFeedback(m, -1)">没有</button>
+                    <button type="button" @click="m.askReason = true">没有</button>
                   </template>
                 </div>
               </div>
             </div>
 
-            <div v-if="!messages.length && !loading" class="empty-hint">
-              说说此刻的感受，随便多少都行。
+            <!-- 空态：情绪困扰的人最难的是"开口"，空白输入框是最高的门槛 -->
+            <div v-if="!messages.length && !loading" class="empty-state">
+              <div class="empty-lead">
+                <h3>不用先想好怎么开口</h3>
+                <p>选一个最接近此刻的，剩下的我们慢慢说。</p>
+              </div>
+              <div class="entry-list">
+                <button v-for="e in ENTRIES" :key="e.key" class="entry" type="button" @click="send(e.opener)">
+                  <span class="entry-ico" v-html="e.icon"></span>
+                  <span class="entry-text"><b>{{ e.title }}</b><i>{{ e.desc }}</i></span>
+                  <span class="entry-arrow">→</span>
+                </button>
+              </div>
+              <p class="empty-note" v-if="lastSessionTitle">
+                上次你聊到「{{ lastSessionTitle }}」，也可以接着说。
+              </p>
             </div>
           </div>
 
@@ -174,6 +243,34 @@ import { pickList, pickData, fmtDate, toast, go } from '../workspace'
 /* ---------------- 常量 ---------------- */
 const CHIPS = ['我有点焦虑', '我睡不好', '觉得很空', '今天还不错']
 
+// 空态的三个入口：点一下直接带一句开场，省掉"不知道说什么"这一步
+const ENTRIES = [
+  {
+    key: 'sleep',
+    title: '睡不着',
+    desc: '躺下以后脑子停不下来',
+    opener: '最近总是睡不着，一躺下脑子就停不下来，越想睡越清醒。',
+    icon: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 13.3A8.5 8.5 0 1 1 10.7 3.5a6.8 6.8 0 0 0 9.8 9.8z"/></svg>'
+  },
+  {
+    key: 'messy',
+    title: '心里很乱',
+    desc: '说不清在烦什么，就是静不下来',
+    opener: '心里很乱，说不清具体在烦什么，但就是静不下来，坐也坐不住。',
+    icon: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9c2.5-3 5-3 7.5 0s5 3 7.5 0 3-1.5 3-1.5"/><path d="M3 15c2.5-3 5-3 7.5 0s5 3 7.5 0 3-1.5 3-1.5"/></svg>'
+  },
+  {
+    key: 'stuck',
+    title: '不知道从哪说起',
+    desc: '没准备好也没关系',
+    opener: '我不知道该从哪里说起，可能只是需要有人陪我说说话。',
+    icon: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-5A8 8 0 1 1 21 12z"/></svg>'
+  }
+]
+
+// 点"没有"之后追问原因，这些是能反哺知识库的信号
+const FEEDBACK_REASONS = ['太长', '不相关', '不像在跟我说话']
+
 // 后端不可达或事件缺失时的兜底热线
 const HOTLINES = [
   { name: '全国心理援助热线', number: '12356' },
@@ -240,10 +337,21 @@ const risk = ref(null)          // { level, keywords, hotlines }
 const showModal = ref(false)
 const modalConfirmed = ref(false)
 const hotlines = ref(HOTLINES)
+const riskDismissed = ref(false)  // L2：用户选了"先自己待会儿"
+const showHelps = ref(false)      // 自助动作是否展开
+const ackedLevel = ref(0)         // 本轮消息里用户已确认过的风险等级
 const userInitial = ref('我')
 const sending = ref(false)
 
 const statusText = computed(() => (sending.value ? '正在回应…' : '在线 · 正在听'))
+
+// 空态里提示"上次聊到…"，让空白页有一点延续感
+const lastSessionTitle = computed(() => {
+  const s = sessions.value.find(
+    x => x.id !== activeId.value && x.title && x.title !== '新的对话'
+  )
+  return s ? s.title : ''
+})
 
 /* ---------------- 会话 ---------------- */
 onMounted(async () => {
@@ -265,6 +373,8 @@ async function open(id) {
   loading.value = true
   messages.value = []
   risk.value = null
+  riskDismissed.value = false
+  showHelps.value = false
   try {
     const d = pickData(await getChatDetail(id))
     messages.value = (d.messages || []).map(m => ({
@@ -273,7 +383,12 @@ async function open(id) {
       messageId: m.role === 'assistant' ? m.id : null,
       sources: [],
       showSrc: false,
+      // 历史消息的来源还没拉取，先给"查看依据"入口
+      canLoadSrc: m.role === 'assistant' && !!m.id,
+      srcLoaded: false,
+      noSource: false,
       feedback: 0,
+      askReason: false,
       typing: false
     }))
     scrollBottom()
@@ -290,16 +405,23 @@ async function send(text) {
   if (!content || !activeId.value || sending.value) return
 
   // ① 本地同步判定：危险信号先上屏，不等网络
+  ackedLevel.value = 0
   const local = detectRisk(content)
   if (local.level) applyRisk({ level: local.level, keywords: local.keywords, hotlines: HOTLINES })
 
   messages.value.push({ role: 'user', content, messageId: null, sources: [] })
   const reply = reactive({
     role: 'assistant', content: '', messageId: null,
-    sources: [], showSrc: false, feedback: 0, typing: true
+    sources: [], showSrc: false, feedback: 0, askReason: false,
+    typing: true, slowHint: false, noSource: false
   })
   messages.value.push(reply)
   scrollBottom()
+
+  // 首字超过 3 秒先给一句安抚，避免干等三个点
+  const slowTimer = setTimeout(() => {
+    if (reply.typing) reply.slowHint = true
+  }, 3000)
 
   sending.value = true
   try {
@@ -307,6 +429,7 @@ async function send(text) {
       onRisk(r) { applyRisk(r) },
       onSources(list) {
         reply.sources = list || []
+        reply.gotSources = true
       },
       onContent(chunk) {
         if (reply.typing) reply.typing = false
@@ -314,9 +437,13 @@ async function send(text) {
         scrollBottom()
       },
       onDone(done) {
+        clearTimeout(slowTimer)
         reply.typing = false
+        reply.slowHint = false
         if (done.message_id) reply.messageId = done.message_id
         if (!reply.content) reply.content = '我在。慢慢说，不着急。'
+        // 后端在无命中时也会下发空的 sources 事件，据此如实标注"无依据"
+        if (reply.gotSources && !reply.sources.length && done.message_id) reply.noSource = true
         scrollBottom()
       },
       onTitle(t) {
@@ -325,7 +452,9 @@ async function send(text) {
       }
     })
   } catch (e) {
+    clearTimeout(slowTimer)
     reply.typing = false
+    reply.slowHint = false
     if (!reply.content) reply.content = '刚才没能连上服务，请稍后再试一次。'
     toast('发送失败：' + (e.message || '网络异常'))
   } finally {
@@ -346,35 +475,65 @@ function applyRisk(r) {
   if (!r || !r.level) return
   // 只升不降：已经 L3 就不被后续轻提示覆盖
   if (risk.value && r.level < risk.value.level) return
+
+  const prevLevel = risk.value ? risk.value.level : 0
   risk.value = r
   if (r.hotlines && r.hotlines.length) hotlines.value = r.hotlines
+  // 新的风险信号进来时，把"先自己待会儿"的折叠状态复位
+  riskDismissed.value = false
+  showHelps.value = false
+
   if (r.level >= 3) {
-    modalConfirmed.value = false
-    showModal.value = true
+    // 同一条消息里，本地判定会先开弹层、后端 risk 事件随后再到一次。
+    // 用户已经确认过的同类风险，不再重复弹出、也不清掉勾选。
+    const duplicate = prevLevel === r.level && ackedLevel.value >= r.level
+    if (!duplicate) {
+      modalConfirmed.value = false
+      showModal.value = true
+    }
   }
 }
 
 function closeModal() {
   if (!modalConfirmed.value) return
   showModal.value = false
+  ackedLevel.value = risk.value ? risk.value.level : 0
 }
 
 /* ---------------- 引用与反馈 ---------------- */
+// 平均相似度：让"这条回答有多靠得住"一眼可见
+function avgScore(m) {
+  if (!m.sources || !m.sources.length) return 0
+  const sum = m.sources.reduce((a, s) => a + (s.score || 0), 0)
+  return Math.round((sum / m.sources.length) * 100)
+}
+
 async function toggleSources(m) {
   m.showSrc = !m.showSrc
-  if (m.showSrc && !m.sources.length && m.messageId) {
+  if (m.showSrc && !m.srcLoaded && m.messageId) {
     try {
       const res = await getMessageSources(m.messageId)
       m.sources = res?.data?.sources || []
-    } catch (e) { /* 历史消息无来源时静默 */ }
+    } catch (e) {
+      m.sources = []
+    }
+    m.srcLoaded = true
+    // 拉回来是空的，就如实说没有依据，而不是留一个空面板
+    if (!m.sources.length) m.noSource = true
+    scrollBottom()
   }
 }
 
-async function sendFeedback(m, rating) {
+async function sendFeedback(m, rating, reason) {
   if (!m.messageId) return
   try {
-    await submitFeedback({ message_id: Number(m.messageId), rating })
+    await submitFeedback({
+      message_id: Number(m.messageId),
+      rating,
+      reason: reason || null
+    })
     m.feedback = rating
+    m.askReason = false
   } catch (e) {
     toast('反馈提交失败')
   }
