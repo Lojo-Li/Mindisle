@@ -434,6 +434,8 @@ async def get_counselor_appointments(
             "message": "获取成功",
             "data": result
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"获取咨询师预约列表失败: {str(e)}")
         raise HTTPException(
@@ -480,6 +482,8 @@ async def get_appointment_detail(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(e)
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"获取预约详情失败: {str(e)}")
         raise HTTPException(
@@ -517,6 +521,8 @@ async def cancel_appointment(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"取消预约失败: {str(e)}")
         db.rollback()
@@ -558,6 +564,8 @@ async def submit_review(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"提交评价失败: {str(e)}")
         db.rollback()

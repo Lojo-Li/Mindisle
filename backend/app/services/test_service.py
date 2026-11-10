@@ -39,6 +39,19 @@ class TestService:
         if query.category:
             q = q.filter(PsychologicalTest.category == query.category)
 
+        # 排序（此前 sort 参数未生效，导致前端切换「最新/最热」无任何变化）
+        sort_key = (query.sort or "latest").lower()
+        if sort_key in ("hot", "popular", "heat"):
+            # 热度相同时用 id 兜底，保证顺序稳定
+            q = q.order_by(PsychologicalTest.hot_value.desc(), PsychologicalTest.id.asc())
+        elif sort_key in ("rating", "score"):
+            q = q.order_by(PsychologicalTest.hot_value.desc(), PsychologicalTest.id.asc())
+        elif sort_key in ("oldest",):
+            q = q.order_by(PsychologicalTest.created_at.asc(), PsychologicalTest.id.asc())
+        else:
+            # latest：按创建时间倒序；同秒创建时按 id 正序，保持列表稳定
+            q = q.order_by(PsychologicalTest.created_at.desc(), PsychologicalTest.id.asc())
+
         # 总数
         total = q.count()
 
@@ -179,8 +192,34 @@ class TestService:
         return max_value - value + 1
 
     @staticmethod
+    def _normalize_answers(answers: Dict[int, int], scoring_rules: Dict, max_value: int) -> Dict[int, int]:
+        """按 scoring_rules.reverse_questions 把反向题折算成正向分。
+
+        SAS/SDS 原先直接对原始作答求和，忽略了规则里声明的反向题
+        （SAS 的第 5/9/13/17/19 题），会让总分系统性偏高、等级整体上移。
+        """
+        rules = scoring_rules or {}
+        reverse = set(rules.get("reverse_questions") or [])
+        if not reverse:
+            return answers
+
+        normalized: Dict[int, int] = {}
+        for key, raw in (answers or {}).items():
+            try:
+                q = int(key)
+                v = int(raw)
+            except (TypeError, ValueError):
+                continue
+            if v <= 0:
+                v = 1
+            normalized[q] = TestService._reverse_score(v, max_value) if q in reverse else v
+        return normalized
+
+    @staticmethod
     def _calculate_sas_score(answers: Dict[int, int], scoring_rules: Dict) -> Dict[str, Any]:
-        """计算焦虑自评量表(SAS)分数"""
+        """计算焦虑自评量表(SAS)分数（含反向题折算）"""
+        answers = TestService._normalize_answers(answers, scoring_rules, 4)
+
         # 躯体性焦虑: 第2,4,6,8,9,10,12,14题
         physical_questions = [2, 4, 6, 8, 9, 10, 12, 14]
         # 精神性焦虑: 第1,3,5,7,11,13,15,16,17,18,19,20题
@@ -221,7 +260,8 @@ class TestService:
 
     @staticmethod
     def _calculate_sds_score(answers: Dict[int, int], scoring_rules: Dict) -> Dict[str, Any]:
-        """计算抑郁自评量表(SDS)分数"""
+        """计算抑郁自评量表(SDS)分数（含反向题折算）"""
+        answers = TestService._normalize_answers(answers, scoring_rules, 4)
         # 情绪低落: 第1,3,5,7,9,15,17,19题
         emotional_questions = [1, 3, 5, 7, 9, 15, 17, 19]
         # 兴趣减退: 第2,4,6,11,14题
@@ -624,15 +664,17 @@ class TestService:
         elif test.test_code == "PSQI19":
             result_data = TestService._calculate_sleep_score(request.answers, test.scoring_rules)
         else:
-            # 通用计分（简单求和）
-            total_score = sum(request.answers.values())
-            result_data = {
-                "total_score": total_score,
-                "dimension_scores": [],
-                "result_level": "unknown",
-                "result_title": "测试完成",
-                "result_description": "感谢您的参与"
-            }
+            # 未内置算法的新量表：完全按 scoring_rules / result_rules 配置计分
+            result_data = TestService._calculate_by_rules(request.answers, test)
+
+        # 等级以量表自己的 result_rules 为准（改配置立即生效，不受硬编码阈值影响）
+        configured_levels = (test.result_rules or {}).get("levels") if isinstance(test.result_rules, dict) else None
+        if configured_levels and result_data.get("total_score") is not None:
+            level, title, description = TestService._match_level(result_data["total_score"], test.result_rules)
+            if level != "unknown":
+                result_data["result_level"] = level
+                result_data["result_title"] = title
+                result_data["result_description"] = description
 
         # 生成建议
         suggestions = TestService._generate_suggestions(test.test_code, result_data)
@@ -847,8 +889,10 @@ class TestService:
 
     @staticmethod
     def get_test_history(db: Session, user_id: int, test_id: Optional[int] = None,
-                        page: int = 1, page_size: int = 10) -> Dict[str, Any]:
-        """获取用户测试历史"""
+                        page: int = 1, page_size: int = 10,
+                        level: Optional[str] = None,
+                        favorite_only: bool = False) -> Dict[str, Any]:
+        """获取用户测试历史（支持按量表、等级、收藏筛选）"""
         q = db.query(TestResult).filter(
             TestResult.user_id == user_id,
             TestResult.is_deleted == False
@@ -856,6 +900,10 @@ class TestService:
 
         if test_id:
             q = q.filter(TestResult.test_id == test_id)
+        if level:
+            q = q.filter(TestResult.result_level == level)
+        if favorite_only:
+            q = q.filter(TestResult.is_favorite == True)
 
         # 按时间倒序
         q = q.order_by(desc(TestResult.created_at))
@@ -888,28 +936,53 @@ class TestService:
         if not test:
             return None
 
-        # 获取该用户在该测试下的所有结果，按时间正序
+        # 获取该用户在该测试下的所有有效结果，按时间正序
+        # 必须排除软删除记录，否则历史列表与趋势图会对不上
         results = db.query(TestResult).filter(
             and_(
                 TestResult.user_id == user_id,
-                TestResult.test_id == test_id
+                TestResult.test_id == test_id,
+                TestResult.is_deleted == False
             )
         ).order_by(TestResult.created_at).all()
 
         # 转换为趋势数据点
+        max_score = (test.total_questions or 0) * TestService._max_option_value(test.option_type, test.scoring_rules)
+
         trend_data = []
+        points = []
         for result in results:
-            if result.total_score is not None:
-                trend_data.append({
-                    "date": result.created_at.strftime("%Y-%m-%d"),
-                    "score": result.total_score
-                })
+            if result.total_score is None:
+                continue
+            trend_data.append({
+                "date": result.created_at.strftime("%Y-%m-%d"),
+                "score": result.total_score
+            })
+            points.append({
+                "id": result.id,
+                "date": result.created_at.strftime("%Y-%m-%d"),
+                "datetime": result.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                "score": result.total_score,
+                "rate": round(result.total_score / max_score * 100) if max_score else None,
+                "level": result.result_level,
+                "title": result.result_title,
+            })
+
+        level_distribution: Dict[str, int] = {}
+        for p in points:
+            key = p["level"] or "unknown"
+            level_distribution[key] = level_distribution.get(key, 0) + 1
 
         return {
             "test_id": test_id,
             "test_code": test.test_code,
             "test_title": test.title,
-            "trend_data": trend_data
+            "total_questions": test.total_questions,
+            "option_type": test.option_type,
+            "max_score": max_score or None,
+            "trend_data": trend_data,
+            "points": points,
+            "level_distribution": level_distribution,
         }
 
     @staticmethod
@@ -1017,7 +1090,271 @@ class TestService:
             )
         ).first()
 
+    @staticmethod
+    def clear_progress(db: Session, user_id: int, test_id: int) -> int:
+        """
+        清除答题进度
+
+        用于「再测一次」：必须把上一次的作答彻底清空，否则前端会恢复到旧答案，
+        用户看到的是上次填过的选项，而不是一份空白的新问卷。
+        """
+        deleted = db.query(TestProgress).filter(
+            and_(
+                TestProgress.user_id == user_id,
+                TestProgress.test_id == test_id
+            )
+        ).delete()
+        db.commit()
+        return deleted
+
     # ==================== 管理后台方法 ====================
+
+    # ==================== 规则驱动计分 ====================
+
+    @staticmethod
+    def _match_level(total: int, result_rules: Optional[Dict]) -> tuple:
+        """按 result_rules.levels 判定等级，返回 (code, title, desc)。兼容 dict / list 两种写法。"""
+        if not result_rules or not isinstance(result_rules, dict):
+            return ("unknown", "测试完成", "感谢您的参与")
+
+        levels = result_rules.get("levels")
+        entries: List[Dict[str, Any]] = []
+
+        if isinstance(levels, dict):
+            for code, cfg in levels.items():
+                cfg = cfg or {}
+                if cfg.get("min") is None and cfg.get("max") is None:
+                    continue
+                entries.append({
+                    "code": code,
+                    "title": cfg.get("title") or cfg.get("label") or code,
+                    "desc": cfg.get("desc") or cfg.get("description") or "",
+                    "min": cfg.get("min", cfg.get("min_score")),
+                    "max": cfg.get("max", cfg.get("max_score")),
+                })
+        elif isinstance(levels, list):
+            for cfg in levels:
+                if not isinstance(cfg, dict):
+                    continue
+                entries.append({
+                    "code": cfg.get("code") or cfg.get("level") or "",
+                    "title": cfg.get("title") or cfg.get("label") or "",
+                    "desc": cfg.get("desc") or cfg.get("description") or "",
+                    "min": cfg.get("min", cfg.get("min_score")),
+                    "max": cfg.get("max", cfg.get("max_score")),
+                })
+
+        if not entries:
+            return ("unknown", "测试完成", "感谢您的参与")
+
+        entries.sort(key=lambda x: (x["min"] if isinstance(x["min"], (int, float)) else 10 ** 9))
+
+        for entry in entries:
+            lo = entry["min"] if isinstance(entry["min"], (int, float)) else None
+            hi = entry["max"] if isinstance(entry["max"], (int, float)) else None
+            if lo is not None and hi is not None and lo <= total <= hi:
+                return (entry["code"], entry["title"], entry["desc"])
+            if lo is not None and hi is None and total >= lo:
+                return (entry["code"], entry["title"], entry["desc"])
+            if hi is not None and lo is None and total <= hi:
+                return (entry["code"], entry["title"], entry["desc"])
+
+        nearest = entries[-1] if total > (entries[-1]["max"] or 0) else entries[0]
+        return (nearest["code"], nearest["title"], nearest["desc"])
+
+    @staticmethod
+    def _max_option_value(option_type: Optional[str], scoring_rules: Optional[Dict] = None) -> int:
+        """从选项类型推断单题最大分值（默认 4 分制）。"""
+        rules = scoring_rules or {}
+        if rules.get("max_value"):
+            try:
+                return int(rules["max_value"])
+            except (TypeError, ValueError):
+                pass
+        return 5 if "5" in (option_type or "") else 4
+
+    @staticmethod
+    def _calculate_by_rules(answers: Dict[int, int], test: PsychologicalTest) -> Dict[str, Any]:
+        """规则驱动计分：不认识 test_code 的量表也能按配置算出确定结果。"""
+        rules = test.scoring_rules or {}
+        result_rules = test.result_rules or {}
+        max_value = TestService._max_option_value(test.option_type, rules)
+        normalized = TestService._normalize_answers(answers, rules, max_value)
+
+        total_questions = test.total_questions or max(normalized.keys() or [0])
+        values = {q: normalized.get(q, 1) for q in range(1, total_questions + 1)}
+        total_score = sum(values.values())
+
+        dimension_scores: List[Dict[str, Any]] = []
+        if rules.get("type", "sum_with_dimensions") != "sum":
+            dim_defs = rules.get("dimensions") or {}
+            if isinstance(dim_defs, dict):
+                for name, cfg in dim_defs.items():
+                    qs = (cfg or {}).get("questions") or []
+                    score = sum(values.get(q, 1) for q in qs)
+                    dimension_scores.append({
+                        "dimension": name,
+                        "score": score,
+                        "max_score": len(qs) * max_value,
+                        "level": "",
+                    })
+
+        level, title, description = TestService._match_level(total_score, result_rules)
+        return {
+            "total_score": total_score,
+            "dimension_scores": dimension_scores,
+            "result_level": level,
+            "result_title": title,
+            "result_description": description,
+        }
+
+    # ==================== 量表配置（管理端） ====================
+
+    @staticmethod
+    def _validate_test_payload(payload: Dict[str, Any], require_code: bool = True) -> List[str]:
+        """量表配置入参校验，返回错误列表（空表示通过）。"""
+        errors: List[str] = []
+        if require_code and not (payload.get("test_code") or "").strip():
+            errors.append("test_code 不能为空")
+        if not (payload.get("title") or "").strip():
+            errors.append("title 不能为空")
+
+        option_type = payload.get("option_type") or "4选项"
+        if option_type not in ("4选项", "5选项"):
+            errors.append("option_type 仅支持「4选项」或「5选项」")
+
+        if payload.get("result_rules") is not None and not isinstance(payload["result_rules"], dict):
+            errors.append("result_rules 必须是对象")
+
+        questions = payload.get("questions")
+        if questions is not None:
+            if not isinstance(questions, list):
+                errors.append("questions 必须是数组")
+            else:
+                for idx, q in enumerate(questions, start=1):
+                    if not (q.get("question_text") or "").strip():
+                        errors.append(f"第 {idx} 题题干为空")
+                        break
+                    options = q.get("options")
+                    if not isinstance(options, list) or not options:
+                        errors.append(f"第 {idx} 题缺少选项")
+                        break
+                    if [o for o in options if not isinstance(o, dict) or o.get("value") is None]:
+                        errors.append(f"第 {idx} 题选项缺少 value")
+                        break
+        return errors
+
+    @staticmethod
+    def _apply_questions(db: Session, test: PsychologicalTest, questions: List[Dict[str, Any]]) -> None:
+        """整表替换题目，并按顺序重排题号。"""
+        db.query(TestQuestion).filter(TestQuestion.test_id == test.id).delete()
+        db.flush()
+
+        for idx, q in enumerate(questions, start=1):
+            options = []
+            for opt in q.get("options") or []:
+                try:
+                    options.append({"value": int(opt.get("value")), "label": str(opt.get("label") or "")})
+                except (TypeError, ValueError):
+                    continue
+            db.add(TestQuestion(
+                test_id=test.id,
+                question_number=idx,
+                question_text=str(q.get("question_text") or "").strip(),
+                options=options,
+                dimension=(q.get("dimension") or None),
+                is_reverse=bool(q.get("is_reverse")),
+            ))
+
+        test.total_questions = len(questions)
+
+    @staticmethod
+    def create_test(db: Session, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """新建量表（可同时写入题目）。"""
+        errors = TestService._validate_test_payload(payload, require_code=True)
+        if errors:
+            raise ValueError("；".join(errors))
+
+        code = payload["test_code"].strip()
+        if db.query(PsychologicalTest).filter(PsychologicalTest.test_code == code).first():
+            raise ValueError(f"test_code「{code}」已存在，请换一个编码")
+
+        test = PsychologicalTest(
+            test_code=code,
+            title=payload["title"].strip(),
+            description=payload.get("description") or "",
+            category=payload.get("category") or "other",
+            intro_text=payload.get("intro_text") or "",
+            total_questions=0,
+            score_type=payload.get("score_type") or "total",
+            option_type=payload.get("option_type") or "4选项",
+            scoring_rules=payload.get("scoring_rules") or {"type": "sum_with_dimensions"},
+            result_rules=payload.get("result_rules") or {"levels": {}},
+            sort_order=int(payload.get("sort_order") or 0),
+            hot_value=int(payload.get("hot_value") or 0),
+            is_active=bool(payload.get("is_active", True)),
+        )
+        db.add(test)
+        db.flush()
+
+        questions = payload.get("questions") or []
+        if questions:
+            TestService._apply_questions(db, test, questions)
+
+        db.commit()
+        db.refresh(test)
+        return TestService.get_admin_test_detail(db, test.id)
+
+    @staticmethod
+    def update_test(db: Session, test_id: int, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """更新量表配置；传入 questions 时整表替换题目。"""
+        test = db.query(PsychologicalTest).filter(PsychologicalTest.id == test_id).first()
+        if not test:
+            raise ValueError("量表不存在")
+
+        errors = TestService._validate_test_payload(payload, require_code=False)
+        if errors:
+            raise ValueError("；".join(errors))
+
+        code = (payload.get("test_code") or "").strip()
+        if code and code != test.test_code:
+            if db.query(PsychologicalTest).filter(
+                PsychologicalTest.test_code == code, PsychologicalTest.id != test_id
+            ).first():
+                raise ValueError(f"test_code「{code}」已被占用")
+            test.test_code = code
+
+        for field in ("title", "description", "category", "intro_text", "score_type", "option_type"):
+            if payload.get(field) is not None:
+                setattr(test, field, payload[field])
+        if payload.get("scoring_rules") is not None:
+            test.scoring_rules = payload["scoring_rules"]
+        if payload.get("result_rules") is not None:
+            test.result_rules = payload["result_rules"]
+        if payload.get("sort_order") is not None:
+            test.sort_order = int(payload["sort_order"])
+        if payload.get("hot_value") is not None:
+            test.hot_value = int(payload["hot_value"])
+        if payload.get("is_active") is not None:
+            test.is_active = bool(payload["is_active"])
+
+        if payload.get("questions") is not None:
+            TestService._apply_questions(db, test, payload["questions"])
+
+        db.commit()
+        db.refresh(test)
+        return TestService.get_admin_test_detail(db, test.id)
+
+    @staticmethod
+    def toggle_test_status(db: Session, test_id: int, is_active: bool) -> Dict[str, Any]:
+        """上架 / 下架量表。"""
+        test = db.query(PsychologicalTest).filter(PsychologicalTest.id == test_id).first()
+        if not test:
+            raise ValueError("量表不存在")
+        test.is_active = bool(is_active)
+        db.commit()
+        db.refresh(test)
+        return {"id": test.id, "is_active": test.is_active}
 
     @staticmethod
     def get_admin_tests(
@@ -1135,9 +1472,11 @@ class TestService:
             "introText": test.intro_text,
             "totalQuestions": test.total_questions,
             "optionType": test.option_type,
+            "scoreType": test.score_type,
             "scoringRules": test.scoring_rules,
+            "resultRules": test.result_rules,
             "hotValue": test.hot_value,
-            "coverImage": test.cover_image,
+            "coverImage": getattr(test, "cover_image", None),
             "isActive": test.is_active,
             "questions": question_list,
             "createTime": test.created_at.strftime("%Y-%m-%d %H:%M:%S") if test.created_at else ""

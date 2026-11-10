@@ -101,7 +101,7 @@
       </form>
     </div>
 
-    <p class="foot" data-copy="W25">© 2026 心屿 Mindisle · 界面演示，账号服务尚未接入</p>
+    <p class="foot" data-copy="W25">© 2026 心屿 Mindisle</p>
     <p class="crisis" data-copy="W26">如遇心理危机，请立即联系专业机构或拨打心理援助热线</p>
   </section>
 
@@ -185,7 +185,7 @@ const COPY = {
   W21: '管理员登录',
   W23: '请输入管理员账号',
   W24: '进入管理后台',
-  W25: '© 2026 心屿 Mindisle · 界面演示，账号服务尚未接入',
+  W25: '© 2026 心屿 Mindisle',
   W26: '如遇心理危机，请立即联系专业机构或拨打心理援助热线',
   W28: 'Welcome back',
   W29: '欢迎回来',

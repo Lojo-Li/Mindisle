@@ -55,10 +55,17 @@ export function statusText(s) {
 }
 
 export function go(view, router) {
+  if (!view) return
+  // 允许直接传绝对路径（如 /workspace/result/21）
+  if (String(view).charAt(0) === '/') {
+    router.push(String(view))
+    return
+  }
   const map = {
     home: '/workspace/home', assess: '/workspace/assess',
     'assess-quiz': '/workspace/assess', 'assess-result': '/workspace/records',
-    lamp: '/workspace/lamp', booking: '/workspace/booking', records: '/workspace/records'
+    lamp: '/workspace/lamp', booking: '/workspace/booking', records: '/workspace/records',
+    trend: '/workspace/trend'
   }
   router.push(map[view] || '/workspace/home')
 }
@@ -93,9 +100,12 @@ export function docCard(c) {
 }
 
 export function testTl(r, i) {
-  return '<div class="tl-item' + (i === 0 ? ' now' : '') + '"><b>' +
-    esc(r.test_title || r.test_code || '心理测评') + ' · ' + (r.total_score ?? '—') + ' 分</b>' +
-    '<span>' + fmtDate(r.created_at) + ' · ' + esc(r.result_level || r.result_title || '已完成') + '</span></div>'
+  // data-go 让记录项可点击回看详情（go() 已支持绝对路径）
+  return '<div class="tl-item' + (i === 0 ? ' now' : '') + '" data-go="/workspace/result/' + (r.id || '') + '" style="cursor:pointer">' +
+    '<b>' + esc(r.test_title || r.test_code || '心理测评') + ' · ' + (r.total_score ?? '—') + ' 分</b>' +
+    '<span>' + fmtDate(r.created_at) + ' · ' + esc(r.result_title || r.result_level || '已完成') +
+    (r.max_score ? ' · 得分率 ' + Math.round((r.total_score || 0) / r.max_score * 100) + '%' : '') +
+    '</span></div>'
 }
 
 export function apptTl(a) {
@@ -123,11 +133,14 @@ export function filterPill(text, on) {
 }
 
 export function dimCard(d) {
+  const max = Number(d.max_score || 0)
+  const pct = max ? Math.min(100, Math.round((Number(d.score || 0) / max) * 100)) : 60
   return '<div><div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:7px">' +
     '<span style="color:var(--ink-2)">' + esc(d.dimension) + '</span>' +
-    '<span style="color:var(--ink-3);font-variant-numeric:tabular-nums">' + esc(d.score) + '</span></div>' +
+    '<span style="color:var(--ink-3);font-variant-numeric:tabular-nums">' + esc(d.score) +
+    (max ? '<span style="opacity:.6"> / ' + max + '</span>' : '') + '</span></div>' +
     '<div style="height:6px;border-radius:6px;background:var(--line-2);overflow:hidden">' +
-    '<i style="display:block;height:100%;width:60%;border-radius:6px;background:var(--sea)"></i></div></div>'
+    '<i style="display:block;height:100%;width:' + pct + '%;border-radius:6px;background:var(--sea)"></i></div></div>'
 }
 
 export function dayCard(d, i, on) {

@@ -104,6 +104,8 @@ async def get_counselor_orders(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"获取咨询师订单列表失败: {str(e)}")
         raise HTTPException(
@@ -156,6 +158,8 @@ async def handle_order(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"处理订单失败: {str(e)}")
         db.rollback()
