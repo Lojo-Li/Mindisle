@@ -79,6 +79,8 @@ const QuizView = () => import('@/views/mindisle/views/QuizView.vue')
 const ResultView = () => import('@/views/mindisle/views/ResultView.vue')
 const LampView = () => import('@/views/mindisle/views/LampView.vue')
 const BookingView = () => import('@/views/mindisle/views/BookingView.vue')
+const UserChatView = () => import('@/views/mindisle/views/UserChatView.vue')
+const MyAppointmentsView = () => import('@/views/mindisle/views/MyAppointmentsView.vue')
 const RecordsView = () => import('@/views/mindisle/views/RecordsView.vue')
 const TrendView = () => import('@/views/mindisle/views/TrendView.vue')
 const CounselorOverview = () => import('@/views/mindisle/views/CounselorOverview.vue')
@@ -111,6 +113,7 @@ const routes = [
       { path: 'result/:id', name: 'WorkspaceResult', component: ResultView, meta: { title: '测评结果 - 心屿 Mindisle', crumb: '测评结果' } },
       { path: 'lamp', name: 'WorkspaceLamp', component: LampView, meta: { title: '屿灯 - 心屿 Mindisle', crumb: '屿灯' } },
       { path: 'booking', name: 'WorkspaceBooking', component: BookingView, meta: { title: '咨询预约 - 心屿 Mindisle', crumb: '咨询预约' } },
+      { path: 'appointments', name: 'WorkspaceAppointments', component: MyAppointmentsView, meta: { title: '我的预约 - 心屿 Mindisle', crumb: '我的预约' } },
       { path: 'records', name: 'WorkspaceRecords', component: RecordsView, meta: { title: '我的记录 - 心屿 Mindisle', crumb: '我的记录' } },
       { path: 'trend/:id?', name: 'WorkspaceTrend', component: TrendView, meta: { title: '测评趋势 - 心屿 Mindisle', crumb: '测评趋势' } }
     ]
@@ -287,7 +290,7 @@ const routes = [
   {
     path: '/consultation/user/:id',
     name: 'ConsultationChatUser',
-    component: ConsultationChatUser,
+    component: UserChatView,
     meta: { title: '咨询对话 - 心屿 Mindisle', requiresAuth: true }
   },
   {

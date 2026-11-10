@@ -7,8 +7,6 @@
           <h1>咨询预约</h1>
           <p>找到那个让你觉得「可以说下去」的人。首次咨询可免费更换一次。</p>
         </div>
-        <div class="spacer"></div>
-        <button class="btn btn-ghost" data-go="/counselor/orders">我的预约</button>
       </div>
 
       <div class="filter-row">
@@ -258,6 +256,8 @@ async function confirm() {
     toast('预约已提交')
     const ov = rootEl.value.querySelector('#bookOverlay')
     if (ov) ov.classList.remove('open')
+    // 预约成功后直接跳到「我的预约」，方便确认状态
+    router.push('/workspace/appointments')
   } catch (e) {
     toast('预约失败，请重试')
   }

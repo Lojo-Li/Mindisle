@@ -128,7 +128,8 @@ const MENUS = {
     { text: '心理测评', short: '测评', path: '/workspace/assess', icon: ICONS.assess },
     { text: '屿灯 · 情绪支持', short: '屿灯', path: '/workspace/lamp', icon: ICONS.lamp, badge: 'AI' },
     { text: '咨询预约', short: '预约', path: '/workspace/booking', icon: ICONS.booking },
-    { label: '我的', text: '我的记录', short: '记录', path: '/workspace/records', icon: ICONS.records },
+    { label: '我的', text: '我的预约', short: '预约', path: '/workspace/appointments', icon: ICONS.booking },
+    { text: '我的记录', short: '记录', path: '/workspace/records', icon: ICONS.records },
     { text: '测评趋势', short: '趋势', path: '/workspace/trend', icon: ICONS.trend }
   ],
   counselor: [

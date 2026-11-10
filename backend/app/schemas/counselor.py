@@ -175,6 +175,7 @@ class AppointmentResponse(BaseModel):
     confirmed_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     cancelled_at: Optional[datetime] = None
+    cancel_reason: Optional[str] = None
 
     # 关联的咨询师信息
     counselor: Optional['CounselorResponse'] = None
