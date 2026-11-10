@@ -55,15 +55,61 @@ class RAGService:
                 )
         return self._ef
 
+    def _resolve_db_path(self) -> str:
+        """解析向量库路径；路径含非 ASCII 字符时自动迁移到纯英文目录。
+
+        为什么必须这么做：底层的 hnswlib 按字节打开文件，遇到中文路径会
+        直接报 "Cannot open header file"。这个错误的迷惑性很强——数据本身
+        完好，但检索永远返回 0 条，前端表现为"回答没有依据、内容变空泛"，
+        不像报错，更像模型能力下降。
+
+        中文目录在国内开发机上极常见（例如 E:\\...\\腾讯实训营\\...），
+        所以这里不靠"记得改配置"，而是自动把索引复制到用户目录下的
+        ASCII 路径再使用。
+        """
+        raw = (settings.CHROMA_DB_PATH or "./chroma_db").strip()
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        path = raw if os.path.isabs(raw) else os.path.join(base_dir, raw.lstrip("./\\"))
+        path = os.path.abspath(path)
+
+        if all(ord(ch) < 128 for ch in path):
+            return path
+
+        safe_root = os.environ.get("LOCALAPPDATA") or os.path.expanduser("~")
+        safe_path = os.path.join(safe_root, "mindisle_chroma")
+
+        # 目标不存在、或源库比缓存新（重建过向量库）时才复制。
+        # 少了这个判断，升级向量库后仍会读到旧缓存，表现为"明明重建了还是查不到"。
+        src_db = os.path.join(path, "chroma.sqlite3")
+        dst_db = os.path.join(safe_path, "chroma.sqlite3")
+        need_copy = not os.path.exists(dst_db)
+        if not need_copy:
+            try:
+                need_copy = os.path.getmtime(src_db) > os.path.getmtime(dst_db) + 1
+            except OSError:
+                need_copy = True
+
+        if need_copy:
+            try:
+                import shutil
+                if os.path.exists(safe_path):
+                    shutil.rmtree(safe_path, ignore_errors=True)
+                shutil.copytree(path, safe_path, dirs_exist_ok=True)
+                logger.warning(
+                    "[RAG] 向量库路径含非 ASCII 字符（hnswlib 无法打开），"
+                    "已复制到纯英文路径：%s", safe_path
+                )
+            except Exception as exc:
+                logger.error("[RAG] 迁移向量库失败，退回原路径（检索可能失效）：%s", exc)
+                return path
+        return safe_path
+
     def _get_client(self):
         """懒加载 ChromaDB 客户端"""
         if self._client is None:
             import chromadb
             from chromadb.config import Settings
-            import os
-            # 统一解析为 backend/ 目录下的 chroma_db，不受启动目录影响
-            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-            db_path = os.path.join(base_dir, settings.CHROMA_DB_PATH.lstrip("./\\"))
+            db_path = self._resolve_db_path()
             os.makedirs(db_path, exist_ok=True)
             self._client = chromadb.PersistentClient(
                 path=db_path,
