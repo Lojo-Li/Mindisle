@@ -16,7 +16,7 @@ from app.schemas.chat import (
     DialogueDetailResponse, TagCreate, TagResponse,
     MessageCreate, ChatResponse
 )
-from app.services.chat_service import chat_service
+from app.services.chat_service import chat_service, DEFAULT_DIALOGUE_TITLES
 from app.services.ai_service import ai_service
 from app.services.rag_service import rag_service
 from app.services.auth_service import AuthService
@@ -505,9 +505,13 @@ async def send_message_stream(
                         ChatMessage.is_deleted == False
                     )
                 ).count()
+                # 只有"仍然是默认名"的首轮对话才自动取标题。
+                # 注意这里的名单必须覆盖前端实际使用的默认名：
+                # 前端新建对话写的是「新的对话」（带「的」），
+                # 之前名单里只有「新对话」，导致新建的对话永远不会被命名。
                 needs_title = (
                     message_count == 2
-                    and dialogue_title_current in {"", "新对话", "未命名对话", "新聊天"}
+                    and (dialogue_title_current or "").strip() in DEFAULT_DIALOGUE_TITLES
                 )
 
             stream_db.commit()

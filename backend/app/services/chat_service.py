@@ -1,6 +1,8 @@
 """
 聊天服务 - 业务逻辑层
 """
+import logging
+
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc, func
 from typing import List, Optional
@@ -19,6 +21,16 @@ from app.services.crisis_service import (
     get_crisis_level_label,
 )
 
+# 视为"尚未命名"的默认标题。
+# 前端新建对话写的是「新的对话」（带「的」），历史数据里还出现过「新对话」
+# 「未命名对话」「新聊天」；这里集中维护，避免各处名单不一致。
+# 背景：之前这里只有「新对话」，导致新建对话永远不会自动命名。
+DEFAULT_DIALOGUE_TITLES = {
+    "", "新的对话", "新对话", "未命名对话", "新聊天", "新的心理咨询"
+}
+
+logger = logging.getLogger(__name__)
+
 
 class ChatService:
     """聊天服务类"""
@@ -26,9 +38,8 @@ class ChatService:
     @staticmethod
     def _should_generate_dialogue_title(dialogue: ChatDialogue, message_count: int) -> bool:
         """仅在首轮对话后为默认标题的会话生成主题。"""
-        default_titles = {"", "新对话", "未命名对话", "新聊天"}
         current_title = (dialogue.title or "").strip()
-        return message_count == 2 and current_title in default_titles
+        return message_count == 2 and current_title in DEFAULT_DIALOGUE_TITLES
 
     @staticmethod
     def _fallback_topic(user_content: str) -> str:
@@ -55,9 +66,21 @@ class ChatService:
                 "content": f"提问：{user_content}\n回应：{ai_content}"
             }
         ]
-        topic = ai_service.chat(messages=prompt_messages, stream=False, temperature=0.2, max_tokens=32)
+        # 32 个 token 对带推理过程的模型不够：思考内容会把预算吃满，
+        # 正文返回空字符串，于是每次都退化成"截取用户原句"。
+        # 给到 200 才能稳定拿到一句主题（只在首轮触发一次，成本可忽略）。
+        try:
+            topic = ai_service.chat(
+                messages=prompt_messages, stream=False, temperature=0.2, max_tokens=200
+            )
+        except Exception as e:
+            logger.warning("[标题] 生成失败，改用首句兜底: %s", e)
+            return ChatService._fallback_topic(user_content)
+
         topic = (topic or "").strip().replace("\n", "")
-        if not topic:
+        # 模型偶尔会带引号或书名号，或者直接把原句抄回来
+        topic = topic.strip("「」『』《》\"' ")
+        if not topic or topic.startswith(user_content[:6]) and len(topic) < 8:
             return ChatService._fallback_topic(user_content)
         return topic[:24]
 
