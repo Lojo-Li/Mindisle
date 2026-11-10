@@ -173,12 +173,22 @@ async def get_user_info(
     }
 
 
+_logout_bearer = HTTPBearer(auto_error=False)
+
+
 @router.post("/logout", response_model=ApiResponse, summary="退出登录")
-async def logout():
+async def logout(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(_logout_bearer)
+):
+    """退出登录：服务端将当前令牌加入黑名单，使其在下一次请求立即失效。
+
+    使用可选的 Bearer 依赖，未携带令牌时仍返回成功（兼容旧调用方），
+    前端仍需清除本地 sessionStorage。
     """
-    退出登录
-    (前端需要清除存储的token)
-    """
+    if credentials and credentials.credentials:
+        from app.core.auth_guard import revoke_token
+
+        revoke_token(credentials.credentials)
     return ApiResponse(code=200, message="退出成功")
 
 

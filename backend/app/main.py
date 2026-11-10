@@ -39,6 +39,9 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# A 线公共接口约定：统一错误响应 {code, message, data, detail}（保留 detail 兼容）
+from app.core.api_contract import install_api_contract
+install_api_contract(app)
 
 
 # CORS 中间件配置
