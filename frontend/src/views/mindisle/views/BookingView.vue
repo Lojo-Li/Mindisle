@@ -146,7 +146,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getCounselorList, getAvailableSlots, createAppointment } from '@/api/counselor'
-import { pickList, pickData, setHtml, setText, docCard, dayCard, slotCard, go, toast } from '../workspace'
+import { pickList, pickData, setHtml, setText, docCard, dayCardWithHint, slotCard, go, toast } from '../workspace'
 
 const rootEl = ref(null)
 const router = useRouter()
@@ -216,7 +216,9 @@ async function openBook(id) {
 }
 
 async function renderDays() {
-  setHtml(rootEl.value, '#days', days.map((d, i) => dayCard(d, i, i === dayIdx)).join(''))
+  setHtml(rootEl.value, '#days', days.map((d, i) =>
+    dayCardWithHint(d, i, i === dayIdx, i === 0 ? '今天' : (i === 1 ? '明天' : ''))
+  ).join(''))
   await renderSlots()
 }
 
@@ -226,19 +228,24 @@ async function renderSlots() {
   try {
     const d = pickData(await getAvailableSlots(picked.id, dateStr(days[dayIdx])))
     const raw = Array.isArray(d) ? d : (d.slots || d.items || [])
-    // 只保留可约时段；后端返回形如 "09:00-10:00" 的区间串
+    // 保留全部时段（含不可约的），由 slotCard 渲染成置灰不可点，避免"时段凭空消失"
     list = raw
-      .filter(x => typeof x === 'string' || x.available !== false)
-      .map(x => (typeof x === 'string' ? x : (x.time || x.slot || '')))
-      .filter(Boolean)
+      .map(x => (typeof x === 'string'
+        ? { time: x, available: true }
+        : { time: x.time || x.slot || '', available: x.available !== false, reason: x.reason }))
+      .filter(s => s.time)
   } catch (e) {
     // 接口不可用时按无可约时段处理
   }
+  const openCount = list.filter(s => s.available).length
   setHtml(
     rootEl.value,
     '#slots',
     list.length
-      ? list.map(s => slotCard(s, s === slot)).join('')
+      ? list.map(s => slotCard(s.time, s.time === slot && s.available, !s.available)).join('') +
+        (openCount === 0
+          ? '<div style="font-size:12.5px;color:var(--ink-3);padding:10px 0;grid-column:1/-1">这一天已没有可约时段了，换一天看看吧</div>'
+          : '')
       : '<div style="font-size:12.5px;color:var(--ink-3);padding:10px 0">该日期暂无可约时段，换一天看看</div>'
   )
 }
@@ -279,6 +286,7 @@ function onClick(e) {
   if (d) { dayIdx = Number(d.getAttribute('data-day')); slot = ''; renderDays(); return }
   const s = e.target.closest('[data-slot]')
   if (s) {
+    if (s.disabled) return
     slot = s.getAttribute('data-slot')
     rootEl.value.querySelectorAll('[data-slot]').forEach(x => x.classList.toggle('on', x === s))
     return

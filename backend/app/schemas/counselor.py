@@ -141,8 +141,10 @@ class CounselorSlotResponse(BaseModel):
 class TimeSlot(BaseModel):
     """可预约时段"""
     time: str  # 时段，如 "09:00-10:00"
-    available: bool  # 是否可用
+    available: bool  # 是否可用（已过期/进行中/已被预约 均为 False）
     price: Optional[float] = None  # 该时段价格
+    expired: bool = False  # 是否已过期（开始时间早于当前时间或未达最小提前量）
+    reason: Optional[str] = None  # 不可用原因：past / ongoing / booked / expired
 
 
 class AppointmentCreate(BaseModel):

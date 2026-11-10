@@ -48,11 +48,11 @@
 
     <div class="sidebar-foot">
       <div class="divider"></div>
-      <button class="user-card" @click="router.push('/profile')">
+      <!-- 个人中心暂用旧版 UI，这里仅展示身份，不提供跳转 -->
+      <div class="user-card is-static">
         <div class="avatar av-a">{{ initial }}<i class="mood-pip" id="userMoodPip"></i></div>
         <div class="user-meta"><b>{{ nickname }}</b><span>{{ roleLabel }}</span></div>
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94A4A6" stroke-width="2" stroke-linecap="round" style="margin-left:auto"><path d="M9 6l6 6-6 6"/></svg>
-      </button>
+      </div>
     </div>
   </aside>
 
@@ -68,11 +68,7 @@
           <svg v-if="theme === 'light'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
           <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
         </button>
-        <button class="icon-btn" title="通知" @click="router.push('/notifications')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
-          <span class="pip"></span>
-        </button>
-        <button class="icon-btn" title="退出登录" @click="logout">
+      <button class="icon-btn" title="退出登录" @click="logout">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
         </button>
       </div>
@@ -287,6 +283,8 @@ function logout() { userStore.logout() }
     transition:background .2s var(--ease);cursor:pointer;width:100%;text-align:left;
   }
   .mi-portal .user-card:hover{background:var(--surface-2)}
+  .mi-portal .user-card.is-static{cursor:default}
+  .mi-portal .user-card.is-static:hover{background:transparent}
   .mi-portal .avatar{
     width:34px;height:34px;border-radius:11px;flex:0 0 34px;
     display:flex;align-items:center;justify-content:center;
@@ -551,6 +549,8 @@ function logout() { userStore.logout() }
   .mi-portal .day.on{background:var(--sea);border-color:var(--sea);color:#fff}
   .mi-portal .day i{display:block;font-size:10.5px;font-style:normal;opacity:.7;margin-bottom:2px}
   .mi-portal .day b{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+  .mi-portal .day u{display:block;font-size:10px;font-style:normal;text-decoration:none;opacity:.8;margin-top:1px;letter-spacing:.5px}
+  .mi-portal .slot.is-off{opacity:.34;cursor:not-allowed;text-decoration:line-through}
   .mi-portal .slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
   .mi-portal .slot{
     padding:9px 0;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);

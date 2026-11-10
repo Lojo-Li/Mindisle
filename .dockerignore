@@ -1,0 +1,38 @@
+# 依赖目录（构建时重新安装）
+**/node_modules
+**/.venv
+**/venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+
+# 构建产物
+**/dist
+**/static
+**/.vite
+
+# 本地配置与密钥（必须排除）
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# 测试与临时文件
+e2e_c_module
+screenshots
+prototype
+*.log
+*.db
+*.sqlite3
+**/uploads
+
+# 版本控制与文档
+.git
+.gitignore
+*.md
+
+# 系统文件
+.DS_Store
+Thumbs.db

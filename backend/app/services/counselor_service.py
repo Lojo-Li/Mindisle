@@ -2,7 +2,7 @@
 咨询师预约服务层
 """
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, desc, func
+from sqlalchemy import and_, or_, desc
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta, date
 import uuid
@@ -29,6 +29,28 @@ ACTIVE_APPOINTMENT_STATUSES = ('pending', 'confirmed', 'in_progress')
 DEFAULT_APPOINTMENT_MINUTES = 60
 # 按开始时间预筛查询窗口时向前回溯的最大分钟数，覆盖任意单条预约的时长
 _MAX_APPOINTMENT_MINUTES = 24 * 60
+# 最小预约提前量（分钟）：距开始不足该时长的时段视为不可预约
+MIN_BOOKING_LEAD_MINUTES = 30
+
+
+def _slot_time_state(slot_start: Optional[datetime], now: Optional[datetime] = None) -> Optional[str]:
+    """判断时段相对当前时间的状态
+
+    返回 None 表示可以正常预约；否则返回不可预约原因：
+    - past: 开始时间已过
+    - ongoing: 已经开始但未结束（仍可点进来咨询，但不能再被预约）
+    - soon: 距开始不足 MIN_BOOKING_LEAD_MINUTES，来不及准备
+    """
+    if slot_start is None:
+        return None
+    now = now or datetime.now()
+    if slot_start <= now:
+        # 已开始即视为不可预约；开始时间已过则标记为 past
+        return 'past' if slot_start < now else 'ongoing'
+    if slot_start - now < timedelta(minutes=MIN_BOOKING_LEAD_MINUTES):
+        return 'soon'
+    return None
+
 
 
 def _appointment_interval(start: datetime, duration) -> tuple:
@@ -185,34 +207,47 @@ class CounselorService:
 
     @staticmethod
     def _availability_map(db: Session, counselor_ids: List[int]) -> Dict[int, bool]:
-        """批量判断咨询师是否还有可预约时段
+        """批量判断咨询师是否"还有可约时段"
 
-        - 存在未来 available 的已发布时段 → 可预约
-        - 从未发布过任何时段（老数据）→ 沿用默认 09:00-18:00 逻辑，视为可预约
-        - 发布过但全部已被预约 → 不可预约
+        语义是「未来一段时间内能不能约到」，而不是「此刻能不能约」——
+        否则晚上 8 点打开列表会全部显示"不可预约"，而用户其实完全能约明天。
+
+        判定口径：
+        - 已发布排班：存在任意"开始时间 >= 现在 + 提前量"的 available 时段 → 可预约
+          （不按 7 天截断：排班是咨询师实际开放的档期，远期档期也算"能约到"；
+           只有当天已过期的时段不算）
+        - 从未发布过任何时段（老数据）→ 沿用默认 09:00-19:00，
+          默认档期每天重开，因此始终视为可预约
+        - 发布过但全部已被预约 / 全部已过期 → 不可预约
         """
         ids = [cid for cid in counselor_ids if cid is not None]
         if not ids:
             return {}
 
+        now = datetime.now()
+
         rows = db.query(
             CounselorTimeSlot.counselor_id,
+            CounselorTimeSlot.slot_date,
+            CounselorTimeSlot.start_time,
             CounselorTimeSlot.status,
-            func.count(CounselorTimeSlot.id)
         ).filter(
             CounselorTimeSlot.counselor_id.in_(ids),
-            CounselorTimeSlot.slot_date >= date.today()
-        ).group_by(
-            CounselorTimeSlot.counselor_id, CounselorTimeSlot.status
+            CounselorTimeSlot.slot_date >= now.date(),
+            CounselorTimeSlot.status != 'disabled'
         ).all()
 
         available_ids, published_ids = set(), set()
-        for cid, status, _count in rows:
+        for cid, slot_date, start_time, slot_status in rows:
             published_ids.add(cid)
-            if status == 'available':
+            if slot_status != 'available':
+                continue
+            slot_start = datetime.combine(slot_date, start_time)
+            if _slot_time_state(slot_start, now) is None:
                 available_ids.add(cid)
 
         return {
+            # 未发布排班的老数据：默认 09:00-19:00 每天重开，恒可预约
             cid: (cid in available_ids) or (cid not in published_ids)
             for cid in ids
         }
@@ -262,15 +297,24 @@ class CounselorService:
             CounselorTimeSlot.status != 'disabled'
         ).order_by(CounselorTimeSlot.start_time).all()
 
+        now = datetime.now()
+        price = counselor.price_video or counselor.price_voice or counselor.price_offline
+
         if published_slots:
-            return [
-                TimeSlot(
+            result = []
+            for slot in published_slots:
+                slot_start = datetime.combine(appt_date, slot.start_time)
+                # 已过期 / 进行中 / 距开始不足提前量 的时段一律不可预约
+                time_state = _slot_time_state(slot_start, now)
+                booked = slot.status == 'booked'
+                result.append(TimeSlot(
                     time=f"{slot.start_time.strftime('%H:%M')}-{slot.end_time.strftime('%H:%M')}",
-                    available=(slot.status == 'available'),
-                    price=counselor.price_video or counselor.price_voice or counselor.price_offline
-                )
-                for slot in published_slots
-            ]
+                    available=(not time_state and not booked),
+                    price=price,
+                    expired=(time_state in ('past', 'soon')),
+                    reason=(booked and 'booked') or time_state
+                ))
+            return result
 
         day_start = datetime.combine(appt_date, datetime.min.time())
         active_appointments = _active_appointments_in_window(
@@ -287,17 +331,16 @@ class CounselorService:
                 db, counselor_id, slot_start, DEFAULT_APPOINTMENT_MINUTES,
                 appointments=active_appointments)
 
-            # 获取该时段价格
-            price = None
-            if counselor.price_video and counselor.consultation_types and 'video' in counselor.consultation_types:
-                price = counselor.price_video
-            elif counselor.price_voice and counselor.consultation_types and 'voice' in counselor.consultation_types:
-                price = counselor.price_voice
+            # 过期时段不可预约，且优先于占用状态展示（过期比"被订走"更直观）
+            time_state = _slot_time_state(slot_start, now)
+            reason = time_state or ('booked' if occupied else None)
 
             time_slots.append(TimeSlot(
                 time=slot_time,
-                available=not occupied,
-                price=price
+                available=(reason is None),
+                price=price,
+                expired=(time_state in ('past', 'soon')),
+                reason=reason
             ))
 
         return time_slots
@@ -703,9 +746,11 @@ class AppointmentService:
         if appt_datetime.tzinfo is not None:
             raise ValueError("日期时间格式错误")
 
-        # 检查预约时间不能是过去
+        # 检查预约时间不能是过去，且必须留出最小提前量
         if appt_datetime < datetime.now():
             raise ValueError("预约时间不能是过去的时间")
+        if appt_datetime - datetime.now() < timedelta(minutes=MIN_BOOKING_LEAD_MINUTES):
+            raise ValueError(f"距预约开始不足 {MIN_BOOKING_LEAD_MINUTES} 分钟，请选择更晚的时段")
 
         # 预约时长固定 60 分钟
         appt_end = appt_datetime + timedelta(minutes=60)

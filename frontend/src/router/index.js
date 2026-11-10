@@ -86,6 +86,7 @@ const TrendView = () => import('@/views/mindisle/views/TrendView.vue')
 const CounselorOverview = () => import('@/views/mindisle/views/CounselorOverview.vue')
 const CounselorScheduleView = () => import('@/views/mindisle/views/CounselorScheduleView.vue')
 const CounselorSessionsView = () => import('@/views/mindisle/views/CounselorSessionsView.vue')
+const CounselorChatView = () => import('@/views/mindisle/views/CounselorChatView.vue')
 const CounselorProfileView = () => import('@/views/mindisle/views/CounselorProfileView.vue')
 
 const routes = [
@@ -252,6 +253,7 @@ const routes = [
       { path: 'schedule', name: 'CounselorSchedule', component: CounselorScheduleView, meta: { title: '时段管理 - 心屿 Mindisle', crumb: '时段管理' } },
       { path: 'orders', name: 'CounselorOrderList', component: CounselorSessionsView, props: { mode: 'orders' }, meta: { title: '预约订单 - 心屿 Mindisle', crumb: '预约订单' } },
       { path: 'sessions', name: 'CounselorSessions', component: CounselorSessionsView, props: { mode: 'sessions' }, meta: { title: '咨询会话 - 心屿 Mindisle', crumb: '咨询会话' } },
+      { path: 'chat/:id', name: 'CounselorChat', component: CounselorChatView, meta: { title: '咨询对话 - 心屿 Mindisle', crumb: '咨询对话' } },
       { path: 'profile', name: 'CounselorProfile', component: CounselorProfileView, meta: { title: '个人中心 - 心屿 Mindisle', crumb: '个人中心' } }
     ]
   },
@@ -304,8 +306,8 @@ const routes = [
   {
     path: '/consultation/counselor/:id',
     name: 'ConsultationChatCounselor',
-    component: ConsultationChatCounselor,
-    meta: { title: '咨询对话 - 心屿 Mindisle', requiresAuth: true, requiresCounselor: true }
+    // 兼容旧链接：统一到心屿布局内的咨询师对话页
+    redirect: to => ({ path: '/counselor/dashboard/chat/' + to.params.id })
   },
   {
     path: '/knowledge',

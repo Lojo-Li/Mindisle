@@ -34,3 +34,8 @@ aiofiles==23.2.1
 
 # 其他依赖
 cryptography==41.0.7
+
+# 测试客户端依赖：必须 <0.28，0.28 起移除了 Client(app=...)，
+# starlette 0.35 的 TestClient 仍使用该签名，装了新版会导致 tests/ 全部报错
+httpx<0.28
+pytest==7.4.4

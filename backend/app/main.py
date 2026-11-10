@@ -56,6 +56,11 @@ app.add_middleware(
 # 路由注册
 @app.get("/")
 async def root():
+    # 生产部署时根路径返回前端页面；本地开发无 static 目录则返回 API 信息
+    spa_index = Path("static") / "index.html"
+    if spa_index.is_file():
+        from fastapi.responses import FileResponse
+        return FileResponse(spa_index)
     return {
         "message": "Welcome to SoulStation API",
         "version": settings.APP_VERSION
@@ -151,6 +156,43 @@ app.include_router(ai_support_router, prefix="/api")
 uploads_dir = Path("uploads")
 uploads_dir.mkdir(exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+# 生产部署：托管前端构建产物（存在 static 目录时才生效，本地开发不受影响）
+# 前后端同源，无需跨域配置；未匹配的路径回落到 index.html 交给 vue-router 处理
+_static_dir = Path("static")
+if _static_dir.is_dir() and (_static_dir / "index.html").exists():
+    import mimetypes
+    from fastapi.responses import FileResponse
+    from fastapi import Request
+
+    # Windows 上 Python 的 mimetypes 常把 .js 识别成 text/plain，
+    # 浏览器会拒绝执行 ES module（"Failed to load module script"），必须显式注册
+    for _ext, _mime in {
+        ".js": "text/javascript",
+        ".mjs": "text/javascript",
+        ".css": "text/css",
+        ".json": "application/json",
+        ".svg": "image/svg+xml",
+        ".woff": "font/woff",
+        ".woff2": "font/woff2",
+        ".ttf": "font/ttf",
+        ".map": "application/json",
+    }.items():
+        mimetypes.add_type(_mime, _ext)
+
+    app.mount("/assets", StaticFiles(directory=str(_static_dir / "assets")), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def spa_fallback(full_path: str, request: Request):
+        if full_path.startswith(("api/", "docs", "redoc", "openapi.json", "uploads/")):
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404, detail="Not Found")
+        candidate = _static_dir / full_path
+        if full_path and candidate.is_file():
+            media_type, _ = mimetypes.guess_type(str(candidate))
+            return FileResponse(candidate, media_type=media_type)
+        return FileResponse(_static_dir / "index.html")
+
 
 if __name__ == "__main__":
     import uvicorn

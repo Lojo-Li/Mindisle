@@ -155,6 +155,17 @@ export function dayCard(d, i, on) {
   return '<button class="day' + (on ? ' on' : '') + '" data-day="' + i + '"><i>周' + W[d.getDay()] + '</i><b>' + d.getDate() + '</b></button>'
 }
 
-export function slotCard(s, on) {
-  return '<button class="slot' + (on ? ' on' : '') + '" data-slot="' + esc(s) + '">' + esc(s) + '</button>'
+export function slotCard(s, on, disabled) {
+  // 未开约的时段渲染为原生 disabled 按钮，复用 .slot:disabled 的置灰 + 删除线样式
+  const cls = 'slot' + (on ? ' on' : '') + (disabled ? ' is-off' : '')
+  return '<button class="' + cls + '" data-slot="' + esc(s) + '"' +
+    (disabled ? ' disabled aria-disabled="true"' : '') + '>' + esc(s) + '</button>'
 }
+
+export function dayCardWithHint(d, i, on, hint) {
+  const W = ['日', '一', '二', '三', '四', '五', '六']
+  return '<button class="day' + (on ? ' on' : '') + '" data-day="' + i + '">' +
+    '<i>周' + W[d.getDay()] + '</i><b>' + d.getDate() + '</b>' +
+    (hint ? '<u>' + esc(hint) + '</u>' : '') + '</button>'
+}
+

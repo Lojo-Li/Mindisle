@@ -3,7 +3,8 @@ import { getToken } from '@/utils/storage'
 import request from './index'
 
 // 获取API基础URL
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
+// 与 axios 实例保持一致：默认走相对路径 /api，生产环境前后端同源，无需跨域
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
 /**
  * 获取对话列表

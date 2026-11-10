@@ -1,0 +1,44 @@
+# 心屿 Mindisle — 单容器部署
+#
+# 前后端打包进同一个镜像：FastAPI 同时提供 /api 接口与前端静态文件，
+# 天然同源，不需要额外配置 CORS 或反向代理。
+#
+# 用法：
+#   docker build -f deploy/Dockerfile -t mindisle .
+#   docker run -d --name mindisle -p 8000:8000 \
+#     -e DATABASE_URL="mysql+pymysql://user:pass@host:3306/soulstation" \
+#     -e REDIS_ENABLED=False \
+#     -e SECRET_KEY="换成随机长字符串" \
+#     mindisle
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: mindisle:latest
+    container_name: mindisle
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # 数据库：指向你的 MySQL（云上建议用托管 MySQL 或同 compose 内的 mysql 服务）
+      DATABASE_URL: ${DATABASE_URL}
+      # 无 Redis 时关掉，应用会退化为进程内缓存
+      REDIS_ENABLED: ${REDIS_ENABLED:-False}
+      SECRET_KEY: ${SECRET_KEY}
+      APP_DEBUG: "False"
+      APP_ENV: production
+      TZ: Asia/Shanghai
+    volumes:
+      # 上传文件持久化，避免容器重启后丢失
+      - mindisle_uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  mindisle_uploads:

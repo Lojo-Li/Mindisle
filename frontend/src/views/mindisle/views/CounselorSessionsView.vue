@@ -134,7 +134,7 @@ function onClick(e) {
   const r = e.target.closest('[data-reject]')
   if (r) { decide(r.getAttribute('data-reject'), 'reject'); return }
   const en = e.target.closest('[data-enter]')
-  if (en) { router.push('/consultation/counselor/' + en.getAttribute('data-enter')); return }
+  if (en) { router.push('/counselor/dashboard/chat/' + en.getAttribute('data-enter')); return }
 }
 
 onMounted(load)
