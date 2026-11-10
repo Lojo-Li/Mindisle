@@ -1,10 +1,7 @@
 """
-AI 服务 - OpenAI 兼容接口（当前接入 DeepSeek）
-
-供应商通过 settings.LLM_* 配置，只要兼容 /chat/completions 就能换。
+AI 服务 - 基于豆包 API
 """
 import os
-import re
 import time
 import httpx
 from typing import Iterator
@@ -12,45 +9,58 @@ from openai import OpenAI
 from app.core.config import settings
 
 
+# ---- 熔断状态 ----
+# 说明：豆包侧若返回 4xx（如 InvalidEndpoint.ClosedEndpoint 表示模型端点已下线），
+# 重试没有任何意义，反而会在 async 接口里用 time.sleep 阻塞整个事件循环，
+# 表现就是"所有接口一起超时、前端提示网络未连接"。这里做两件事：
+#   1) 4xx 不重试，立即失败；
+#   2) 连续失败达到阈值后熔断一段时间，期间直接跳过 AI，不再发起网络请求。
+_FAIL_STREAK = 0
+_OPEN_UNTIL = 0.0
+_FAIL_THRESHOLD = 2
+_OPEN_SECONDS = 300  # 熔断 5 分钟
+
+# 这些状态码属于"调用方式/凭证/端点"问题，重试无意义
+_NON_RETRYABLE_STATUS = {400, 401, 403, 404, 422}
+
+
+def _status_of(exc: Exception):
+    """尽力从异常里取出 HTTP 状态码"""
+    resp = getattr(exc, "response", None)
+    code = getattr(resp, "status_code", None)
+    if isinstance(code, int):
+        return code
+    text = str(exc)
+    for c in _NON_RETRYABLE_STATUS:
+        if f"Error code: {c}" in text:
+            return c
+    return None
+
+
 class AIService:
     """AI 服务类"""
 
-    # 401/402/403/404 这类错误重试也不会变好：只会让用户多等十几秒，
-    # 并且白白多消耗几次额度。只对限流、服务端错误、网络问题重试。
-    RETRYABLE_STATUS = {429, 500, 502, 503, 504}
-
     def __init__(self):
         """初始化 AI 客户端"""
-        self._build_client()
-        self.model = settings.LLM_ACTIVE_MODEL
-
-    def _build_client(self):
+        # 创建httpx客户端，禁用SSL验证以避免Windows上的SSL错误
+        # 超时收紧：连接 8s、读 30s。原来 60s 会把请求挂很久。
         http_client = httpx.Client(
-            timeout=60.0,
+            timeout=httpx.Timeout(30.0, connect=8.0),
             limits=httpx.Limits(max_keepalive_connections=50, max_connections=100),
             verify=settings.AI_VERIFY_SSL  # 默认校验证书，见 config.AI_VERIFY_SSL
         )
+
         self.client = OpenAI(
             base_url=settings.LLM_ACTIVE_BASE_URL,
             api_key=settings.LLM_ACTIVE_API_KEY,
             http_client=http_client
         )
+        self.model = settings.LLM_ACTIVE_MODEL
 
     @staticmethod
-    def _status_of(err: Exception):
-        """尽量取出 HTTP 状态码，用于判断是否值得重试"""
-        code = getattr(err, "status_code", None)
-        if isinstance(code, int):
-            return code
-        m = re.search(r"Error code:\s*(\d{3})", str(err))
-        return int(m.group(1)) if m else None
-
-    def _should_retry(self, err: Exception) -> bool:
-        status = self._status_of(err)
-        if status is None:
-            # 没有状态码，通常是连接中断/超时，值得重试
-            return True
-        return status in self.RETRYABLE_STATUS
+    def circuit_open() -> bool:
+        """熔断中：直接跳过 AI 调用，避免拖慢主流程"""
+        return time.time() < _OPEN_UNTIL
 
     def chat(
         self,
@@ -73,6 +83,13 @@ class AIService:
         Returns:
             str: AI 的回复内容
         """
+        global _FAIL_STREAK, _OPEN_UNTIL
+
+        # 熔断中：不再发起网络请求，立刻返回错误。
+        # 这样即使端点不可用，主流程（提交测评）也不会被拖住。
+        if self.circuit_open():
+            raise Exception("AI 服务暂不可用（已熔断，稍后自动恢复）")
+
         for attempt in range(max_retries):
             try:
                 if stream:
@@ -88,6 +105,7 @@ class AIService:
                     for chunk in stream_response:
                         if chunk.choices and chunk.choices[0].delta.content:
                             response += chunk.choices[0].delta.content
+                    _FAIL_STREAK = 0
                     return response
                 else:
                     # 非流式返回
@@ -98,20 +116,42 @@ class AIService:
                         temperature=temperature,
                         max_tokens=max_tokens,
                     )
+                    _FAIL_STREAK = 0
                     return completion.choices[0].message.content
 
             except Exception as e:
-                # 不可重试的错误（鉴权、模型不存在、余额不足）直接抛出，别让用户干等
-                if attempt == max_retries - 1 or not self._should_retry(e):
-                    raise Exception(f"AI 服务调用失败: {str(e)}")
+                status = _status_of(e)
+                _FAIL_STREAK += 1
+
+                # 连续失败达到阈值 → 熔断，后续调用直接跳过
+                if _FAIL_STREAK >= _FAIL_THRESHOLD:
+                    _OPEN_UNTIL = time.time() + _OPEN_SECONDS
+                    print(f"[AI] 连续失败 {_FAIL_STREAK} 次，熔断 {_OPEN_SECONDS}s：{e}")
+
+                # 4xx（端点关闭/鉴权/参数错误）重试无意义，直接抛出
+                if status in _NON_RETRYABLE_STATUS:
+                    raise Exception(f"AI 服务不可用（HTTP {status}）: {e}")
+
+                # 如果是最后一次尝试，抛出异常
+                if attempt == max_retries - 1:
+                    raise Exception(f"AI 服务调用失败（已重试{max_retries}次）: {str(e)}")
 
                 # 等待一段时间后重试
-                wait_time = (attempt + 1) * 2  # 2s, 4s
+                wait_time = (attempt + 1) * 2  # 2s, 4s, 6s
                 print(f"AI服务调用失败，{wait_time}秒后进行第{attempt + 2}次重试... 错误: {str(e)}")
                 time.sleep(wait_time)
 
                 # 重新创建客户端（连接可能已损坏）
-                self._build_client()
+                http_client = httpx.Client(
+                    timeout=httpx.Timeout(30.0, connect=8.0),
+                    limits=httpx.Limits(max_keepalive_connections=50, max_connections=100),
+                    verify=settings.AI_VERIFY_SSL
+                )
+                self.client = OpenAI(
+                    base_url=settings.LLM_ACTIVE_BASE_URL,
+                    api_key=settings.LLM_ACTIVE_API_KEY,
+                    http_client=http_client
+                )
 
     def chat_stream(
         self,
