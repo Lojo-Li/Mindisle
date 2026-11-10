@@ -1,7 +1,10 @@
 """
-AI 服务 - 基于豆包 API
+AI 服务 - OpenAI 兼容接口（当前接入 DeepSeek）
+
+供应商通过 settings.LLM_* 配置，只要兼容 /chat/completions 就能换。
 """
 import os
+import re
 import time
 import httpx
 from typing import Iterator
@@ -12,21 +15,42 @@ from app.core.config import settings
 class AIService:
     """AI 服务类"""
 
+    # 401/402/403/404 这类错误重试也不会变好：只会让用户多等十几秒，
+    # 并且白白多消耗几次额度。只对限流、服务端错误、网络问题重试。
+    RETRYABLE_STATUS = {429, 500, 502, 503, 504}
+
     def __init__(self):
         """初始化 AI 客户端"""
-        # 创建httpx客户端，禁用SSL验证以避免Windows上的SSL错误
+        self._build_client()
+        self.model = settings.LLM_ACTIVE_MODEL
+
+    def _build_client(self):
         http_client = httpx.Client(
             timeout=60.0,
             limits=httpx.Limits(max_keepalive_connections=50, max_connections=100),
             verify=settings.AI_VERIFY_SSL  # 默认校验证书，见 config.AI_VERIFY_SSL
         )
-
         self.client = OpenAI(
-            base_url=settings.DOUBAO_BASE_URL,
-            api_key=settings.DOUBAO_API_KEY,
+            base_url=settings.LLM_ACTIVE_BASE_URL,
+            api_key=settings.LLM_ACTIVE_API_KEY,
             http_client=http_client
         )
-        self.model = settings.DOUBAO_MODEL
+
+    @staticmethod
+    def _status_of(err: Exception):
+        """尽量取出 HTTP 状态码，用于判断是否值得重试"""
+        code = getattr(err, "status_code", None)
+        if isinstance(code, int):
+            return code
+        m = re.search(r"Error code:\s*(\d{3})", str(err))
+        return int(m.group(1)) if m else None
+
+    def _should_retry(self, err: Exception) -> bool:
+        status = self._status_of(err)
+        if status is None:
+            # 没有状态码，通常是连接中断/超时，值得重试
+            return True
+        return status in self.RETRYABLE_STATUS
 
     def chat(
         self,
@@ -77,26 +101,17 @@ class AIService:
                     return completion.choices[0].message.content
 
             except Exception as e:
-                # 如果是最后一次尝试，抛出异常
-                if attempt == max_retries - 1:
-                    raise Exception(f"AI 服务调用失败（已重试{max_retries}次）: {str(e)}")
+                # 不可重试的错误（鉴权、模型不存在、余额不足）直接抛出，别让用户干等
+                if attempt == max_retries - 1 or not self._should_retry(e):
+                    raise Exception(f"AI 服务调用失败: {str(e)}")
 
                 # 等待一段时间后重试
-                wait_time = (attempt + 1) * 2  # 2s, 4s, 6s
+                wait_time = (attempt + 1) * 2  # 2s, 4s
                 print(f"AI服务调用失败，{wait_time}秒后进行第{attempt + 2}次重试... 错误: {str(e)}")
                 time.sleep(wait_time)
 
                 # 重新创建客户端（连接可能已损坏）
-                http_client = httpx.Client(
-                    timeout=60.0,
-                    limits=httpx.Limits(max_keepalive_connections=50, max_connections=100),
-                    verify=settings.AI_VERIFY_SSL
-                )
-                self.client = OpenAI(
-                    base_url=settings.DOUBAO_BASE_URL,
-                    api_key=settings.DOUBAO_API_KEY,
-                    http_client=http_client
-                )
+                self._build_client()
 
     def chat_stream(
         self,
