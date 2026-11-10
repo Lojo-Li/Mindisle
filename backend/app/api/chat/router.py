@@ -470,7 +470,10 @@ async def send_message_stream(
             # ── 流式生成 ────────────────────────────────────────
             full_response = ""
             try:
-                for content_chunk in ai_service.chat_stream(messages=messages_list):
+                # 陪伴场景比问答更适合稍高的随机性：0.7 容易说套话，0.85 更自然
+                for content_chunk in ai_service.chat_stream(
+                    messages=messages_list, temperature=0.85, max_tokens=1600
+                ):
                     full_response += content_chunk
                     yield f"data: {json.dumps({'content': content_chunk, 'done': False}, ensure_ascii=False)}\n\n"
             except Exception as ai_error:

@@ -4,9 +4,10 @@ AI 服务 - 基于豆包 API
 import os
 import time
 import httpx
-from typing import Iterator
+from typing import Iterator, Optional
 from openai import OpenAI
 from app.core.config import settings
+from app.services import llm_config
 
 
 # ---- 熔断状态 ----
@@ -41,21 +42,56 @@ class AIService:
     """AI 服务类"""
 
     def __init__(self):
-        """初始化 AI 客户端"""
-        # 创建httpx客户端，禁用SSL验证以避免Windows上的SSL错误
-        # 超时收紧：连接 8s、读 30s。原来 60s 会把请求挂很久。
-        http_client = httpx.Client(
+        """初始化 AI 客户端（配置可变，见 _ensure_client）"""
+        self.client: Optional[OpenAI] = None
+        self.model: str = ""
+        self._signature = None
+        self._http_client: Optional[httpx.Client] = None
+        self._ensure_client()
+
+    # ── 配置热加载 ────────────────────────────────────────────────
+    def _build_client(self, cfg: llm_config.LLMConfig) -> None:
+        """按给定配置重建客户端；旧的连接池顺手关掉，避免句柄泄漏。"""
+        try:
+            if self._http_client is not None:
+                self._http_client.close()
+        except Exception:
+            pass
+
+        # 超时收紧：连接 8s、读 30s。
+        self._http_client = httpx.Client(
             timeout=httpx.Timeout(30.0, connect=8.0),
             limits=httpx.Limits(max_keepalive_connections=50, max_connections=100),
             verify=settings.AI_VERIFY_SSL  # 默认校验证书，见 config.AI_VERIFY_SSL
         )
-
         self.client = OpenAI(
-            base_url=settings.LLM_ACTIVE_BASE_URL,
-            api_key=settings.LLM_ACTIVE_API_KEY,
-            http_client=http_client
+            base_url=cfg.base_url,
+            api_key=cfg.api_key,
+            http_client=self._http_client
         )
-        self.model = settings.LLM_ACTIVE_MODEL
+        self.model = cfg.model
+
+    def _ensure_client(self) -> llm_config.LLMConfig:
+        """每次调用前确认配置未变；变了就重建客户端并清掉熔断状态。
+
+        这样换 key 只需要改 llm.json（或环境变量后重启），不需要动代码，
+        也不会出现"换了 key 还被上一次的失败锁在熔断期里"的情况。
+        """
+        global _FAIL_STREAK, _OPEN_UNTIL
+
+        cfg = llm_config.load()
+        if self.client is not None and cfg.signature == self._signature:
+            return cfg
+
+        changed = self._signature is not None
+        self._build_client(cfg)
+        self._signature = cfg.signature
+
+        if changed:
+            _FAIL_STREAK = 0
+            _OPEN_UNTIL = 0.0
+            print(f"[AI] 配置已切换 → {cfg.source} / {cfg.model} / {cfg.masked_key}")
+        return cfg
 
     @staticmethod
     def circuit_open() -> bool:
@@ -84,6 +120,9 @@ class AIService:
             str: AI 的回复内容
         """
         global _FAIL_STREAK, _OPEN_UNTIL
+
+        # 先确认配置是否有变化（换 key 会顺带清掉熔断）
+        self._ensure_client()
 
         # 熔断中：不再发起网络请求，立刻返回错误。
         # 这样即使端点不可用，主流程（提交测评）也不会被拖住。
@@ -142,37 +181,45 @@ class AIService:
                 time.sleep(wait_time)
 
                 # 重新创建客户端（连接可能已损坏）
-                http_client = httpx.Client(
-                    timeout=httpx.Timeout(30.0, connect=8.0),
-                    limits=httpx.Limits(max_keepalive_connections=50, max_connections=100),
-                    verify=settings.AI_VERIFY_SSL
-                )
-                self.client = OpenAI(
-                    base_url=settings.LLM_ACTIVE_BASE_URL,
-                    api_key=settings.LLM_ACTIVE_API_KEY,
-                    http_client=http_client
-                )
+                self._build_client(llm_config.load())
 
     def chat_stream(
         self,
         messages: list,
         temperature: float = 0.7,
-        max_tokens: int = 2000
+        max_tokens: int = 2000,
+        max_retries: int = 2,
     ) -> Iterator[str]:
-        """发起流式聊天请求，逐块返回文本。"""
-        try:
-            stream_response = self.client.chat.completions.create(
-                model=self.model,
-                messages=messages,
-                stream=True,
-                temperature=temperature,
-                max_tokens=max_tokens,
-            )
-            for chunk in stream_response:
-                if chunk.choices and chunk.choices[0].delta.content:
-                    yield chunk.choices[0].delta.content
-        except Exception as e:
-            raise Exception(f"AI 服务流式调用失败: {str(e)}")
+        """发起流式聊天请求，逐块返回文本。
+
+        网关偶尔会直接掐断连接（Windows 上表现为 WinError 10054）。只要还没
+        往前端吐过任何字符，重试就是安全的；一旦已经吐过就不再重试，否则用户
+        会看到重复的半句话。
+        """
+        self._ensure_client()
+
+        for attempt in range(max_retries):
+            emitted = False
+            try:
+                stream_response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    stream=True,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                )
+                for chunk in stream_response:
+                    if chunk.choices and chunk.choices[0].delta.content:
+                        emitted = True
+                        yield chunk.choices[0].delta.content
+                return
+            except Exception as e:
+                if emitted or attempt == max_retries - 1:
+                    raise Exception(f"AI 服务流式调用失败: {str(e)}")
+                wait = attempt + 1
+                print(f"[AI] 流式中断，{wait}s 后重试（第 {attempt + 2} 次）：{e}")
+                time.sleep(wait)
+                self._build_client(llm_config.load())
 
     def generate_system_prompt(self, context: str = "") -> str:
         """
@@ -185,45 +232,54 @@ class AIService:
             str: 系统提示词
         """
         assistant_name = getattr(settings, "AI_ASSISTANT_NAME", "小屿")
-        base_prompt = f"""你是「心屿 Mindisle」心理支持平台的智能助手，名叫"{assistant_name}"。你的职责是：
+        base_prompt = f"""你是「心屿 Mindisle」心理支持平台的陪伴助手，名叫"{assistant_name}"。
 
-1. **专业角色**：你是一个温暖、专业、有同理心的心理健康陪伴者，不是医生
-2. **服务宗旨**：为用户提供情绪支持、心理健康知识普及和自助方法建议
-3. **交流风格**：
-   - 语气温和、友善，不带评判色彩
-   - 善于倾听，先回应情绪，再谈方法
-   - 使用通俗易懂的语言，避免专业术语堆砌
-   - 不空泛安慰，尽量给一个具体、今天就能做的小动作
+【你是谁】
+不是客服，也不是老师。你像一个凌晨两点还醒着、愿意听人说话的朋友。
+懂一点心理学，但不把术语挂在嘴上。
 
-4. **能力边界（务必遵守）**：
-   - **不下诊断**：不说"你得了抑郁症/焦虑症"，只描述状态
-   - **不建议药物**：任何药物、剂量、停药问题都建议就医
-   - **不替代咨询**：明确说明你是 AI 支持，不能替代专业心理咨询
-   - 保持中立，不替用户做决定
+【怎么说话】
+- 像发微信，不像写文章。多用短句，允许"嗯""其实""我猜"这类口语。
+- 先用一句话接住对方的情绪，让对方知道"你听懂了"，再往下说。
+- 不要说"首先/其次/最后"，不要用列表、编号、加粗、小标题。
+- 不空泛安慰（"一切都会好起来的"），也不喊口号。
+- 可以用 1 个 emoji，不要每段都放。
 
-5. **回答依据（极其重要）**：
-   - 如果下方提供了知识库参考，请吸收后用自己的话表达，可自然地说"心理学上通常会…"
-   - 如果**没有**提供知识库参考，不要编造研究、数据、书名或"研究表明"
-   - 拿不准时直接说"这一点我不确定，建议和咨询师确认"
+【一次回答的骨架】
+1. 先回应情绪：具体说出你听到的那种感受，而不是"我理解你"。
+2. 再落一个具体的点：对方话里最值得展开的那一句。
+3. 给一件今天就能做的小事：具体到动作（"睡前把手机放到客厅充电"），
+   不要说"你要放松""调整心态"。
+4. 结尾可以留一句轻轻的邀请（"要不要说说，是从什么时候开始的？"），
+   但不要每句都追问。
 
-6. **危机干预**：
-   - 若用户表现出自伤、自杀等危机信号：先充分共情，让对方感到被理解，
-     再温和地鼓励其立即联系专业帮助
-   - 界面上会同步展示援助热线，你不必机械罗列，重点是把人接住
-   - 不要讲道理、不要反问、不要急于给解决方案
+【篇幅】
+- 有知识库参考时：250-400 字，把参考里的信息消化掉再说，不要照抄。
+- 没有参考时：150-250 字，宁可短一点，也不要用废话填满。
 
-7. **回复格式**：
-   - **通常不超过 200 字**，除非用户明确要求展开
-   - 一次只给 1-2 个要点，避免信息过载
-   - 可以用少量表情符号让语气更柔和（如 💚 🌿）
-   - 不要用"首先/其次/最后"这种报告式结构"""
+【边界】
+- 不做诊断：不说"你有抑郁症/焦虑症"，只描述状态。
+- 不谈药物、剂量、停药，一律建议就医。
+- 不说"我能治好你"，明确你是 AI 陪伴，不替代专业咨询。
+- 不替对方做决定（分手、辞职这类），只帮他把选项摆清楚。
+
+【关于依据】
+- 有参考：自然转述，"心理学里有一种说法是…"，不要出现"根据文档第几条"。
+- 没有参考：可以说"这点我没有直接资料"，但仍然要给出通用的、无害的建议，
+  不要因为怕出错就只说空话。绝不能编造研究、数据、书名。
+
+【危机情况】
+对方若表现出自伤、自杀、伤害他人的念头：
+- 先共情，明确说出你的担心（"我听到这句话有点担心你"），不要追问细节、不要讲道理。
+- 鼓励他立刻联系专业帮助，界面上会同步显示热线，你不必机械罗列号码。
+- 不要试图"劝回来"，也不要承诺"你会没事的"。"""
 
         if context:
             return f"""{base_prompt}
 
-**【知识库参考 — 请用温暖口吻转述】**
-下方案例供你参考，请吸收核心信息后**用自己的语言**重新表达，
-不要让用户感觉在读教科书：
+【这次可参考的知识库片段】
+下面是从知识库检索到的真实案例/条目。请吸收后用自己的话讲出来，
+让用户觉得是"有人在跟他说"，而不是在读教科书：
 
 {context}"""
         return base_prompt
