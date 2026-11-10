@@ -29,10 +29,17 @@ onMounted(async () => {
       getUserAppointments({ page: 1, page_size: 10 })
     ])
     const st = pickData(s)
-    animateNumber(root.querySelector('[data-bind="testCount"]'), st.test_count ?? 0)
-    animateNumber(root.querySelector('[data-bind="moodScore"]'),
-      st.test_count ? Math.min(100, 60 + st.test_count * 2) : 0)
     const tests = pickList(h)
+    animateNumber(root.querySelector('[data-bind="testCount"]'), st.test_count ?? tests.length)
+
+    // 用最近一次测评的真实得分率，替代原先编造的「情绪分」
+    const latest = tests[0]
+    const rate = latest && latest.max_score
+      ? Math.round((latest.total_score || 0) / latest.max_score * 100)
+      : 0
+    animateNumber(root.querySelector('[data-bind="moodScore"]'), rate)
+    setText(root, '[data-bind="moodScoreLabel"]', latest ? '最近一次得分率' : '还没有测评')
+
     setHtml(root, '[data-list="homeTests"]', tests.length
       ? tests.map(testTl).join('')
       : '<div class="tl-item"><b>还没有测评记录</b></div>')

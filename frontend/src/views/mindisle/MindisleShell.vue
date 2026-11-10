@@ -38,7 +38,7 @@
 
     <nav class="nav">
       <template v-for="(item, i) in menu" :key="item.path + i">
-        <div class="nav-label" v-if="item.label">{{ item.label }}</div>
+        <div class="nav-label" v-if="item.showLabel">{{ item.label }}</div>
         <button class="nav-item" :class="{ active: isActive(item) }" @click="navigate(item)">
           <span class="nav-ico" v-html="item.icon"></span>{{ item.text }}
           <span class="badge" v-if="item.badge">{{ item.badge }}</span>
@@ -103,7 +103,8 @@ const ICONS = {
   "assess": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z\"/><path d=\"M9.5 9h5M9.5 13h5M9.5 17h3\"/></svg>",
   "lamp": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 18h6M10 21h4\"/><path d=\"M12 3a6 6 0 0 0-3.6 10.8c.6.5.9 1.2.9 1.9v.3h5.4v-.3c0-.7.3-1.4.9-1.9A6 6 0 0 0 12 3z\"/></svg>",
   "booking": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3.5\" y=\"5\" width=\"17\" height=\"15.5\" rx=\"2.5\"/><path d=\"M8 3v4M16 3v4M3.5 10h17\"/></svg>",
-  "records": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 5.5A2.5 2.5 0 0 1 6.5 3H19v15H6.5A2.5 2.5 0 0 0 4 20.5z\"/><path d=\"M4 20.5A2.5 2.5 0 0 1 6.5 18H19v3H6.5\"/></svg>"
+  "records": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 5.5A2.5 2.5 0 0 1 6.5 3H19v15H6.5A2.5 2.5 0 0 0 4 20.5z\"/><path d=\"M4 20.5A2.5 2.5 0 0 1 6.5 18H19v3H6.5\"/></svg>",
+  "trend": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 4v15.5a.5.5 0 0 0 .5.5H20\"/><path d=\"M7 15l3.5-4 3 2.5L19 8\"/></svg>"
 }
 
 const MENUS = {
@@ -112,7 +113,8 @@ const MENUS = {
     { text: '心理测评', path: '/workspace/assess', icon: ICONS.assess },
     { text: '屿灯 · 情绪支持', path: '/workspace/lamp', icon: ICONS.lamp, badge: 'AI' },
     { text: '咨询预约', path: '/workspace/booking', icon: ICONS.booking },
-    { label: '我的', text: '我的记录', path: '/workspace/records', icon: ICONS.records }
+    { label: '我的', text: '我的记录', path: '/workspace/records', icon: ICONS.records },
+    { text: '测评趋势', path: '/workspace/trend', icon: ICONS.trend }
   ],
   counselor: [
     { label: '咨询师工作台', text: '概览', path: '/counselor/dashboard', icon: ICONS.home },
@@ -122,7 +124,17 @@ const MENUS = {
   ]
 }
 
-const menu = computed(() => MENUS[props.role] || MENUS.user)
+// 分组标题只在「该组第一条」渲染一次。
+// 之前 我的记录 / 测评趋势 两条都写了 label:'我的'，就会在侧栏出现两个「我的」。
+// 这里统一做去重，数据里重复写也不会再重复显示。
+const menu = computed(() => {
+  let lastLabel = null
+  return (MENUS[props.role] || MENUS.user).map((it) => {
+    const showLabel = !!it.label && it.label !== lastLabel
+    if (it.label) lastLabel = it.label
+    return { ...it, showLabel }
+  })
+})
 const crumb = computed(() => route.meta.crumb || '概览')
 const nickname = computed(() => {
   const i = userStore.userInfo || {}

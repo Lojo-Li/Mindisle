@@ -820,3 +820,77 @@ async def delete_test_endpoint(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"删除测试失败: {str(e)}"
         )
+
+
+# ==================== 量表配置（新增 / 更新 / 上下架） ====================
+
+@router.post("/tests", summary="新建心理测试")
+async def create_test_endpoint(
+    payload: dict,
+    current_admin: Admin = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """新建量表；请求体可同时携带 questions，题目按数组顺序重排题号。"""
+    try:
+        from app.services.test_service import TestService
+        data = TestService.create_test(db, payload)
+        return {"code": 200, "message": "创建成功", "data": data}
+    except ValueError as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        logger.error(f"新建量表失败: {str(e)}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"新建量表失败: {str(e)}"
+        )
+
+
+@router.put("/test/{test_id}", summary="更新心理测试")
+async def update_test_endpoint(
+    test_id: int,
+    payload: dict,
+    current_admin: Admin = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """更新量表配置；仅更新出现的字段，传入 questions 时整表替换题目。"""
+    try:
+        from app.services.test_service import TestService
+        data = TestService.update_test(db, test_id, payload)
+        return {"code": 200, "message": "更新成功", "data": data}
+    except ValueError as e:
+        db.rollback()
+        detail = str(e)
+        code = status.HTTP_404_NOT_FOUND if detail == "量表不存在" else status.HTTP_400_BAD_REQUEST
+        raise HTTPException(status_code=code, detail=detail)
+    except Exception as e:
+        logger.error(f"更新量表失败: {str(e)}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"更新量表失败: {str(e)}"
+        )
+
+
+@router.patch("/test/{test_id}/status", summary="上架/下架心理测试")
+async def toggle_test_status_endpoint(
+    test_id: int,
+    payload: dict,
+    current_admin: Admin = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """切换量表启用状态，下架后用户端列表不再出现。"""
+    try:
+        from app.services.test_service import TestService
+        data = TestService.toggle_test_status(db, test_id, bool(payload.get("is_active", True)))
+        return {"code": 200, "message": "已更新", "data": data}
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        logger.error(f"切换量表状态失败: {str(e)}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"切换量表状态失败: {str(e)}"
+        )

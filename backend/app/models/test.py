@@ -29,6 +29,7 @@ class PsychologicalTest(Base):
     sort_order = Column(Integer, default=0, comment="排序序号")
     is_active = Column(Boolean, default=True, comment="是否启用")
     hot_value = Column(Integer, default=0, comment="热度值")
+    cover_image = Column(String(500), nullable=True, comment="封面图片URL")
 
     created_at = Column(DateTime, server_default=func.now(), comment="创建时间")
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), comment="更新时间")

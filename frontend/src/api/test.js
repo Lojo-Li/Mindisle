@@ -65,6 +65,18 @@ export function getProgress(testId) {
 }
 
 /**
+ * 清除答题进度（「再测一次」时调用）
+ * 不清空的话，重新进入答题页会自动恢复上一次的答案
+ * @param {string} testId - 测试ID
+ */
+export function clearProgress(testId) {
+  return request({
+    url: `/test/${testId}/progress`,
+    method: 'delete'
+  })
+}
+
+/**
  * 提交测试答案
  * @param {string} testId - 测试ID
  * @param {Object} data
