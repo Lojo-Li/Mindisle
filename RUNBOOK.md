@@ -174,3 +174,44 @@ print('引用条数:', db.query(AiMessageSource).count())
 | `backend/app/services/rag_service.py` | 嵌入模型路径归一化；支持 cosine 度量；按相似度过滤 |
 | `backend/app/core/config.py` | 新增 `RAG_METRIC` / `RAG_MIN_SIMILARITY` |
 | `backend/scripts/rebuild_vector_db.py` | 新增：可复现的向量库重建脚本（含中文路径检查） |
+
+---
+
+## 九、切换大模型（换供应商）
+
+模型走 OpenAI 兼容接口，**换供应商只改 `backend/.env.local` 三行，代码不用动**。
+
+```ini
+LLM_BASE_URL=https://api.deepseek.com/v1   # 必须以 /v1 结尾或服务商指定路径
+LLM_API_KEY=sk-xxxx
+LLM_MODEL=deepseek-flash
+```
+
+`LLM_*` 优先级高于旧的 `DOUBAO_*`，所以老环境不改也能照常启动。
+
+**改完必须重启后端**（配置在进程启动时读入，热更新不会生效）。
+
+### 先验证再重启
+
+```bash
+cd backend
+.venv/Scripts/python.exe scripts/check_llm.py --list   # 零 token，只验密钥与模型名
+.venv/Scripts/python.exe scripts/check_llm.py          # 一次最小请求，输出上限 16 token
+```
+
+`--list` 能列出模型就说明密钥和地址都对。失败时脚本会直接告诉你是密钥无效、模型未开通、余额不足还是网络不通。
+
+### 常见错误对照
+
+| 报错 | 含义 | 处理 |
+|---|---|---|
+| 401 | 密钥无效或不属于这个地址 | 检查 key 与 base_url 是否配套 |
+| 403 | 网关限流或内容拦截 | 隔几分钟再试；频繁连发容易触发 |
+| 404 ModelNotOpen / not found | 模型未开通或名字不对 | 控制台开通，或 `--list` 看准确名称 |
+| 402 / insufficient balance | 余额不足 | 充值 |
+| 10054 / 连接被重置 | 旧配置残留或网关抖动 | 先确认已重启，再重试 |
+
+### 为什么不用把 key 写进 .env
+
+`.env` 已经被提交到公开仓库，再往里写新密钥等于再泄露一次。
+`.env.local` 已加入 `.gitignore`，只在本机生效，加载顺序在 `.env` 之后覆盖。
