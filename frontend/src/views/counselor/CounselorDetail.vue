@@ -79,31 +79,38 @@
             </el-card>
 
             <el-card class="cd-card">
-              <template #header><span class="cd-card-title">咨询方式 &amp; 收费</span></template>
+              <template #header><span class="cd-card-title">咨询方式</span></template>
               <div class="cd-price-list">
-                <div v-if="counselor.price_video && typeList.includes('video')" class="cd-price-row">
+                <div v-if="typeList.includes('video')" class="cd-price-row">
                   <div class="cd-price-type">
                     <el-icon><VideoCamera /></el-icon> 视频咨询
                   </div>
-                  <span class="cd-price">¥{{ counselor.price_video }}<em>/小时</em></span>
+                  <span class="cd-free">公益免费</span>
                 </div>
-                <div v-if="counselor.price_voice && typeList.includes('voice')" class="cd-price-row">
+                <div v-if="typeList.includes('voice')" class="cd-price-row">
                   <div class="cd-price-type">
                     <el-icon><Microphone /></el-icon> 语音咨询
                   </div>
-                  <span class="cd-price">¥{{ counselor.price_voice }}<em>/小时</em></span>
+                  <span class="cd-free">公益免费</span>
                 </div>
-                <div v-if="counselor.price_offline && typeList.includes('offline')" class="cd-price-row">
+                <div v-if="typeList.includes('offline')" class="cd-price-row">
                   <div class="cd-price-type">
                     <el-icon><Location /></el-icon> 线下咨询
                   </div>
-                  <span class="cd-price">¥{{ counselor.price_offline }}<em>/小时</em></span>
+                  <span class="cd-free">公益免费</span>
                 </div>
               </div>
             </el-card>
 
-            <el-button type="primary" round size="large" style="width:100%;margin-bottom:12px" @click="goToAppointment">
-              立即预约
+            <el-button
+              type="primary"
+              round
+              size="large"
+              style="width:100%;margin-bottom:12px"
+              :disabled="counselor.has_available_slot === false"
+              @click="goToAppointment"
+            >
+              {{ counselor.has_available_slot === false ? '暂无可预约时段' : '立即预约' }}
             </el-button>
             <el-button round size="large" style="width:100%" @click="goToInquiry">
               <el-icon><ChatDotSquare /></el-icon> 联系咨询师
@@ -292,6 +299,7 @@ onMounted(loadDetail)
   font-size: 14px;
 }
 
+.cd-free { color: #22524E; background: rgba(59,131,124,.12); border-radius: 8px; padding: 2px 10px; font-size: 12px; font-weight: 600; }
 .cd-price {
   font-size: 18px;
   font-weight: 700;

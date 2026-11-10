@@ -54,10 +54,6 @@
                   <span class="type-badge">{{ getTypeLabel(order.consultation_type) }}</span>
                 </span>
               </div>
-              <div class="info-item">
-                <span class="info-label">咨询费用</span>
-                <span class="info-value price">¥{{ order.price }}</span>
-              </div>
             </div>
 
             <!-- 问题描述 -->

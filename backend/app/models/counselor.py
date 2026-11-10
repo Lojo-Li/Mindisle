@@ -1,7 +1,7 @@
 """
 咨询师和预约相关数据库模型
 """
-from sqlalchemy import Column, BigInteger, String, DateTime, Text, Float, Integer, Boolean, Enum, ForeignKey, func
+from sqlalchemy import Column, BigInteger, String, DateTime, Date, Time, Text, Float, Integer, Boolean, Enum, ForeignKey, func
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -171,6 +171,27 @@ class ConsultationMessage(Base):
 
     def __repr__(self):
         return f"<ConsultationMessage(id={self.id}, type={self.message_type}, sender_type={self.sender_type})>"
+
+
+class CounselorTimeSlot(Base):
+    """咨询师可预约时段表（由咨询师自行发布，预约成功后锁定）"""
+    __tablename__ = "counselor_time_slots"
+
+    id = Column(BigInteger, primary_key=True, index=True, comment="时段ID")
+    counselor_id = Column(BigInteger, ForeignKey("counselors.id"), nullable=False, comment="咨询师ID")
+
+    slot_date = Column(Date, nullable=False, comment="时段日期")
+    start_time = Column(Time, nullable=False, comment="开始时间")
+    end_time = Column(Time, nullable=False, comment="结束时间")
+
+    # available: 可预约 / booked: 已被预约锁定 / disabled: 咨询师手动停用
+    status = Column(Enum('available', 'booked', 'disabled'), default='available', comment="时段状态")
+
+    created_at = Column(DateTime, server_default=func.now(), comment="创建时间")
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), comment="更新时间")
+
+    def __repr__(self):
+        return f"<CounselorTimeSlot(id={self.id}, counselor={self.counselor_id}, date={self.slot_date}, {self.start_time}-{self.end_time}, {self.status})>"
 
 
 class CounselorInquiry(Base):

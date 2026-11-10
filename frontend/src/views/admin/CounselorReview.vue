@@ -119,17 +119,7 @@
           </el-descriptions-item>
         </el-descriptions>
 
-        <el-descriptions title="定价信息" :column="3" border style="margin-top: 16px">
-          <el-descriptions-item label="视频咨询">
-            {{ currentCounselor.price_video != null ? currentCounselor.price_video + ' 元/时' : '—' }}
-          </el-descriptions-item>
-          <el-descriptions-item label="语音咨询">
-            {{ currentCounselor.price_voice != null ? currentCounselor.price_voice + ' 元/时' : '—' }}
-          </el-descriptions-item>
-          <el-descriptions-item label="线下咨询">
-            {{ currentCounselor.price_offline != null ? currentCounselor.price_offline + ' 元/时' : '—' }}
-          </el-descriptions-item>
-        </el-descriptions>
+        
 
         <div class="detail-section" style="margin-top: 16px">
           <h4>个人简介</h4>

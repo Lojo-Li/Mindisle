@@ -27,6 +27,10 @@ ENV/
 env.bak/
 venv.bak/
 
+# 本机环境配置（端口等机器相关设置，不提交）
+.env.local
+frontend/.env.local
+
 # Backend models (local ML models, not source)
 backend/models/
 

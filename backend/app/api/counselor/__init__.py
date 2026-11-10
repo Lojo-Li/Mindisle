@@ -13,9 +13,9 @@ from app.models.user import User
 from app.schemas.counselor import (
     CounselorResponse, CounselorListQuery, CounselorRegisterRequest,
     TimeSlot, AppointmentCreate, AppointmentResponse,
-    ReviewCreate, ReviewResponse
+    ReviewCreate, ReviewResponse, SlotPublishRequest
 )
-from app.services.counselor_service import CounselorService, AppointmentService
+from app.services.counselor_service import CounselorService, AppointmentService, ScheduleService
 
 router = APIRouter(prefix="/counselor", tags=["咨询师预约"])
 security = HTTPBearer()
@@ -38,6 +38,23 @@ def get_current_user_id(credentials: HTTPAuthorizationCredentials = Depends(secu
             detail="无效的认证令牌"
         )
     return int(user_id)
+
+
+def get_current_reviewer_id(credentials: HTTPAuthorizationCredentials = Depends(security)) -> int:
+    """校验管理员令牌，返回审核人 ID（用于咨询师资料审核接口）"""
+    payload = decode_access_token(credentials.credentials)
+    if not payload or (payload.get("type") != "admin" and payload.get("role") != "admin"):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="需要管理员权限"
+        )
+    admin_id = payload.get("sub")
+    if not admin_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="无效的管理员令牌"
+        )
+    return int(admin_id)
 
 
 # ==================== 咨询师接口 ====================
@@ -682,6 +699,7 @@ async def review_application(
     counselor_id: int,
     action: str = Query(..., pattern=r'^(approve|reject)$', description="审核操作：approve通过/reject拒绝"),
     reason: Optional[str] = Query(None, description="拒绝原因（拒绝时必填）"),
+    reviewer_id: int = Depends(get_current_reviewer_id),
     db: Session = Depends(get_db)
 ):
     """
@@ -695,10 +713,6 @@ async def review_application(
     - 拒绝：咨询师可以重新提交申请
     """
     try:
-        # TODO: 添加管理员权限验证
-        # 临时使用固定管理员ID
-        reviewer_id = 1
-
         if action == 'reject' and not reason:
             raise ValueError("拒绝申请时必须提供拒绝原因")
 
@@ -723,4 +737,91 @@ async def review_application(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"审核申请失败: {str(e)}"
+        )
+
+
+# ==================== 咨询师排班接口 ====================
+
+router_schedule = APIRouter(prefix="/counselor/schedule", tags=["咨询师排班"])
+
+
+@router_schedule.post("/publish", summary="批量发布可预约时段")
+async def publish_slots(
+    request: SlotPublishRequest,
+    user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    """
+    咨询师批量发布可预约时段（工作台-时段管理）
+
+    请求体：`{"slots": [{"date": "2026-11-12", "start_time": "09:00", "end_time": "12:00"}]}`
+
+    冲突校验（逐条校验，互不影响）：
+    - 时段必须对齐整点且至少 1 小时
+    - 不能发布过去的时段
+    - 与已发布时段重叠 → 跳过并记录原因
+    - 与未完成预约的时间重叠 → 跳过并记录原因
+
+    返回：`{"created": n, "skipped": m, "conflicts": [...]}`
+    """
+    try:
+        result = ScheduleService.publish_slots(db, user_id, request)
+        return {
+            "code": 200,
+            "message": f"发布完成：成功 {result['created']} 条，跳过 {result['skipped']} 条",
+            "data": result
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        logger.error(f"发布时段失败: {str(e)}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"发布时段失败: {str(e)}"
+        )
+
+
+@router_schedule.get("/list", summary="查询我的排班时段")
+async def get_my_slots(
+    date: Optional[str] = Query(None, description="按日期过滤 (YYYY-MM-DD)，不传则返回全部未来时段"),
+    user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    """查询咨询师自己发布的排班时段，包含状态（available/booked）"""
+    try:
+        slots = ScheduleService.get_my_slots(db, user_id, date)
+        return {"code": 200, "message": "获取成功", "data": slots}
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        logger.error(f"查询排班失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"查询排班失败: {str(e)}"
+        )
+
+
+@router_schedule.delete("/{slot_id}", summary="删除已发布时段")
+async def remove_slot(
+    slot_id: int,
+    user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    """
+    删除自己发布的可预约时段
+
+    ⚠️ 已被预约占用（booked）的时段不可删除，需先取消对应预约
+    """
+    try:
+        ScheduleService.remove_slot(db, user_id, slot_id)
+        return {"code": 200, "message": "时段已删除", "data": {"id": slot_id, "deleted": True}}
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        logger.error(f"删除时段失败: {str(e)}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"删除时段失败: {str(e)}"
         )

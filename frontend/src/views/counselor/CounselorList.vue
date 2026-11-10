@@ -44,21 +44,11 @@
           </div>
 
           <div class="filter-row">
-            <span class="label">价格范围</span>
-            <div class="pills">
-              <button
-                v-for="p in priceOptions"
-                :key="p.value"
-                class="pill"
-                :class="{ active: filters.priceRange === p.value }"
-                @click="filters.priceRange = p.value; handleFilterChange()"
-              >{{ p.label }}</button>
-            </div>
+            <span class="label">排序方式</span>
             <el-select v-model="filters.sort" @change="handleFilterChange" style="width:120px; margin-left:auto" size="small">
               <el-option label="综合排序" value="default" />
               <el-option label="评分最高" value="rating" />
-              <el-option label="销量最高" value="orders" />
-              <el-option label="价格最低" value="price-asc" />
+              <el-option label="咨询次数最多" value="orders" />
             </el-select>
           </div>
         </div>
@@ -79,9 +69,8 @@
             <el-avatar :size="80" :src="counselor.avatar" class="avatar">
               <el-icon :size="36"><User /></el-icon>
             </el-avatar>
-            <div class="price-tag">
-              <span class="num">¥{{ counselor.price }}</span>
-              <span class="unit">/时</span>
+            <div class="avail-tag" :class="counselor.has_available_slot === false ? 'off' : 'on'">
+              {{ counselor.has_available_slot === false ? '不可预约' : '可预约' }}
             </div>
           </div>
 
@@ -158,12 +147,6 @@ const typeOptions = [
   { label: '语音', value: 'voice' },
   { label: '线下', value: 'offline' },
 ]
-const priceOptions = [
-  { label: '不限', value: '' },
-  { label: '¥0-200', value: '0-200' },
-  { label: '¥200-500', value: '200-500' },
-  { label: '¥500+', value: '500+' },
-]
 const typeLabelMap = { video: '视频', voice: '语音', offline: '线下' }
 const typeLabel = (t) => typeLabelMap[t] || t
 
@@ -206,7 +189,6 @@ const filters = reactive({
   keyword: '',
   specialties: [],
   types: [],
-  priceRange: '',
   sort: 'default'
 })
 
@@ -214,17 +196,6 @@ const pagination = reactive({
   page: 1,
   pageSize: 12
 })
-
-const parsePriceRange = (range) => {
-  if (!range) return {}
-  if (range === '500+') return { price_min: 500 }
-
-  const [min, max] = range.split('-').map(Number)
-  const params = {}
-  if (!Number.isNaN(min)) params.price_min = min
-  if (!Number.isNaN(max)) params.price_max = max
-  return params
-}
 
 const normalizeCounselor = (item) => {
   const specialties = typeof item.specialties === 'string'
@@ -235,16 +206,12 @@ const normalizeCounselor = (item) => {
     ? item.consultation_types.split(',').map(t => t.trim()).filter(Boolean)
     : (item.types || [])
 
-  const prices = [item.price_video, item.price_voice, item.price_offline]
-    .filter(v => v !== null && v !== undefined)
-
   return {
     ...item,
     specialties,
     types,
     rating: Number(item.rating || 0),
-    reviewCount: item.review_count || item.reviewCount || 0,
-    price: prices.length ? Math.min(...prices) : 0
+    reviewCount: item.review_count || item.reviewCount || 0
   }
 }
 
@@ -258,7 +225,6 @@ const loadCounselors = async () => {
       sort: filters.sort,
       page: pagination.page,
       page_size: pagination.pageSize,
-      ...parsePriceRange(filters.priceRange)
     }
     const res = await getCounselorList(params)
     const rows = res.data.items || res.data.list || []
@@ -413,16 +379,16 @@ onMounted(() => {
       border: 3px solid $primary-lighter;
     }
 
-    .price-tag {
-      background: linear-gradient(135deg, #3B837C 0%, #22524E 100%);
-      color: white;
+    .avail-tag {
       border-radius: 10px;
       padding: 4px 12px;
       text-align: center;
       white-space: nowrap;
+      font-size: 12px;
+      font-weight: 600;
 
-      .num { font-size: 17px; font-weight: 700; }
-      .unit { font-size: 11px; opacity: 0.9; }
+      &.on { background: rgba(59, 131, 124, 0.12); color: #22524E; }
+      &.off { background: #F1F3F2; color: #9AA3A1; }
     }
   }
 

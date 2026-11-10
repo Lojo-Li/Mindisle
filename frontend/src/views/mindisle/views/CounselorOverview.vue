@@ -7,6 +7,7 @@
       <p>这里是你的咨询工作台。待处理的预约会第一时间出现在这里。</p>
     </div>
     <div class="spacer"></div>
+    <button class="btn btn-ghost" data-go="/counselor/schedule">时段管理</button>
     <button class="btn btn-ghost" data-go="/consultation/counselor/orders">订单详情</button>
   </div>
 

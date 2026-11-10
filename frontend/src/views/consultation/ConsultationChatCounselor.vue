@@ -84,10 +84,6 @@
               <span class="info-label">咨询方式</span>
               <span class="info-value">{{ getTypeText(appointment?.type) }}</span>
             </div>
-            <div class="info-item">
-              <span class="info-label">咨询费用</span>
-              <span class="info-value price">¥{{ appointment?.price }}</span>
-            </div>
           </div>
         </div>
 

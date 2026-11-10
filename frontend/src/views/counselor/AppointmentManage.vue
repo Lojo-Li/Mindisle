@@ -56,10 +56,6 @@
                   <span class="type-badge">{{ getTypeLabel(order.consultation_type) }}</span>
                 </span>
               </div>
-              <div class="info-item">
-                <span class="info-label">咨询费用</span>
-                <span class="info-value price">¥{{ order.price }}</span>
-              </div>
             </div>
 
             <!-- 操作按钮 -->
@@ -109,8 +105,7 @@ const STATUS_LABELS = {
   confirmed: '已确认',
   in_progress: '进行中',
   completed: '已完成',
-  cancelled: '已取消',
-  refunded: '已退款'
+  cancelled: '已取消'
 }
 
 const orders = ref([])

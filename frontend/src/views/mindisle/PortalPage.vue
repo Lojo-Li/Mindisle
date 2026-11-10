@@ -569,7 +569,7 @@
           </p>
           <div class="doc-meta">
             <span>本周可约 4 个时段</span>
-            <span class="price">¥480 <small>/ 50 分钟</small></span>
+            <span class="avail ok" style="margin-left:auto">可预约</span>
           </div>
           <button class="btn btn-primary btn-sm" style="width:100%;margin-top:14px" data-book="陈曦">选择时段</button>
         </div>
@@ -591,7 +591,7 @@
           </p>
           <div class="doc-meta">
             <span>本周可约 6 个时段</span>
-            <span class="price">¥420 <small>/ 50 分钟</small></span>
+            <span class="avail ok" style="margin-left:auto">可预约</span>
           </div>
           <button class="btn btn-primary btn-sm" style="width:100%;margin-top:14px" data-book="周予安">选择时段</button>
         </div>
@@ -615,7 +615,7 @@
           </p>
           <div class="doc-meta">
             <span>本周可约 2 个时段</span>
-            <span class="price">¥680 <small>/ 50 分钟</small></span>
+            <span class="avail ok" style="margin-left:auto">可预约</span>
           </div>
           <button class="btn btn-primary btn-sm" style="width:100%;margin-top:14px" data-book="林知夏">选择时段</button>
         </div>
@@ -637,7 +637,7 @@
           </p>
           <div class="doc-meta">
             <span>本周可约 8 个时段</span>
-            <span class="price">¥360 <small>/ 50 分钟</small></span>
+            <span class="avail ok" style="margin-left:auto">可预约</span>
           </div>
           <button class="btn btn-primary btn-sm" style="width:100%;margin-top:14px" data-book="苏漾">选择时段</button>
         </div>

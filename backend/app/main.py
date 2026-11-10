@@ -121,10 +121,11 @@ from app.api.chat.router import router as chat_router
 app.include_router(chat_router, prefix="/api")
 
 # 咨询师预约路由
-from app.api.counselor import router as counselor_router, router_appointment as appointment_router, router_inquiry as inquiry_router
+from app.api.counselor import router as counselor_router, router_appointment as appointment_router, router_inquiry as inquiry_router, router_schedule as counselor_schedule_router
 app.include_router(counselor_router, prefix="/api")
 app.include_router(appointment_router, prefix="/api")
 app.include_router(inquiry_router, prefix="/api")
+app.include_router(counselor_schedule_router, prefix="/api")
 
 # 咨询对话路由
 from app.api.consultation import router as consultation_router

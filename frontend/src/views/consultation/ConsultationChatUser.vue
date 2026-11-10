@@ -49,10 +49,6 @@
             <span class="chip-label">咨询方式</span>
             <span class="chip-value">{{ getTypeLabel(appointment?.type) }}</span>
           </div>
-          <div class="info-chip">
-            <span class="chip-label">费用</span>
-            <span class="chip-value price">¥{{ appointment?.price }}</span>
-          </div>
         </div>
 
         <!-- 消息区域 -->

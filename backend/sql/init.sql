@@ -340,6 +340,22 @@ CREATE TABLE IF NOT EXISTS inquiry_messages (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='预约前沟通消息表';
 
 -- ===============================================
+-- 12.5 咨询师可预约时段表 (模型: app.models.counselor.CounselorTimeSlot → counselor_time_slots)
+-- ===============================================
+CREATE TABLE IF NOT EXISTS counselor_time_slots (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT '时段ID',
+    counselor_id BIGINT UNSIGNED NOT NULL COMMENT '咨询师ID',
+    slot_date DATE NOT NULL COMMENT '时段日期',
+    start_time TIME NOT NULL COMMENT '开始时间',
+    end_time TIME NOT NULL COMMENT '结束时间',
+    status ENUM('available','booked','disabled') NOT NULL DEFAULT 'available' COMMENT '时段状态',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    KEY idx_slot_counselor_date (counselor_id, slot_date),
+    KEY idx_slot_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='咨询师可预约时段表';
+
+-- ===============================================
 -- 13. 通知表 (用户/咨询师通知中心)
 -- ===============================================
 CREATE TABLE IF NOT EXISTS notifications (

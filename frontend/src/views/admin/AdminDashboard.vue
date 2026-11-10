@@ -97,7 +97,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import * as echarts from 'echarts'
-import { User, ShoppingCart, Money, Document, ArrowUp, ArrowDown, Warning, UserFilled } from '@element-plus/icons-vue'
+import { User, ShoppingCart, Document, ArrowUp, ArrowDown, Warning, UserFilled } from '@element-plus/icons-vue'
 import { getDashboardStats, getChartData } from '@/api/admin'
 
 const router = useRouter()
@@ -107,7 +107,7 @@ const userChartPeriod = ref('week')
 const stats = ref([
   { key: 'users', label: '用户总数', value: '1,234', trend: 12.5, color: 'linear-gradient(135deg, #3B837C 0%, #22524E 100%)', icon: User },
   { key: 'orders', label: '订单总数', value: '856', trend: 8.3, color: 'linear-gradient(135deg, #9FCBC4 0%, #C4746A 100%)', icon: ShoppingCart },
-  { key: 'revenue', label: '总收入', value: '¥45,678', trend: 23.1, color: 'linear-gradient(135deg, #5AA79E 0%, #E2EFEC 100%)', icon: Money },
+  { key: 'completed', label: '已完成咨询', value: '1,286', trend: 9.4, color: 'linear-gradient(135deg, #5AA79E 0%, #E2EFEC 100%)', icon: ShoppingCart },
   { key: 'articles', label: '知识文章', value: '342', trend: 5.6, color: 'linear-gradient(135deg, #9FCBC4 0%, #E2EFEC 100%)', icon: Document }
 ])
 

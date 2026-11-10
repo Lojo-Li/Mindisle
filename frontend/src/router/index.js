@@ -36,6 +36,7 @@ const CounselorRegister = () => import('@/views/counselor/CounselorRegister.vue'
 const CounselorApply = () => import('@/views/counselor/CounselorApply.vue')
 const AppointmentForm = () => import('@/views/counselor/AppointmentForm.vue')
 const AppointmentManage = () => import('@/views/counselor/AppointmentManage.vue')
+const SlotManage = () => import('@/views/counselor/SlotManage.vue')
 const ReviewForm = () => import('@/views/counselor/ReviewForm.vue')
 const InquiryChat = () => import('@/views/counselor/InquiryChat.vue')
 
@@ -270,6 +271,12 @@ const routes = [
     name: 'ReviewForm',
     component: ReviewForm,
     meta: { title: '评价咨询 - 心屿 Mindisle', requiresAuth: true }
+  },
+  {
+    path: '/counselor/schedule',
+    name: 'SlotManage',
+    component: SlotManage,
+    meta: { title: '时段管理 - 心屿 Mindisle', requiresAuth: true, requiresCounselor: true }
   },
   {
     path: '/consultation/counselor/orders',

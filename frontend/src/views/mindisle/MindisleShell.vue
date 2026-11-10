@@ -133,6 +133,7 @@ const MENUS = {
   ],
   counselor: [
     { label: '咨询师工作台', text: '概览', short: '概览', path: '/counselor/dashboard', icon: ICONS.home },
+    { text: '时段管理', short: '时段', path: '/counselor/schedule', icon: ICONS.booking },
     { text: '预约订单', short: '订单', path: '/consultation/counselor/orders', icon: ICONS.booking },
     { text: '咨询会话', short: '会话', path: '/chat', icon: ICONS.lamp },
     { label: '我的', text: '个人中心', short: '我的', path: '/profile', icon: ICONS.records }
@@ -482,17 +483,25 @@ function logout() { userStore.logout() }
   .mi-portal .send:hover{background:var(--sea-deep)}
 
   /* ---------- 咨询师 ---------- */
-  .mi-portal .docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px}
-  .mi-portal .doc{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow-s);transition:.28s var(--ease)}
+  .mi-portal .docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;align-items:stretch}
+  .mi-portal .doc{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow-s);transition:.28s var(--ease);display:flex;flex-direction:column;height:100%}
   .mi-portal .doc:hover{box-shadow:var(--shadow-m);transform:translateY(-2px)}
   .mi-portal .doc-top{display:flex;gap:13px;align-items:flex-start}
   .mi-portal .doc .avatar{width:48px;height:48px;flex:0 0 48px;border-radius:15px;font-size:16px}
   .mi-portal .doc-top h4{font-size:15px;font-weight:600;display:flex;align-items:center;gap:7px}
   .mi-portal .doc-top .sub{font-size:11.5px;color:var(--ink-3);margin-top:2px}
   .mi-portal .doc-tags{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 12px}
-  .mi-portal .doc-meta{display:flex;align-items:center;gap:12px;padding-top:13px;border-top:1px solid var(--line-2);font-size:11.5px;color:var(--ink-3)}
-  .mi-portal .doc-meta .price{margin-left:auto;font-size:14px;font-weight:640;color:var(--ink);letter-spacing:-.2px}
-  .mi-portal .doc-meta .price small{font-size:11px;font-weight:400;color:var(--ink-3)}
+  /* 简介固定 3 行，超出省略；不同长度的简历不会再撑出高低不一的卡片 */
+  .mi-portal .doc-bio{
+    font-size:12.5px;color:var(--ink-2);line-height:1.75;margin:0;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+    min-height:calc(1.75em * 3);
+  }
+  .mi-portal .doc-meta{display:flex;align-items:center;gap:12px;padding-top:13px;border-top:1px solid var(--line-2);font-size:11.5px;color:var(--ink-3);margin-top:auto}
+  .mi-portal .doc-meta .avail{margin-left:auto;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+  .mi-portal .doc-meta .avail.ok{color:var(--sea-deep);background:var(--sea-soft)}
+  .mi-portal .doc-meta .avail.no{color:var(--ink-3);background:var(--surface-2)}
+  .mi-portal .doc .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
   .mi-portal .stars{display:flex;align-items:center;gap:3px;color:var(--lamp);font-weight:600}
 
   .mi-portal .filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}

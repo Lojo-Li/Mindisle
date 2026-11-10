@@ -255,3 +255,42 @@ export function sendInquiryMessage(inquiryId, content) {
     data: { content, msg_type: 'text' }
   })
 }
+
+// ── 咨询师排班（时段发布与冲突校验） ──────────────────
+
+/**
+ * 批量发布可预约时段
+ * @param {Array<{date: string, start_time: string, end_time: string}>} slots
+ * 后端逐条做冲突校验（整点对齐 / 过去时段 / 与已发布时段重叠 / 与已有预约重叠），
+ * 返回 { created, skipped, conflicts }
+ */
+export function publishScheduleSlots(slots) {
+  return request({
+    url: '/counselor/schedule/publish',
+    method: 'post',
+    data: { slots }
+  })
+}
+
+/**
+ * 查询我的排班时段
+ * @param {string} [date] - 按日期过滤 (YYYY-MM-DD)，不传返回全部未来时段
+ */
+export function getMyScheduleSlots(date) {
+  return request({
+    url: '/counselor/schedule/list',
+    method: 'get',
+    params: date ? { date } : {}
+  })
+}
+
+/**
+ * 删除已发布时段（已被预约占用的时段后端会拒绝）
+ * @param {number|string} slotId
+ */
+export function removeScheduleSlot(slotId) {
+  return request({
+    url: `/counselor/schedule/${slotId}`,
+    method: 'delete'
+  })
+}

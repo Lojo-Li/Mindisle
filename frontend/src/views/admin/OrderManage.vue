@@ -40,16 +40,8 @@
           <span class="stat-value">{{ stats.total }}</span>
         </div>
         <div class="stat-item">
-          <span class="stat-label">总收入:</span>
-          <span class="stat-value">¥{{ stats.revenue }}</span>
-        </div>
-        <div class="stat-item">
           <span class="stat-label">完成率:</span>
           <span class="stat-value">{{ stats.completionRate }}%</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">平均客单价:</span>
-          <span class="stat-value">¥{{ stats.avgPrice }}</span>
         </div>
       </div>
 
@@ -66,11 +58,6 @@
         <el-table-column prop="consultation_type" label="方式" width="80">
           <template #default="{ row }">
             {{ getTypeText(row.consultation_type) }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="price" label="费用" width="80">
-          <template #default="{ row }">
-            ¥{{ row.price }}
           </template>
         </el-table-column>
         <el-table-column prop="status" label="状态" width="100">
@@ -115,7 +102,7 @@
           <el-descriptions-item label="咨询师">{{ currentOrder.counselor_name }}</el-descriptions-item>
           <el-descriptions-item label="预约日期">{{ formatDate(currentOrder.appointment_date) }}</el-descriptions-item>
           <el-descriptions-item label="咨询方式">{{ getTypeText(currentOrder.consultation_type) }}</el-descriptions-item>
-          <el-descriptions-item label="费用">¥{{ currentOrder.price }}</el-descriptions-item>
+
           <el-descriptions-item label="创建时间" :span="2">{{ currentOrder.created_at }}</el-descriptions-item>
         </el-descriptions>
 

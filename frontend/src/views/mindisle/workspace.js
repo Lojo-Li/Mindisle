@@ -67,6 +67,11 @@ export function go(view, router) {
     lamp: '/workspace/lamp', booking: '/workspace/booking', records: '/workspace/records',
     trend: '/workspace/trend'
   }
+  // 以 / 开头的直接当作路由路径，便于 data-go 指向任意页面
+  if (typeof view === 'string' && view.startsWith('/')) {
+    router.push(view)
+    return
+  }
   router.push(map[view] || '/workspace/home')
 }
 
@@ -86,17 +91,19 @@ export function scaleCard(t) {
 }
 
 export function docCard(c) {
-  const price = c.price_video || c.price_voice || c.price_offline || 0
   const tags = String(c.specialties || '').split(/[,，、\s]+/).filter(Boolean).slice(0, 3)
+  const available = c.has_available_slot !== false
   return '<div class="doc"><div class="doc-top">' +
     '<div class="avatar av-a">' + esc(String(c.name || '咨').slice(0, 1)) + '</div>' +
     '<div><h4>' + esc(c.name) + (c.is_verified ? '<span class="tag sea" style="font-size:10px;padding:1.5px 7px">认证</span>' : '') + '</h4>' +
     '<div class="sub">' + esc(c.title || '心理咨询师') + ' · ' + (c.experience_years || 0) + ' 年经验</div></div>' +
     '<div class="stars" style="margin-left:auto;font-size:11.5px">★ ' + (c.rating || '5.0') + '</div></div>' +
     '<div class="doc-tags">' + tags.map(x => '<span class="tag">' + esc(x) + '</span>').join('') + '</div>' +
-    '<p style="font-size:12.5px;color:var(--ink-2);line-height:1.75">' + esc(c.bio || '愿意慢慢听你说。') + '</p>' +
-    '<div class="doc-meta"><span>可预约咨询</span><span class="price">¥' + price + ' <small>/ 50 分钟</small></span></div>' +
-    '<button class="btn btn-primary btn-sm" style="width:100%;margin-top:14px" data-book="' + c.id + '">选择时段</button></div>'
+    '<p class="doc-bio">' + esc(c.bio || '愿意慢慢听你说。') + '</p>' +
+    '<div class="doc-meta"><span>公益免费</span>' +
+    '<span class="avail ' + (available ? 'ok' : 'no') + '">' + (available ? '可预约' : '不可预约') + '</span></div>' +
+    '<button class="btn btn-primary btn-sm" style="width:100%;margin-top:14px"' +
+    (available ? '' : ' disabled') + ' data-book="' + c.id + '">选择时段</button></div>'
 }
 
 export function testTl(r, i) {

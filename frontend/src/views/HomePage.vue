@@ -166,8 +166,8 @@
               <span v-for="tag in counselor.specialties" :key="tag" class="tag">{{ tag }}</span>
             </div>
             <div class="counselor-price">
-              <span class="price-num">¥{{ counselor.price }}</span>
-              <span class="price-unit">/小时</span>
+              <span class="price-num">公益免费</span>
+              <span class="price-unit">/50 分钟</span>
             </div>
             <el-button type="primary" class="book-btn" @click="bookCounselor(counselor.id)">
               立即预约
@@ -313,32 +313,28 @@ const recommendedCounselors = ref([
     name: '张老师',
     avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200',
     rating: 4.9,
-    specialties: ['焦虑', '抑郁', '情感'],
-    price: 300
+    specialties: ['焦虑', '抑郁', '情感']
   },
   {
     id: 2,
     name: '李老师',
     avatar: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=200',
     rating: 4.8,
-    specialties: ['职场', '家庭', '情感'],
-    price: 500
+    specialties: ['职场', '家庭', '情感']
   },
   {
     id: 3,
     name: '王老师',
     avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200',
     rating: 4.9,
-    specialties: ['情感', '婚姻', '亲子'],
-    price: 400
+    specialties: ['情感', '婚姻', '亲子']
   },
   {
     id: 4,
     name: '赵老师',
     avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200',
     rating: 4.7,
-    specialties: ['学业', '职业', '社交'],
-    price: 350
+    specialties: ['学业', '职业', '社交']
   }
 ])
 

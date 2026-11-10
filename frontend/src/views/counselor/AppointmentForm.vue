@@ -65,13 +65,6 @@
                 placeholder="请简要描述您希望咨询的问题"
               />
             </el-form-item>
-
-            <el-form-item label="费用">
-              <div class="price-display">
-                <span class="price">¥{{ price }}</span>
-                <span class="unit">/小时</span>
-              </div>
-            </el-form-item>
           </el-form>
         </div>
 
@@ -116,7 +109,6 @@ const submitting = ref(false)
 
 const counselorId = route.query.counselorId
 const counselor = ref({})
-const price = ref(0)
 
 const selectedDate = ref(new Date())
 const availableSlots = ref([])
@@ -146,21 +138,8 @@ const loadCounselor = async () => {
   try {
     const res = await getCounselorDetail(counselorId)
     counselor.value = res.data
-    updatePrice()
   } catch (error) {
     ElMessage.error('加载咨询师信息失败')
-  }
-}
-
-const updatePrice = () => {
-  if (formData.type === 'video') {
-    price.value = counselor.value.price_video || 0
-  } else if (formData.type === 'voice') {
-    price.value = counselor.value.price_voice || 0
-  } else if (formData.type === 'offline') {
-    price.value = counselor.value.price_offline || 0
-  } else {
-    price.value = 0
   }
 }
 
@@ -169,10 +148,19 @@ const isAvailableDate = (date) => {
   return day >= 1 && day <= 5 // 周一到周五
 }
 
+// 按本地时区格式化日期。
+// 不能用 toISOString()：它是 UTC，东八区选 11-20 会变成 11-19，预约日期与咨询师排班对不上
+const formatLocalDate = (d) => {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
 const loadSlots = async () => {
   if (!selectedDate.value) return
   try {
-    const dateStr = selectedDate.value.toISOString().split('T')[0]
+    const dateStr = formatLocalDate(selectedDate.value)
     const res = await getAvailableSlots(counselorId, dateStr)
     const slots = res.data || []
     availableSlots.value = slots.filter(item => item.available)
@@ -195,7 +183,7 @@ const submitAppointment = async () => {
     await formRef.value.validate()
     submitting.value = true
 
-    const date = selectedDate.value.toISOString().split('T')[0]
+    const date = formatLocalDate(selectedDate.value)
     const startTime = formData.timeSlot.split('-')[0]
     const payload = {
       counselor_id: Number(counselorId),
@@ -238,9 +226,6 @@ watch(selectedDate, () => {
   loadSlots()
 })
 
-watch(() => formData.type, () => {
-  updatePrice()
-})
 </script>
 
 <style lang="scss" scoped>
@@ -259,7 +244,5 @@ watch(() => formData.type, () => {
 .time-slots h4 { margin-bottom: $spacing-md; }
 .slots-group { display: flex; flex-wrap: wrap; gap: $spacing-md; }
 .no-slots { color: $text-secondary; padding: $spacing-md; }
-.price-display { font-size: 24px; }
-.price-display .price { color: $primary-color; font-weight: 600; }
 .action-buttons { display: flex; justify-content: center; gap: $spacing-md; margin-top: $spacing-xl; }
 </style>

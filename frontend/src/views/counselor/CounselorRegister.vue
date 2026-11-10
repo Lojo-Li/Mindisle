@@ -115,52 +115,6 @@
         </el-form-item>
       </div>
 
-      <!-- 定价信息 -->
-      <div class="section">
-        <h3 class="section-title">定价信息（元/小时）</h3>
-
-        <el-row :gutter="20">
-          <el-col :span="8">
-            <el-form-item label="视频咨询价格">
-              <el-input-number
-                v-model="formData.price_video"
-                :min="0"
-                :max="5000"
-                :precision="0"
-                controls-position="right"
-                class="full-width"
-              />
-            </el-form-item>
-          </el-col>
-
-          <el-col :span="8">
-            <el-form-item label="语音咨询价格">
-              <el-input-number
-                v-model="formData.price_voice"
-                :min="0"
-                :max="5000"
-                :precision="0"
-                controls-position="right"
-                class="full-width"
-              />
-            </el-form-item>
-          </el-col>
-
-          <el-col :span="8">
-            <el-form-item label="线下咨询价格">
-              <el-input-number
-                v-model="formData.price_offline"
-                :min="0"
-                :max="5000"
-                :precision="0"
-                controls-position="right"
-                class="full-width"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </div>
-
       <!-- 详细信息 -->
       <div class="section">
         <h3 class="section-title">详细介绍</h3>
@@ -234,9 +188,6 @@ const formData = reactive({
   experience_years: 0,
   education: '',
   qualifications: '',
-  price_video: null,
-  price_voice: null,
-  price_offline: null,
   bio: '',
   approach: '',
   achievements: ''
@@ -315,12 +266,6 @@ const submitForm = async () => {
   try {
     // 验证表单
     await formRef.value.validate()
-
-    // 验证至少填写一种价格
-    if (!formData.price_video && !formData.price_voice && !formData.price_offline) {
-      ElMessage.warning('请至少填写一种咨询方式的价格')
-      return
-    }
 
     // 如果之前被拒绝过，确认是否重新提交
     if (existingStatus.value?.has_applied && existingStatus.value?.application_status === 'rejected') {

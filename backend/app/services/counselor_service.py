@@ -12,13 +12,14 @@ from fastapi import HTTPException, status
 
 logger = logging.getLogger(__name__)
 
-from app.models.counselor import Counselor, Appointment, ConsultationReview
+from app.models.counselor import Counselor, Appointment, ConsultationReview, CounselorTimeSlot
 from app.schemas.counselor import (
     CounselorResponse, CounselorListQuery, CounselorRegisterRequest, TimeSlot,
     AppointmentCreate, AppointmentResponse, AppointmentListResponse,
     ReviewCreate, ReviewResponse, ReviewListResponse,
     MessageResponse, MessageListResponse, SendMessageRequest,
-    HandleOrderRequest, AddNoteRequest, FileUploadResponse
+    HandleOrderRequest, AddNoteRequest, FileUploadResponse,
+    SlotPublishRequest
 )
 
 
@@ -72,6 +73,23 @@ def _has_time_conflict(db: Session, counselor_id, start, duration,
         if _intervals_overlap(new_start, new_end, old_start, old_end):
             return True
     return False
+
+
+def _release_counselor_slot(db: Session, appointment: Appointment) -> None:
+    """释放预约占用的排班时段（取消/拒单时调用）"""
+    appt_start = appointment.appointment_date
+    if appt_start.tzinfo is not None:
+        appt_start = appt_start.replace(tzinfo=None)
+    appt_end = appt_start + timedelta(minutes=appointment.duration or 60)
+    booked_slot = db.query(CounselorTimeSlot).filter(
+        CounselorTimeSlot.counselor_id == appointment.counselor_id,
+        CounselorTimeSlot.slot_date == appt_start.date(),
+        CounselorTimeSlot.status == 'booked',
+        CounselorTimeSlot.start_time <= appt_start.time(),
+        CounselorTimeSlot.end_time >= appt_end.time()
+    ).first()
+    if booked_slot:
+        booked_slot.status = 'available'
 
 
 class CounselorService:
@@ -149,14 +167,54 @@ class CounselorService:
         offset = (query.page - 1) * query.page_size
         counselors = q.offset(offset).limit(query.page_size).all()
 
-        # 转换为响应格式
-        items = [CounselorResponse.model_validate(c) for c in counselors]
+        # 转换为响应格式（并标注是否还有可预约时段）
+        availability = CounselorService._availability_map(db, [c.id for c in counselors])
+        items = [
+            CounselorResponse.model_validate(c).model_copy(
+                update={"has_available_slot": availability.get(c.id, True)}
+            )
+            for c in counselors
+        ]
 
         return {
             "total": total,
             "items": items,
             "page": query.page,
             "page_size": query.page_size
+        }
+
+    @staticmethod
+    def _availability_map(db: Session, counselor_ids: List[int]) -> Dict[int, bool]:
+        """批量判断咨询师是否还有可预约时段
+
+        - 存在未来 available 的已发布时段 → 可预约
+        - 从未发布过任何时段（老数据）→ 沿用默认 09:00-18:00 逻辑，视为可预约
+        - 发布过但全部已被预约 → 不可预约
+        """
+        ids = [cid for cid in counselor_ids if cid is not None]
+        if not ids:
+            return {}
+
+        rows = db.query(
+            CounselorTimeSlot.counselor_id,
+            CounselorTimeSlot.status,
+            func.count(CounselorTimeSlot.id)
+        ).filter(
+            CounselorTimeSlot.counselor_id.in_(ids),
+            CounselorTimeSlot.slot_date >= date.today()
+        ).group_by(
+            CounselorTimeSlot.counselor_id, CounselorTimeSlot.status
+        ).all()
+
+        available_ids, published_ids = set(), set()
+        for cid, status, _count in rows:
+            published_ids.add(cid)
+            if status == 'available':
+                available_ids.add(cid)
+
+        return {
+            cid: (cid in available_ids) or (cid not in published_ids)
+            for cid in ids
         }
 
     @staticmethod
@@ -170,7 +228,10 @@ class CounselorService:
         if not counselor:
             raise ValueError("咨询师不存在")
 
-        return CounselorResponse.model_validate(counselor)
+        available = CounselorService._availability_map(db, [counselor.id])
+        return CounselorResponse.model_validate(counselor).model_copy(
+            update={"has_available_slot": available.get(counselor.id, True)}
+        )
 
     @staticmethod
     def get_available_slots(
@@ -194,7 +255,23 @@ class CounselorService:
         except ValueError:
             raise ValueError("日期格式错误")
 
-        # 一次性取出可能影响当天时段的有效预约，与创建预约共用区间冲突判定
+        # 优先使用咨询师发布的时段（排班）；未发布过排班时回退到默认 09:00-18:00
+        published_slots = db.query(CounselorTimeSlot).filter(
+            CounselorTimeSlot.counselor_id == counselor_id,
+            CounselorTimeSlot.slot_date == appt_date,
+            CounselorTimeSlot.status != 'disabled'
+        ).order_by(CounselorTimeSlot.start_time).all()
+
+        if published_slots:
+            return [
+                TimeSlot(
+                    time=f"{slot.start_time.strftime('%H:%M')}-{slot.end_time.strftime('%H:%M')}",
+                    available=(slot.status == 'available'),
+                    price=counselor.price_video or counselor.price_voice or counselor.price_offline
+                )
+                for slot in published_slots
+            ]
+
         day_start = datetime.combine(appt_date, datetime.min.time())
         active_appointments = _active_appointments_in_window(
             db, counselor_id, day_start, day_start + timedelta(days=1))
@@ -396,23 +473,25 @@ class CounselorService:
         page_size: int = 10
     ) -> Dict[str, Any]:
         """获取待审核的咨询师申请列表（管理员用）"""
-        q = db.query(Counselor).filter(
+        from app.models.user import User
+
+        q = db.query(Counselor, User.email).outerjoin(
+            User, User.id == Counselor.user_id
+        ).filter(
             Counselor.application_status == 'pending',
             Counselor.is_deleted == False
         ).order_by(Counselor.created_at.asc())
 
         total = q.count()
         offset = (page - 1) * page_size
-        counselors = q.offset(offset).limit(page_size).all()
+        rows = q.offset(offset).limit(page_size).all()
 
         items = []
-        for counselor in counselors:
-            from app.models.user import User
-            user = db.query(User).filter(User.id == counselor.user_id).first()
-            counselor_data = CounselorResponse.model_validate(counselor)
-            # 添加用户邮箱
-            if user:
-                counselor_data.user_email = user.email
+        for counselor, user_email in rows:
+            # user_email 不是 Counselor 模型字段，需显式回填
+            counselor_data = CounselorResponse.model_validate(counselor).model_copy(
+                update={"user_email": user_email}
+            )
             items.append(counselor_data)
 
         return {
@@ -628,24 +707,40 @@ class AppointmentService:
         if appt_datetime < datetime.now():
             raise ValueError("预约时间不能是过去的时间")
 
+        # 预约时长固定 60 分钟
+        appt_end = appt_datetime + timedelta(minutes=60)
+
         # 检查预约区间 [start, start+duration) 是否与已有有效预约重叠
         # 与 /counselor/{id}/slots 共用 _has_time_conflict，保证两处判定口径一致
         if _has_time_conflict(db, appointment_data.counselor_id,
                               appt_datetime, DEFAULT_APPOINTMENT_MINUTES):
             raise ValueError("该时段已被预约")
 
-        # 确定价格
-        if appointment_data.consultation_type == 'video':
-            price = counselor.price_video
-        elif appointment_data.consultation_type == 'voice':
-            price = counselor.price_voice
-        elif appointment_data.consultation_type == 'offline':
-            price = counselor.price_offline
-        else:
-            raise ValueError("不支持的咨询方式")
+        # 若咨询师已发布排班时段，预约必须完整落在某个 available 时段内，并锁定该时段
+        slot_to_book = None
+        published_slots = db.query(CounselorTimeSlot).filter(
+            CounselorTimeSlot.counselor_id == appointment_data.counselor_id,
+            CounselorTimeSlot.slot_date == appt_datetime.date(),
+            CounselorTimeSlot.status != 'disabled'
+        ).all()
+        if published_slots:
+            for slot in published_slots:
+                slot_start = datetime.combine(appt_datetime.date(), slot.start_time)
+                slot_end = datetime.combine(appt_datetime.date(), slot.end_time)
+                if slot_start <= appt_datetime and appt_end <= slot_end:
+                    slot_to_book = slot
+                    break
+            if slot_to_book is None:
+                raise ValueError("咨询师未开放该时段，请从已发布的可预约时段中选择")
+            if slot_to_book.status != 'available':
+                raise ValueError("该时段已被预约")
 
-        if not price:
+        # 公益活动：所有咨询免费，不再计算/收取任何费用
+        # 这里仅保留"咨询师是否支持该咨询方式"的校验
+        supported_types = [t.strip() for t in (counselor.consultation_types or '').split(',') if t.strip()]
+        if appointment_data.consultation_type not in supported_types:
             raise ValueError(f"咨询师暂不支持{appointment_data.consultation_type}咨询方式")
+        price = 0
 
         # 生成预约编号
         appointment_no = f"APT{datetime.now().strftime('%Y%m%d%H%M%S')}{uuid.uuid4().hex[:6].upper()}"
@@ -667,6 +762,11 @@ class AppointmentService:
         )
 
         db.add(appointment)
+
+        # 锁定已发布的排班时段
+        if slot_to_book is not None:
+            slot_to_book.status = 'booked'
+
         db.commit()
         db.refresh(appointment)
 
@@ -816,13 +916,17 @@ class AppointmentService:
         page_size: int = 10
     ) -> Dict[str, Any]:
         """获取咨询师收到的预约列表"""
+        from app.models.user import User
+
         # 先获取咨询师ID（通过user_id）。非咨询师直接拒绝访问
         counselor = db.query(Counselor).filter(Counselor.user_id == counselor_id).first()
         if not counselor:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="仅咨询师可访问")
 
-        # 查询该咨询师的预约订单
-        q = db.query(Appointment).filter(Appointment.counselor_id == counselor.id)
+        # 查询该咨询师的预约订单（一并取出下单用户，Appointment 与 User 之间无 relationship）
+        q = db.query(Appointment, User).outerjoin(
+            User, User.id == Appointment.user_id
+        ).filter(Appointment.counselor_id == counselor.id)
 
         # 状态筛选
         if status_filter:
@@ -838,22 +942,22 @@ class AppointmentService:
         offset = (page - 1) * page_size
         appointments = q.offset(offset).limit(page_size).all()
 
-        # 转换为响应格式
+        # 转换为响应格式（用户信息随查询一并取出，避免 N+1）
         items = []
-        for appt in appointments:
-            appt_data = AppointmentResponse.model_validate(appt)
-            # 添加用户信息。显式查询 users 表，不依赖 Appointment.user 关系
-            # （模型未定义该关系，直接访问会抛 AttributeError 导致接口 500）
-            from app.models.user import User
-            user = db.query(User).filter(User.id == appt.user_id).first()
+        for appt, user in appointments:
+            user_info = None
             if user:
-                appt_data.user_info = {
+                user_info = {
                     "id": user.id,
                     "nickname": user.nickname,
                     "email": user.email,
                     "phone": user.phone
                 }
-            items.append(appt_data)
+            items.append(
+                AppointmentResponse.model_validate(appt).model_copy(
+                    update={"user_info": user_info}
+                )
+            )
 
         return {
             "total": total,
@@ -881,6 +985,9 @@ class AppointmentService:
         appointment.status = 'cancelled'
         appointment.cancel_reason = reason
         appointment.cancelled_at = datetime.now()
+
+        # 释放被锁定的排班时段
+        _release_counselor_slot(db, appointment)
 
         db.commit()
 
@@ -1132,6 +1239,8 @@ class ConsultationService:
             appointment.status = 'cancelled'
             appointment.cancel_reason = reason
             appointment.cancelled_at = datetime.now()
+            # 释放被锁定的排班时段
+            _release_counselor_slot(db, appointment)
 
             # 发送系统消息通知用户
             ConsultationService._send_system_message(
@@ -1410,3 +1519,190 @@ class ConsultationService:
         )
         db.add(message)
 
+
+
+class ScheduleService:
+    """咨询师排班服务：时段发布、查询与删除（含冲突校验）"""
+
+    @staticmethod
+    def _get_counselor_by_user(db: Session, user_id: int) -> Counselor:
+        """通过登录用户 ID 获取咨询师档案"""
+        counselor = db.query(Counselor).filter(
+            Counselor.user_id == user_id,
+            Counselor.is_deleted == False
+        ).first()
+        if not counselor:
+            raise ValueError("未找到咨询师档案，请先完成咨询师入驻申请")
+        return counselor
+
+    @staticmethod
+    def publish_slots(db: Session, user_id: int, request: SlotPublishRequest) -> Dict[str, Any]:
+        """
+        批量发布可预约时段
+
+        冲突校验规则（逐条校验，互不影响）：
+        - 时间必须对齐整点，且起止至少相差 1 小时
+        - 不能是过去的时段
+        - 与已发布的任意时段重叠 → 跳过并记录
+        - 与未完成预约的时间重叠 → 跳过并记录（该时间已有咨询安排）
+        """
+        counselor = ScheduleService._get_counselor_by_user(db, user_id)
+        now = datetime.now()
+
+        created, skipped, conflicts = 0, 0, []
+        # 预加载已有数据，避免循环内重复查询
+        existing_slots = db.query(CounselorTimeSlot).filter(
+            CounselorTimeSlot.counselor_id == counselor.id,
+            CounselorTimeSlot.status != 'disabled'
+        ).all()
+        active_appointments = db.query(Appointment).filter(
+            Appointment.counselor_id == counselor.id,
+            Appointment.status.in_(['pending', 'confirmed', 'in_progress'])
+        ).all()
+
+        for item in request.slots:
+            label = f"{item.date} {item.start_time}-{item.end_time}"
+            try:
+                slot_date = datetime.strptime(item.date, "%Y-%m-%d").date()
+                start = datetime.strptime(item.start_time, "%H:%M").time()
+                end = datetime.strptime(item.end_time, "%H:%M").time()
+            except ValueError:
+                conflicts.append(f"{label}：日期或时间格式错误")
+                skipped += 1
+                continue
+
+            slot_start = datetime.combine(slot_date, start)
+            slot_end = datetime.combine(slot_date, end)
+
+            if slot_end <= slot_start:
+                conflicts.append(f"{label}：结束时间必须晚于开始时间")
+                skipped += 1
+                continue
+            if item.start_time[-2:] != '00' or item.end_time[-2:] != '00':
+                conflicts.append(f"{label}：时段必须对齐整点（如 09:00-12:00）")
+                skipped += 1
+                continue
+            if (slot_end - slot_start).total_seconds() < 3600:
+                conflicts.append(f"{label}：时段至少为 1 小时")
+                skipped += 1
+                continue
+            if slot_start < now:
+                conflicts.append(f"{label}：不能发布过去的时段")
+                skipped += 1
+                continue
+
+            # 按整点拆分为 1 小时的子时段：每个小时独立可约、独立锁定
+            # （预约时长固定 60 分钟，拆分后单条预约只占用自己那一小时）
+            # 冲突校验同粒度进行：部分重叠时只跳过冲突的那一小时，其余照常发布
+            hour_start = slot_start
+            while hour_start < slot_end:
+                hour_end = hour_start + timedelta(hours=1)
+                h_start, h_end = hour_start.time(), hour_end.time()
+                h_label = f"{item.date} {hour_start.strftime('%H:%M')}-{hour_end.strftime('%H:%M')}"
+
+                # 与已发布时段重叠校验
+                overlap_slot = next(
+                    (s for s in existing_slots
+                     if s.slot_date == slot_date
+                     and s.start_time < h_end and s.end_time > h_start),
+                    None
+                )
+                if overlap_slot is not None:
+                    conflicts.append(
+                        f"{h_label}：与已发布时段 "
+                        f"{overlap_slot.start_time.strftime('%H:%M')}-"
+                        f"{overlap_slot.end_time.strftime('%H:%M')} 重叠"
+                    )
+                    skipped += 1
+                    hour_start = hour_end
+                    continue
+
+                # 与未完成预约重叠校验
+                overlap_appt = None
+                for appt in active_appointments:
+                    appt_start = appt.appointment_date
+                    if appt_start.tzinfo is not None:
+                        appt_start = appt_start.replace(tzinfo=None)
+                    if appt_start.date() != slot_date:
+                        continue
+                    appt_end = appt_start + timedelta(minutes=appt.duration or 60)
+                    if appt_start < hour_end and appt_end > hour_start:
+                        overlap_appt = appt
+                        break
+                if overlap_appt is not None:
+                    conflicts.append(
+                        f"{h_label}：与已有预约（"
+                        f"{overlap_appt.appointment_date.strftime('%H:%M')} 开始）时间冲突"
+                    )
+                    skipped += 1
+                    hour_start = hour_end
+                    continue
+
+                slot = CounselorTimeSlot(
+                    counselor_id=counselor.id,
+                    slot_date=slot_date,
+                    start_time=h_start,
+                    end_time=h_end,
+                    status='available'
+                )
+                db.add(slot)
+                existing_slots.append(slot)
+                created += 1
+                hour_start = hour_end
+
+        if created > 0:
+            db.commit()
+
+        return {
+            "created": created,
+            "skipped": skipped,
+            "conflicts": conflicts
+        }
+
+    @staticmethod
+    def get_my_slots(db: Session, user_id: int, query_date: Optional[str] = None) -> List[Dict[str, Any]]:
+        """查询咨询师自己的排班时段（可按日期过滤，默认全部未来时段）"""
+        counselor = ScheduleService._get_counselor_by_user(db, user_id)
+
+        q = db.query(CounselorTimeSlot).filter(
+            CounselorTimeSlot.counselor_id == counselor.id,
+            CounselorTimeSlot.status != 'disabled'
+        )
+        if query_date:
+            try:
+                d = datetime.strptime(query_date, "%Y-%m-%d").date()
+            except ValueError:
+                raise ValueError("日期格式错误，应为 YYYY-MM-DD")
+            q = q.filter(CounselorTimeSlot.slot_date == d)
+        else:
+            q = q.filter(CounselorTimeSlot.slot_date >= date.today())
+
+        slots = q.order_by(CounselorTimeSlot.slot_date, CounselorTimeSlot.start_time).all()
+        return [
+            {
+                "id": s.id,
+                "slot_date": s.slot_date.strftime("%Y-%m-%d"),
+                "start_time": s.start_time.strftime("%H:%M"),
+                "end_time": s.end_time.strftime("%H:%M"),
+                "status": s.status
+            }
+            for s in slots
+        ]
+
+    @staticmethod
+    def remove_slot(db: Session, user_id: int, slot_id: int) -> bool:
+        """删除已发布时段（已被预约的时段不可删除，需先取消对应预约）"""
+        counselor = ScheduleService._get_counselor_by_user(db, user_id)
+
+        slot = db.query(CounselorTimeSlot).filter(
+            CounselorTimeSlot.id == slot_id,
+            CounselorTimeSlot.counselor_id == counselor.id
+        ).first()
+        if not slot:
+            raise ValueError("时段不存在或无权操作")
+        if slot.status == 'booked':
+            raise ValueError("该时段已被预约占用，无法删除；请先取消对应预约")
+
+        db.delete(slot)
+        db.commit()
+        return True

@@ -158,50 +158,7 @@
                   <div class="form-tip-text">请至少选择一种咨询方式</div>
                 </el-form-item>
 
-                <el-form-item
-                  v-if="formData.consultation_types.includes('video')"
-                  label="视频咨询价格"
-                  prop="price_video"
-                >
-                  <el-input-number
-                    v-model="formData.price_video"
-                    :min="0"
-                    :max="2000"
-                    :step="50"
-                    style="width: 200px"
-                  />
-                  <span class="unit-text">元/小时</span>
-                </el-form-item>
 
-                <el-form-item
-                  v-if="formData.consultation_types.includes('voice')"
-                  label="语音咨询价格"
-                  prop="price_voice"
-                >
-                  <el-input-number
-                    v-model="formData.price_voice"
-                    :min="0"
-                    :max="2000"
-                    :step="50"
-                    style="width: 200px"
-                  />
-                  <span class="unit-text">元/小时</span>
-                </el-form-item>
-
-                <el-form-item
-                  v-if="formData.consultation_types.includes('offline')"
-                  label="线下咨询价格"
-                  prop="price_offline"
-                >
-                  <el-input-number
-                    v-model="formData.price_offline"
-                    :min="0"
-                    :max="2000"
-                    :step="50"
-                    style="width: 200px"
-                  />
-                  <span class="unit-text">元/小时</span>
-                </el-form-item>
               </div>
 
               <!-- 详细信息 -->
@@ -357,9 +314,6 @@ const formData = reactive({
   certificate_images: [], // 改为证书图片数组
 
   // 定价信息
-  price_video: null,
-  price_voice: null,
-  price_offline: null,
 
   // 详细信息
   bio: '',
@@ -476,9 +430,6 @@ const submitApplication = async () => {
       experienceYears: formData.experience_years,
       education: formData.education,
       qualifications: certificateBase64Array.join(','), // 将多张图片用逗号分隔
-      priceVideo: formData.price_video,
-      priceVoice: formData.price_voice,
-      priceOffline: formData.price_offline,
       bio: `${formData.bio}\n\n【从业初衷】\n${formData.question1}\n\n【咨询理念】\n${formData.question2}\n\n【典型案例】\n${formData.question3}\n\n【自我评价】\n${formData.question4}\n\n【时间安排】\n${formData.question5}`,
       approach: formData.approach,
       achievements: formData.achievements

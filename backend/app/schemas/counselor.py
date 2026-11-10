@@ -86,6 +86,8 @@ class CounselorResponse(CounselorBase):
     is_verified: bool = False
     application_status: Optional[str] = "pending"
     rejection_reason: Optional[str] = None
+    user_email: Optional[str] = Field(None, description="申请人邮箱（审核列表用）")
+    has_available_slot: bool = Field(True, description="是否还有可预约时段（用于列表展示可预约/不可预约）")
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -103,6 +105,38 @@ class CounselorListQuery(BaseModel):
 
 
 # ==================== 预约相关 ====================
+
+# ==================== 时段发布相关 ====================
+
+class SlotPublishItem(BaseModel):
+    """单个待发布时段"""
+    date: str = Field(..., pattern=r'^\d{4}-\d{2}-\d{2}$', description="时段日期 YYYY-MM-DD")
+    start_time: str = Field(..., pattern=r'^\d{2}:\d{2}$', description="开始时间 HH:MM")
+    end_time: str = Field(..., pattern=r'^\d{2}:\d{2}$', description="结束时间 HH:MM")
+
+
+class SlotPublishRequest(BaseModel):
+    """批量发布时段请求"""
+    slots: List[SlotPublishItem] = Field(..., min_items=1, description="时段列表")
+
+
+class SlotPublishResult(BaseModel):
+    """批量发布结果"""
+    created: int = 0
+    skipped: int = 0
+    conflicts: List[str] = []
+
+
+class CounselorSlotResponse(BaseModel):
+    """咨询师已发布时段响应"""
+    id: int
+    slot_date: str
+    start_time: str
+    end_time: str
+    status: str
+
+    model_config = ConfigDict(from_attributes=True)
+
 
 class TimeSlot(BaseModel):
     """可预约时段"""
