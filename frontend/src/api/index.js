@@ -20,6 +20,10 @@ request.interceptors.request.use(
     const token = sessionStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+      // 云托管平台的反向代理会占用 Authorization 头（注入平台自身 JWT），
+      // 因此额外用自定义头传递应用 token，后端中间件会把它提升为标准凭据。
+      // 本地开发时该头无副作用，后端同样识别。
+      config.headers['X-App-Token'] = token
     }
     return config
   },

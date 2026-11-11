@@ -53,6 +53,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 云托管适配：部分平台的反向代理会占用 Authorization 头（注入平台自身 JWT），
+# 前端因此额外用 X-App-Token 传递应用 token，这里提升为标准 Authorization。
+# 纯 ASGI 中间件，本地开发不受影响。
+from app.core.cloud_middleware import AppTokenMiddleware
+app.add_middleware(AppTokenMiddleware)
+
 # 路由注册
 @app.get("/")
 async def root():

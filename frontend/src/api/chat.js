@@ -77,7 +77,9 @@ export function sendMessageStream(chatId, data, onMessage, onComplete, onError) 
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      'Authorization': `Bearer ${token}`,
+      // 云托管平台代理会占用 Authorization，另用自定义头传递应用 token
+      'X-App-Token': token || ''
     },
     body: JSON.stringify(data)
   }).then(async (response) => {

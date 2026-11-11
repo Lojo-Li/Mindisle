@@ -16,6 +16,12 @@ export default defineConfig(({ mode }) => {
         '@': fileURLToPath(new URL('./src', import.meta.url))
       }
     },
+    build: {
+      // 关闭 modulepreload 注入：Element Plus 是异步块，
+      // 默认会被写进 <link rel="modulepreload">，浏览器仍会立刻下载 1MB，
+      // 首屏优化就白做了。
+      modulePreload: false
+    },
     server: {
       host: '0.0.0.0', // 允许通过IP地址访问
       port: 5173,
@@ -41,7 +47,10 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks: {
-            'element-plus': ['element-plus'],
+            // 注意：不要再把 element-plus 强制分块。
+            // 强制分块会让 Rollup 在入口就静态引用该 chunk，
+            // 于是它出现在 index.html 的 modulepreload 里，首屏照旧下载 1MB。
+            // 保持默认行为，它才会作为动态 import 的异步块按需加载。
             'vue-vendor': ['vue', 'vue-router', 'pinia'],
             'echarts': ['echarts', 'vue-echarts']
           }
