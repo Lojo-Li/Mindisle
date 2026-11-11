@@ -121,3 +121,18 @@ backend/llm.local.json
 
 # 数据库备份
 backend/soulstation.db.bak-*
+
+# ---------- 本地开发/验收产物（不进仓库）----------
+# C 模块过程文档与测试报告
+C_MODULE_*.md
+# 本地验收脚本（Playwright 等）
+e2e_c_module/*.py
+e2e_c_module/results_*.json
+e2e_c_module/shots_*/
+e2e_c_module/_pwlib/
+e2e_c_module/*.log
+scripts/verify_*.py
+scripts/gen_qrcode.py
+# 截图与临时产物
+screenshots/
+.public-url.txt
