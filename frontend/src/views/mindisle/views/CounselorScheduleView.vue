@@ -5,7 +5,7 @@
     <div>
       <div class="eyebrow">Schedule</div>
       <h1>时段管理</h1>
-      <p>发布你可接待的时段，来访者只能预约你发布过的时间。时段以 1 小时为单位。</p>
+      <p>决定来访者能约到你的哪些时间。发布排班后，默认时段会自动停用；不发布则一直使用默认的每天 09:00–19:00。</p>
     </div>
     <div class="spacer"></div>
     <button class="btn btn-primary" @click="openDialog">发布时段</button>
@@ -20,8 +20,14 @@
   <div v-if="loading" class="doc"><p class="doc-bio">正在加载时段…</p></div>
 
   <div v-else-if="slots.length === 0" class="doc">
-    <h4>还没有发布可预约时段</h4>
-    <p class="doc-bio" style="margin-top:8px">点右上角「发布时段」，选好日期和起止时间即可。未发布排班时，来访者会看到默认的 09:00–18:00 时段。</p>
+    <h4>你正在使用系统默认时段</h4>
+    <p class="doc-bio" style="margin-top:8px">
+      还没有发布过排班时，来访者会看到<b>每天 09:00–19:00</b> 的整点时段，全部可约。
+      这样虽然不会漏单，但如果你实际只在某几天有空，来访者可能约到你不在的时间。
+    </p>
+    <p class="doc-bio" style="margin-top:6px">
+      点右上角「发布时段」，选好日期和起止时间，发布后<b>只会显示你设置的时间</b>，默认时段自动停用。
+    </p>
   </div>
 
   <div v-else class="doc">

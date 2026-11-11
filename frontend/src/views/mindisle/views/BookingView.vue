@@ -129,12 +129,29 @@
       <div class="days" id="days"></div>
       <div style="font-size:12px;color:var(--ink-3);margin-bottom:9px">可约时段</div>
       <div class="slots" id="slots"></div>
-      <div style="display:flex;gap:9px;margin-top:22px">
+
+      <div class="book-note-wrap">
+        <div class="book-note-head">
+          <span>想聊些什么</span>
+          <em>选填 · 咨询师会提前看到</em>
+        </div>
+        <textarea
+          id="bookNote"
+          class="book-note"
+          rows="3"
+          maxlength="1000"
+          v-model="problemNote"
+          placeholder="简单说说最近的困扰，比如：最近总是睡不好，白天没精神，想找个人聊聊（不会公开，只有咨询师能看到）"
+        ></textarea>
+        <div class="book-note-count">{{ problemNote.length }}/1000</div>
+      </div>
+
+      <div style="display:flex;gap:9px;margin-top:18px">
         <button class="btn btn-ghost" style="flex:1" id="bookCancel">取消</button>
         <button class="btn btn-primary" style="flex:1.4" id="bookConfirm">确认预约</button>
       </div>
-      <p style="font-size:11px;color:var(--ink-3);margin-top:14px;text-align:center">
-        开始前 24 小时可免费取消
+      <p style="font-size:11px;color:var(--ink-3);margin-top:14px;text-align:center;line-height:1.8">
+        需至少提前 15 分钟预约 · 公益免费，可随时取消
       </p>
     </div>
   </div>
@@ -155,6 +172,8 @@ let picked = null
 let days = []
 let dayIdx = 0
 let slot = ''
+// 问题描述（选填），提交时带给咨询师，也会显示在「我的预约」里
+const problemNote = ref('')
 
 // 擅长领域筛选：标签 → 命中关键词（按咨询师的擅长领域/简介/职称匹配）
 const FILTERS = [
@@ -209,6 +228,7 @@ async function openBook(id) {
   if (!picked) return
   dayIdx = 0
   slot = ''
+  problemNote.value = ''
   setText(rootEl.value, '#bookTitle', '预约 · ' + (picked.name || '咨询师'))
   await renderDays()
   const ov = rootEl.value.querySelector('#bookOverlay')
@@ -258,7 +278,8 @@ async function confirm() {
     await createAppointment({
       counselor_id: picked.id,
       consultation_type: 'video',
-      appointment_date: dateStr(days[dayIdx]) + 'T' + start + ':00'
+      appointment_date: dateStr(days[dayIdx]) + 'T' + start + ':00',
+      problem_description: problemNote.value.trim() || null
     })
     toast('预约已提交')
     const ov = rootEl.value.querySelector('#bookOverlay')

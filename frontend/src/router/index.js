@@ -37,7 +37,6 @@ const CounselorApply = () => import('@/views/counselor/CounselorApply.vue')
 const AppointmentForm = () => import('@/views/counselor/AppointmentForm.vue')
 const AppointmentManage = () => import('@/views/counselor/AppointmentManage.vue')
 const SlotManage = () => import('@/views/counselor/SlotManage.vue')
-const ReviewForm = () => import('@/views/counselor/ReviewForm.vue')
 const InquiryChat = () => import('@/views/counselor/InquiryChat.vue')
 
 // 咨询对话
@@ -87,6 +86,7 @@ const CounselorOverview = () => import('@/views/mindisle/views/CounselorOverview
 const CounselorScheduleView = () => import('@/views/mindisle/views/CounselorScheduleView.vue')
 const CounselorSessionsView = () => import('@/views/mindisle/views/CounselorSessionsView.vue')
 const CounselorChatView = () => import('@/views/mindisle/views/CounselorChatView.vue')
+const ReviewView = () => import('@/views/mindisle/views/ReviewView.vue')
 const CounselorProfileView = () => import('@/views/mindisle/views/CounselorProfileView.vue')
 
 const routes = [
@@ -118,6 +118,7 @@ const routes = [
       { path: 'lamp', name: 'WorkspaceLamp', component: LampView, meta: { title: '屿灯 - 心屿 Mindisle', crumb: '屿灯' } },
       { path: 'booking', name: 'WorkspaceBooking', component: BookingView, meta: { title: '咨询预约 - 心屿 Mindisle', crumb: '咨询预约' } },
       { path: 'appointments', name: 'WorkspaceAppointments', component: MyAppointmentsView, meta: { title: '我的预约 - 心屿 Mindisle', crumb: '我的预约' } },
+      { path: 'review/:id', name: 'WorkspaceReview', component: ReviewView, meta: { title: '评价咨询 - 心屿 Mindisle', crumb: '我的预约' } },
       { path: 'chat/:id', name: 'WorkspaceUserChat', component: UserChatView, meta: { title: '咨询对话 - 心屿 Mindisle', crumb: '咨询对话' } },
       { path: 'records', name: 'WorkspaceRecords', component: RecordsView, meta: { title: '我的记录 - 心屿 Mindisle', crumb: '我的记录' } },
       { path: 'trend/:id?', name: 'WorkspaceTrend', component: TrendView, meta: { title: '测评趋势 - 心屿 Mindisle', crumb: '测评趋势' } }
@@ -282,8 +283,8 @@ const routes = [
   {
     path: '/counselor/review/:id',
     name: 'ReviewForm',
-    component: ReviewForm,
-    meta: { title: '评价咨询 - 心屿 Mindisle', requiresAuth: true }
+    // 兼容旧链接：统一到心屿布局内的评价页
+    redirect: to => ({ path: '/workspace/review/' + to.params.id })
   },
   {
     path: '/counselor/schedule',

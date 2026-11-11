@@ -30,7 +30,8 @@ DEFAULT_APPOINTMENT_MINUTES = 60
 # 按开始时间预筛查询窗口时向前回溯的最大分钟数，覆盖任意单条预约的时长
 _MAX_APPOINTMENT_MINUTES = 24 * 60
 # 最小预约提前量（分钟）：距开始不足该时长的时段视为不可预约
-MIN_BOOKING_LEAD_MINUTES = 30
+# 15 分钟足以让咨询师收到通知并准备，又不会像 30 分钟那样挡掉临近的可用时段
+MIN_BOOKING_LEAD_MINUTES = 15
 
 
 def _slot_time_state(slot_start: Optional[datetime], now: Optional[datetime] = None) -> Optional[str]:

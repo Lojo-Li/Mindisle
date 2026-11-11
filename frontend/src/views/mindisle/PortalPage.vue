@@ -729,8 +729,8 @@
         <button class="btn btn-ghost" style="flex:1" id="bookCancel">取消</button>
         <button class="btn btn-primary" style="flex:1.4" id="bookConfirm">确认预约</button>
       </div>
-      <p style="font-size:11px;color:var(--ink-3);margin-top:14px;text-align:center">
-        开始前 24 小时可免费取消
+      <p style="font-size:11px;color:var(--ink-3);margin-top:14px;text-align:center;line-height:1.8">
+        需至少提前 15 分钟预约 · 公益免费，可随时取消
       </p>
     </div>
   </div>

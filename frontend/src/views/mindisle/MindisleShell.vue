@@ -560,6 +560,20 @@ function logout() { userStore.logout() }
   .mi-portal .slot.on{background:var(--sea);border-color:var(--sea);color:#fff}
   .mi-portal .slot:disabled{opacity:.34;cursor:not-allowed;text-decoration:line-through}
 
+  /* 预约弹窗：问题描述输入区 */
+  .mi-portal .book-note-wrap{margin-top:18px}
+  .mi-portal .book-note-head{display:flex;align-items:baseline;gap:8px;margin-bottom:9px}
+  .mi-portal .book-note-head span{font-size:12px;color:var(--ink-3)}
+  .mi-portal .book-note-head em{font-size:11px;font-style:normal;color:var(--ink-3);opacity:.75}
+  .mi-portal .book-note{
+    width:100%;border:1px solid var(--line);border-radius:11px;padding:11px 13px;
+    font-family:inherit;font-size:13px;line-height:1.7;color:var(--ink);background:var(--surface-2);
+    resize:vertical;outline:none;transition:border-color .18s var(--ease),background .18s var(--ease);
+  }
+  .mi-portal .book-note:focus{border-color:var(--sea);background:var(--surface)}
+  .mi-portal .book-note::placeholder{color:var(--ink-3)}
+  .mi-portal .book-note-count{margin-top:5px;text-align:right;font-size:10.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+
   .mi-portal .toast{
     position:fixed;left:50%;bottom:34px;transform:translate(-50%,20px);
     background:#1B2A2C;color:#fff;padding:11px 20px;border-radius:12px;font-size:13px;
