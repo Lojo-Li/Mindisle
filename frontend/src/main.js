@@ -26,4 +26,14 @@ app.use(createPinia())
 app.use(router)
 app.use(ElementPlus, { locale: zhCn })
 
-app.mount('#app')
+/**
+ * 等路由首次解析完成再挂载。
+ *
+ * 直接 mount 的话，首帧 route.meta 还是空的，App.vue 里
+ * `showHeader = !route.meta.hideHeader` 会算成 true，
+ * 于是旧版 PageHeader 先闪一下，等路由就绪才被移除——
+ * 刷新 / 或退出登录时会看到「旧导航栏一闪而过」。
+ */
+router.isReady().then(() => {
+  app.mount('#app')
+})

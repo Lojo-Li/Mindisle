@@ -7,7 +7,7 @@ from typing import Optional
 
 class Settings(BaseSettings):
     # 应用配置
-    APP_NAME: str = "SoulStation"
+    APP_NAME: str = "心屿 Mindisle"
     APP_VERSION: str = "1.0.0"
     APP_DEBUG: bool = True
 
@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     MAIL_USERNAME: str = ""
     MAIL_PASSWORD: str = ""
     MAIL_FROM: str = ""
-    MAIL_FROM_NAME: str = "SoulStation"
+    MAIL_FROM_NAME: str = "心屿 Mindisle"
     MAIL_PORT: int = 465
     MAIL_SERVER: str = "smtp.163.com"
     MAIL_TLS: bool = False

@@ -6,13 +6,18 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import PageHeader from '@/components/PageHeader.vue'
 
 const route = useRoute()
 
-const showHeader = computed(() => !route.meta.hideHeader)
+// 路由是否已完成首次解析。未解析时 route.meta 为空对象，
+// 若此时按 !hideHeader 判断会误显示旧导航栏，因此先不渲染。
+const routeReady = ref(false)
+onMounted(() => { routeReady.value = true })
+
+const showHeader = computed(() => routeReady.value && !route.meta.hideHeader)
 </script>
 
 <style>

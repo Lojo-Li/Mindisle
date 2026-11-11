@@ -1,5 +1,5 @@
 """
-SoulStation - 心理咨询服务平台
+心屿 Mindisle - 公益心理健康陪伴平台
 FastAPI 应用入口
 """
 from contextlib import asynccontextmanager
@@ -62,7 +62,7 @@ async def root():
         from fastapi.responses import FileResponse
         return FileResponse(spa_index)
     return {
-        "message": "Welcome to SoulStation API",
+        "message": "Welcome to Mindisle API",
         "version": settings.APP_VERSION
     }
 
