@@ -18,97 +18,26 @@
         <button class="pill" data-spec="teen">青少年</button>
       </div>
 
-      <div class="docs" data-list="docs">
-        <div class="doc">
+      <div class="docs" data-list="docs" aria-busy="true">
+        <!-- 加载骨架：接口返回前占位，避免先闪出一批写死的示例咨询师 -->
+        <div class="doc doc-skeleton" v-for="n in 4" :key="n" aria-hidden="true">
           <div class="doc-top">
-            <div class="avatar av-a">陈</div>
-            <div>
-              <h4>陈曦
-                <span class="tag sea" style="font-size:10px;padding:1.5px 7px">认证</span>
-              </h4>
-              <div class="sub">临床心理学硕士 · 8 年经验</div>
+            <div class="sk-avatar"></div>
+            <div style="flex:1">
+              <div class="sk-line" style="width:42%;height:13px"></div>
+              <div class="sk-line" style="width:62%;height:10px;margin-top:8px"></div>
             </div>
-            <div class="stars" style="margin-left:auto;font-size:11.5px">★ 4.9</div>
           </div>
           <div class="doc-tags">
-            <span class="tag">焦虑</span><span class="tag">正念</span><span class="tag">情绪调节</span>
+            <span class="sk-pill"></span><span class="sk-pill"></span><span class="sk-pill"></span>
           </div>
-          <p class="doc-bio">
-            擅长用认知行为与正念结合的方式，陪你把"停不下来的脑子"慢慢调慢。
-          </p>
+          <div class="sk-line" style="width:100%;height:10px;margin-top:4px"></div>
+          <div class="sk-line" style="width:78%;height:10px;margin-top:7px"></div>
           <div class="doc-meta">
-            <span>公益免费</span>
-            <span class="avail ok">可预约</span>
+            <span class="sk-line" style="width:52px;height:10px"></span>
+            <span class="sk-line" style="width:44px;height:10px"></span>
           </div>
-          <button class="btn btn-primary btn-sm" style="width:100%;margin-top:14px" data-book="陈曦">选择时段</button>
-        </div>
-
-        <div class="doc">
-          <div class="doc-top">
-            <div class="avatar av-b">周</div>
-            <div>
-              <h4>周予安</h4>
-              <div class="sub">国家二级心理咨询师 · 6 年经验</div>
-            </div>
-            <div class="stars" style="margin-left:auto;font-size:11.5px">★ 4.8</div>
-          </div>
-          <div class="doc-tags">
-            <span class="tag">亲密关系</span><span class="tag">自我认同</span>
-          </div>
-          <p class="doc-bio">
-            相信关系里的痛，也要在关系里被修好。风格温和，擅长长程陪伴。
-          </p>
-          <div class="doc-meta">
-            <span>公益免费</span>
-            <span class="avail ok">可预约</span>
-          </div>
-          <button class="btn btn-primary btn-sm" style="width:100%;margin-top:14px" data-book="周予安">选择时段</button>
-        </div>
-
-        <div class="doc">
-          <div class="doc-top">
-            <div class="avatar av-c">林</div>
-            <div>
-              <h4>林知夏
-                <span class="tag lamp" style="font-size:10px;padding:1.5px 7px">精神科</span>
-              </h4>
-              <div class="sub">副主任医师 · 12 年经验</div>
-            </div>
-            <div class="stars" style="margin-left:auto;font-size:11.5px">★ 5.0</div>
-          </div>
-          <div class="doc-tags">
-            <span class="tag">睡眠障碍</span><span class="tag">抑郁</span><span class="tag">药物评估</span>
-          </div>
-          <p class="doc-bio">
-            医学背景，适合症状较重或需要药物联合评估的情况。
-          </p>
-          <div class="doc-meta">
-            <span>公益免费</span>
-            <span class="avail ok">可预约</span>
-          </div>
-          <button class="btn btn-primary btn-sm" style="width:100%;margin-top:14px" data-book="林知夏">选择时段</button>
-        </div>
-
-        <div class="doc">
-          <div class="doc-top">
-            <div class="avatar av-d">苏</div>
-            <div>
-              <h4>苏漾</h4>
-              <div class="sub">心理咨询师 · 4 年经验</div>
-            </div>
-            <div class="stars" style="margin-left:auto;font-size:11.5px">★ 4.7</div>
-          </div>
-          <div class="doc-tags">
-            <span class="tag">学业压力</span><span class="tag">青少年</span>
-          </div>
-          <p class="doc-bio">
-            和 12–22 岁的年轻人工作，懂那种"被期待推着走"的窒息感。
-          </p>
-          <div class="doc-meta">
-            <span>公益免费</span>
-            <span class="avail ok">可预约</span>
-          </div>
-          <button class="btn btn-primary btn-sm" style="width:100%;margin-top:14px" data-book="苏漾">选择时段</button>
+          <div class="sk-btn"></div>
         </div>
       </div>
     
@@ -117,7 +46,7 @@
   <div class="modal">
     <div class="modal-head">
       <div>
-        <h3 id="bookTitle">预约 · 陈曦</h3>
+        <h3 id="bookTitle">预约咨询</h3>
         <p style="font-size:12px;color:var(--ink-3);margin-top:2px">在线咨询</p>
       </div>
       <button class="close" id="bookClose">
@@ -214,8 +143,19 @@ onMounted(async () => {
   try {
     counselors = pickList(await getCounselorList({ page: 1, page_size: 50 }))
     renderCounselors()
+    // 数据已替换骨架屏，解除加载中标记
+    const docsEl = rootEl.value?.querySelector('[data-list="docs"]')
+    if (docsEl) docsEl.setAttribute('aria-busy', 'false')
   } catch (e) {
     toast('咨询师列表加载失败')
+    // 出错时也要撤掉骨架屏，改为可读的错误提示，避免一直转圈
+    const docsEl = rootEl.value?.querySelector('[data-list="docs"]')
+    if (docsEl) {
+      docsEl.setAttribute('aria-busy', 'false')
+      setHtml(rootEl.value, '[data-list="docs"]',
+        '<div class="doc"><h4>咨询师列表加载失败</h4>' +
+        '<p style="font-size:12.5px;color:var(--ink-3);margin-top:8px">请检查网络后刷新页面重试</p></div>')
+    }
   }
 })
 

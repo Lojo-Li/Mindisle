@@ -570,6 +570,31 @@ function logout() { userStore.logout() }
     font-family:inherit;font-size:13px;line-height:1.7;color:var(--ink);background:var(--surface-2);
     resize:vertical;outline:none;transition:border-color .18s var(--ease),background .18s var(--ease);
   }
+
+  /* 咨询师列表加载骨架：避免接口返回前闪出写死的示例数据 */
+  .mi-portal .sk-line,
+  .mi-portal .sk-pill,
+  .mi-portal .sk-avatar,
+  .mi-portal .sk-btn{
+    background:linear-gradient(90deg,#EFEFEB 25%,#F7F7F4 50%,#EFEFEB 75%);
+    background-size:200% 100%;
+    animation:sk-shimmer 1.4s ease-in-out infinite;
+    border-radius:5px;
+  }
+  .mi-portal .sk-avatar{width:44px;height:44px;flex:0 0 44px;border-radius:14px}
+  .mi-portal .sk-line{display:block}
+  .mi-portal .sk-pill{display:inline-block;width:44px;height:20px;border-radius:999px}
+  .mi-portal .sk-btn{width:100%;height:34px;margin-top:14px;border-radius:11px}
+  .mi-portal .doc-skeleton{pointer-events:none}
+  .mi-portal .doc-skeleton .doc-tags{display:flex;gap:6px}
+  .mi-portal .doc-skeleton .doc-meta{display:flex;gap:10px}
+  @keyframes sk-shimmer{
+    0%{background-position:200% 0}
+    100%{background-position:-200% 0}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .mi-portal .sk-line,.mi-portal .sk-pill,.mi-portal .sk-avatar,.mi-portal .sk-btn{animation:none}
+  }
   .mi-portal .book-note:focus{border-color:var(--sea);background:var(--surface)}
   .mi-portal .book-note::placeholder{color:var(--ink-3)}
   .mi-portal .book-note-count{margin-top:5px;text-align:right;font-size:10.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
