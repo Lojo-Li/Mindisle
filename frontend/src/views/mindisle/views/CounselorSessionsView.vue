@@ -21,7 +21,7 @@
     <button v-if="isOrders" class="pill" data-filter="cancelled">已取消</button>
   </div>
 
-  <div class="docs" data-list="sessions"></div>
+  <div class="sess-feed" data-list="sessions"></div>
 </section>
 </template>
 
@@ -47,7 +47,7 @@ const STATUS_TAG = {
   cancelled: 'sea'
 }
 
-const TYPE_LABEL = { video: '视频咨询', voice: '语音咨询', offline: '线下咨询' }
+const TYPE_LABEL = { video: '在线咨询', voice: '在线咨询', offline: '线下咨询' }
 
 const EMPTY_TEXT = {
   all: '还没有预约记录，来访者下单后会出现在这里。',
@@ -58,31 +58,52 @@ const EMPTY_TEXT = {
   cancelled: '没有已取消的预约。'
 }
 
+// 单列横向卡片。两种模式共用结构，但内容侧重点不同：
+// - 订单模式（审核用途）：突出学生诉求与时间，操作为 接受 / 拒绝
+// - 会话模式（接待用途）：突出当前状态与进入入口
 function sessionCard(o) {
   const u = (o.user_info && o.user_info.nickname) || o.user_name || '来访者'
   const type = TYPE_LABEL[o.consultation_type] || '咨询'
   const actions = []
-  if (o.status === 'pending') {
-    actions.push('<button class="btn btn-primary btn-sm" data-agree="' + o.id + '">接单</button>')
+  if (isOrders.value && o.status === 'pending') {
+    actions.push('<button class="btn btn-primary btn-sm" data-agree="' + o.id + '">接受预约</button>')
     actions.push('<button class="btn btn-ghost btn-sm" data-reject="' + o.id + '">拒绝</button>')
   } else if (o.status === 'confirmed' || o.status === 'in_progress') {
-    actions.push('<button class="btn btn-primary btn-sm" data-enter="' + o.id + '">进入会话</button>')
+    actions.push('<button class="btn btn-soft btn-sm" data-enter="' + o.id + '">' +
+      (isOrders.value ? '进入咨询' : '进入会话') + '</button>')
+  } else if (o.status === 'completed') {
+    actions.push('<button class="btn btn-ghost btn-sm" data-enter="' + o.id + '">查看记录</button>')
   }
 
-  return '<div class="doc">' +
-    '<div class="doc-top">' +
-      '<div class="avatar av-a">' + esc(u.slice(0, 1)) + '</div>' +
-      '<div><h4>' + esc(u) + '<span class="tag ' + (STATUS_TAG[o.status] || 'sea') + '" style="font-size:10px;padding:1.5px 7px">' +
-        esc(statusText(o.status)) + '</span></h4>' +
-      '<div class="sub">' + esc(type) + ' · ' + esc(fmtDate(o.appointment_date)) + '</div></div>' +
+  const statusCls = STATUS_TAG[o.status] || 'sea'
+  // 订单页把诉求作为主体强调；会话页弱化诉求，专注状态
+  const noteCls = isOrders.value ? 'sess-note emphasis' : 'sess-note'
+  const note = o.problem_description
+    ? '<div class="' + noteCls + '"><b>学生诉求</b>' + esc(o.problem_description) + '</div>'
+    : '<div class="sess-note empty">学生未填写诉求描述</div>'
+
+  const cancelNote = (isOrders.value && o.cancel_reason)
+    ? '<div class="sess-note cancel">取消原因：' + esc(o.cancel_reason) + '</div>'
+    : ''
+
+  return '<div class="sess-card' + (isOrders.value ? ' is-order' : '') + '">' +
+    '<div class="sess-avatar">' + esc(u.slice(0, 1)) + '</div>' +
+    '<div class="sess-main">' +
+      '<div class="sess-title-row"><h4>' + esc(u) + '</h4>' +
+        '<span class="tag ' + statusCls + '">' + esc(statusText(o.status)) + '</span></div>' +
+      '<div class="sess-meta">' +
+        '<span class="meta-item">' + ICON_CAL + esc(fmtDate(o.appointment_date)) + '</span>' +
+        '<span class="tag">' + esc(type) + '</span>' +
+      '</div>' +
+      note + cancelNote +
     '</div>' +
-    '<div class="doc-tags"><span class="tag">公益免费</span><span class="tag">' + esc(o.appointment_no || '') + '</span></div>' +
-    '<p class="doc-bio">' + esc(o.problem_description || '来访者未填写问题描述。') + '</p>' +
     (actions.length
-      ? '<div style="display:flex;gap:8px;margin-top:14px">' + actions.join('') + '</div>'
-      : '<div class="doc-meta"><span>本次咨询已结束</span></div>') +
+      ? '<div class="sess-actions">' + actions.join('') + '</div>'
+      : '<div class="sess-actions"><span class="sess-ended">已结束</span></div>') +
     '</div>'
 }
+
+const ICON_CAL = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg>'
 
 function render() {
   const base = isOrders.value
@@ -139,3 +160,87 @@ function onClick(e) {
 
 onMounted(load)
 </script>
+
+<style>
+/* 注意：不能用 scoped —— 卡片由 sessionCard() 拼成字符串后经 innerHTML 注入，
+   scoped 生成的 data-v-xxx 属性不会出现在这些动态节点上，样式会全部失效。 */
+
+/* 单列横向卡片：与「预约订单」同结构，便于两页之间保持一致的视觉语言 */
+.sess-feed { display: flex; flex-direction: column; gap: 12px; }
+.sess-feed .sess-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 22px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow-s);
+  transition: border-color .2s var(--ease), box-shadow .2s var(--ease);
+}
+.sess-feed .sess-card:hover {
+  border-color: #CFDCD9;
+  box-shadow: 0 6px 22px -14px rgba(34, 82, 78, .5);
+}
+.sess-feed .sess-avatar {
+  flex: 0 0 auto;
+  width: 46px; height: 46px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 600; color: #fff;
+  background: linear-gradient(160deg, #357B74, #22524E);
+  letter-spacing: .5px;
+}
+.sess-feed .sess-main { flex: 1 1 auto; min-width: 0; }
+.sess-feed .sess-title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.sess-feed .sess-main h4 { font-size: 15px; font-weight: 500; }
+.sess-feed .sess-meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
+  font-size: 12.5px; color: var(--ink-2);
+}
+.sess-feed .sess-meta .meta-item {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-variant-numeric: tabular-nums;
+}
+.sess-feed .sess-meta .meta-item svg { color: var(--ink-3); flex: 0 0 auto; }
+.sess-feed .sess-note {
+  margin-top: 11px;
+  padding: 10px 13px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ink);
+  word-break: break-word;
+}
+.sess-feed .sess-note.empty { color: var(--ink-3); }
+
+/* 订单模式：诉求是审核的主要依据，用品牌色描边强调，标签加粗分隔 */
+.sess-feed .sess-note.emphasis {
+  border-left: 3px solid var(--sea);
+  padding-left: 12px;
+  background: var(--sea-soft, #EAF3F1);
+}
+.sess-feed .sess-note.emphasis b {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--sea-deep, #22524E);
+  margin-bottom: 4px;
+  letter-spacing: .3px;
+}
+.sess-feed .sess-note.cancel { color: var(--rose); background: transparent; border-color: transparent; padding-left: 0; }
+.sess-feed .sess-actions {
+  flex: 0 0 auto;
+  display: flex; flex-direction: column; gap: 8px;
+  min-width: 96px;
+}
+.sess-feed .sess-ended { font-size: 12px; color: var(--ink-3); text-align: right; }
+
+@media (max-width: 720px) {
+.sess-feed .sess-card { flex-wrap: wrap; padding: 16px; }
+.sess-feed .sess-actions { flex-direction: row; width: 100%; justify-content: flex-end; }
+.sess-feed .sess-actions .btn { flex: 1; }
+}
+</style>

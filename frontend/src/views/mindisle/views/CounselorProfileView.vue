@@ -80,7 +80,7 @@ const specialties = computed(() => {
   return String(s).split(/[,，、\s]+/).filter(Boolean)
 })
 
-const TYPE_LABEL = { video: '视频咨询', voice: '语音咨询', offline: '线下咨询' }
+const TYPE_LABEL = { video: '在线咨询', voice: '在线咨询', offline: '线下咨询' }
 const typeText = computed(() => {
   const t = String(profile.value.consultation_types || '').split(/[,，、\s]+/).filter(Boolean)
   return t.map(x => TYPE_LABEL[x] || x).join('、') || '未填写'

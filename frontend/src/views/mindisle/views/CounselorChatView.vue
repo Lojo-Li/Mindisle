@@ -229,6 +229,7 @@ import {
   getMessages, sendMessage as sendMessageApi, uploadFile,
   endConsultation, addConsultationNote, getCounselorOrders, isSignalMessage
 } from '@/api/consultation'
+import { consultTypeText } from '../workspace'
 
 const route = useRoute()
 const router = useRouter()
@@ -280,7 +281,7 @@ function statusClass(s) {
   return 'sea'
 }
 function typeLabel(t) {
-  return { video: '视频咨询', voice: '语音咨询', offline: '线下咨询' }[t] || '咨询'
+  return consultTypeText(t)
 }
 function initialOf(n) { return String(n || '学').slice(0, 1) }
 

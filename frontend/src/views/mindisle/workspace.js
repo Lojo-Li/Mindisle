@@ -54,6 +54,18 @@ export function statusText(s) {
   return STATUS[s] || s || '—'
 }
 
+/**
+ * 咨询方式文案
+ *
+ * 视频通话与语音通话功能尚未开通，站内咨询实际通过文字对话进行，
+ * 因此对外统一显示为「在线咨询」。后端 consultation_type 仍沿用
+ * video/voice/offline 三个历史取值（数据库约束），此处只负责展示层映射。
+ */
+export function consultTypeText(t) {
+  const MAP = { video: '在线咨询', voice: '在线咨询', offline: '线下咨询' }
+  return MAP[t] || '在线咨询'
+}
+
 export function go(view, router) {
   if (!view) return
   // 允许直接传绝对路径（如 /workspace/result/21）

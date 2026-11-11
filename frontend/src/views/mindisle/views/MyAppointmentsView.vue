@@ -113,7 +113,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 import { getUserAppointments, cancelAppointment } from '@/api/counselor'
-import { pickData, toast } from '../workspace'
+import { pickData, toast, consultTypeText } from '../workspace'
 
 const router = useRouter()
 const rootEl = ref(null)
@@ -198,7 +198,7 @@ function statusClass(s) {
 }
 
 function typeLabel(t) {
-  return { video: '视频咨询', voice: '语音咨询', offline: '线下咨询' }[t] || '咨询'
+  return consultTypeText(t)
 }
 
 function parseDate(v) {

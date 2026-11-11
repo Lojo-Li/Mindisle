@@ -119,7 +119,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getAppointmentDetail, submitReview } from '@/api/counselor'
-import { toast } from '../workspace'
+import { toast, consultTypeText } from '../workspace'
 
 const router = useRouter()
 const route = useRoute()
@@ -146,8 +146,7 @@ const counselorName = computed(() => {
 })
 
 function typeText(t) {
-  const map = { video: '视频咨询', voice: '语音咨询', offline: '线下咨询' }
-  return map[t] || t || '咨询'
+  return consultTypeText(t)
 }
 
 function fmtDate(v) {

@@ -196,6 +196,7 @@ import {
   endConsultation, isSignalMessage
 } from '@/api/consultation'
 import { getUserAppointments } from '@/api/counselor'
+import { consultTypeText } from '../workspace'
 import { useCallStore } from '@/stores/call'
 import VideoCall from '@/components/VideoCall.vue'
 
@@ -227,8 +228,12 @@ const counselorName = computed(() => appt.value?.counselor?.name || appt.value?.
 
 const activeNow = computed(() => ['confirmed', 'in_progress'].includes(appt.value?.status))
 
+// 视频/语音通话尚未开通，暂不显示通话入口。
+// 保留 WebRTC 相关代码，将来开通时把 CALL_ENABLED 改为 true 即可恢复。
+const CALL_ENABLED = false
+
 const canCall = computed(() =>
-  activeNow.value && ['video', 'voice'].includes(appt.value?.consultation_type)
+  CALL_ENABLED && activeNow.value && ['video', 'voice'].includes(appt.value?.consultation_type)
 )
 
 // 过滤掉信令消息（WebRTC 用）
@@ -249,7 +254,7 @@ function statusClass(s) {
 }
 
 function typeLabel(t) {
-  return { video: '视频咨询', voice: '语音咨询', offline: '线下咨询' }[t] || '咨询'
+  return consultTypeText(t)
 }
 
 function initialOf(n) { return String(n || '咨').slice(0, 1) }

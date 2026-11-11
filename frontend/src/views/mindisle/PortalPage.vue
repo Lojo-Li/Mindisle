@@ -223,7 +223,7 @@
             </div>
             <div class="tl-item">
               <b>第 7 次咨询 · 陈曦</b>
-              <span>11月12日 20:00 · 视频咨询</span>
+              <span>11月12日 20:00 · 在线咨询</span>
             </div>
             <div class="tl-item">
               <b>GAD-7 复测提醒</b>
@@ -714,7 +714,7 @@
     <div class="modal-head">
       <div>
         <h3 id="bookTitle">预约 · 陈曦</h3>
-        <p style="font-size:12px;color:var(--ink-3);margin-top:2px">50 分钟 · 视频咨询</p>
+        <p style="font-size:12px;color:var(--ink-3);margin-top:2px">50 分钟 · 在线咨询</p>
       </div>
       <button class="close" id="bookClose">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
