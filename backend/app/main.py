@@ -4,6 +4,12 @@ FastAPI 应用入口
 """
 from contextlib import asynccontextmanager
 import asyncio
+
+# 时区必须在其余应用模块导入前锁定为北京时间，
+# 否则 SQLite 容器（UTC）写入的时间会慢 8 小时。
+from app.core.timezone_setup import apply_timezone, fix_sqlite_time_defaults
+apply_timezone()
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -12,6 +18,9 @@ from app.core.config import settings
 import logging
 
 logger = logging.getLogger(__name__)
+
+# SQLite 部署时修正时间默认值（幂等，MySQL 下自动跳过）
+fix_sqlite_time_defaults(settings.DATABASE_URL)
 
 
 def _warmup_rag_sync():
